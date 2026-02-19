@@ -29,6 +29,7 @@ AgentDefinitions:
     Product: Microsoft Intune
     RequiredSkillsets:
       - IntuneStuff.PolicyIntelligenceAgent
+      - Microsoft.Intune
     AgentSingleInstanceConstraint: Workspace
     Triggers:
       - Name: Default
@@ -102,6 +103,12 @@ SkillGroups:
 
         Settings:
           OrchestratorSkill: DefaultAgentOrchestrator
+          ChildSkills:
+            - Microsoft.Intune.DescribeIntunePolicy
+            - Microsoft.Intune.GetIntuneDeviceDiff
+            - Microsoft.Intune.GetIntuneDevices
+            - Microsoft.Intune.IntunePolicyAdvisorRoutingSkill
+            - Microsoft.Intune.GetIntuneDeviceGroupMemberships
           Instructions: |
             # Mission
             You are the Policy Intelligence Agent, an expert Intune policy analyst.
