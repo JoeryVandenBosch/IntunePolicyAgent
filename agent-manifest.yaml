@@ -9,6 +9,26 @@ Descriptor:
     Security Copilot for accurate, tenant-specific analysis.
   Icon: ''
 
+AgentDefinitions:
+  - Name: PolicyIntelligenceAgent
+    DisplayName: Policy Intelligence Agent
+    Description: >-
+      An interactive agent that performs deep analysis of Intune policies. It
+      summarizes policies, assesses end-user and security impact, reports
+      assignments with filters, detects conflicts, maps compliance frameworks, and
+      generates exportable reports.
+    Product: Microsoft Intune
+    Publisher: IntuneStuff
+    RequiredSkillsets:
+      - PolicyIntelligenceAgent
+      - Intune
+    AgentSingleInstanceConstraint: Workspace
+    Triggers:
+      - Name: Default
+        DefaultPollPeriodSeconds: 0
+        ProcessSkill: PolicyIntelligenceAgent.PolicyIntelligenceAgent
+    PromptSkill: PolicyIntelligenceAgent.PolicyIntelligenceAgent
+
 SkillGroups:
   - Format: Agent
     Skills:
@@ -18,6 +38,8 @@ SkillGroups:
           Orchestrates comprehensive Intune policy analysis by chaining built-in
           Intune skills to summarize policies, assess impact, report
           assignments, and detect conflicts.
+        Interfaces:
+          - InteractiveAgent
         Inputs:
           - Name: UserRequest
             Description: >-
@@ -25,8 +47,48 @@ SkillGroups:
               about policies, or a request to analyze specific policies.
             DefaultValue: List all my Intune configuration policies
             Required: false
+        SuggestedPrompts:
+          - Prompt: List all my Intune configuration policies
+            Title: Browse Policies
+            Personas:
+              - 3
+            IsStarterAgent: true
+          - Prompt: >-
+              Analyze my Windows security policies - summarize each one,
+              show end-user impact, security impact, assignments with filters,
+              and check for conflicts
+            Title: Full Windows Policy Analysis
+            Personas:
+              - 3
+            IsStarterAgent: true
+          - Prompt: >-
+              Show me all compliance policies and their assignments including
+              any filters that are applied
+            Title: Compliance & Assignments
+            Personas:
+              - 3
+            IsStarterAgent: true
+          - Prompt: >-
+              Which of my Intune policies have conflicting settings?
+              Check across all policy types.
+            Title: Conflict Detection
+            Personas:
+              - 3
+            IsStarterAgent: true
+          - Prompt: Now show me the end-user impact for these policies
+          - Prompt: What is the security impact of these policies?
+          - Prompt: Show me all assignments and filters for these policies
+          - Prompt: Check these policies for conflicts with other policies
+          - Prompt: Which compliance frameworks do these policies satisfy?
+          - Prompt: Generate a full report for these policies
         Settings:
           OrchestratorSkill: DefaultAgentOrchestrator
+          ChildSkills:
+            - DescribeIntunePolicy
+            - GetIntuneDeviceDiff
+            - GetIntuneDevices
+            - GetIntuneDeviceGroupMemberships
+            - IntunePolicyAdvisorRoutingSkill
           Instructions: |
             # Mission
             You are the Policy Intelligence Agent, an expert Intune policy analyst.
@@ -35,14 +97,12 @@ SkillGroups:
 
             # Available Tools
             You have access to Microsoft Intune tools. You MUST use them to query
-            real data from the user's tenant. The most important tools are:
-            - **DescribeIntunePolicy** - Use this to get full policy details.
-              Pass the policy name. Set ConflictAnalysisRequired and
-              RiskAssessRequired based on what the user needs.
+            real data from the user's tenant:
+            - **DescribeIntunePolicy** - Get full policy details. Pass the policy name.
             - **GetIntuneDevices** - Get device information.
             - **GetIntuneDeviceGroupMemberships** - Understand group assignments.
             - **GetIntuneDeviceDiff** - Compare policies.
-            - **IntunePolicyAdvisorRoutingSkill** - Route policy analysis requests.
+            - **IntunePolicyAdvisorRoutingSkill** - Route policy queries.
 
             # CRITICAL RULES
             - You MUST call the actual Intune tools for every request.
@@ -50,69 +110,17 @@ SkillGroups:
             - When describing a policy, call DescribeIntunePolicy with the policy name.
             - If you cannot find an appropriate tool, tell the user what you tried.
 
-            # SCU Optimization (IMPORTANT - minimize consumption)
-            - Only enable flags that are needed for the specific request:
-              - ConflictAnalysisRequired: ONLY set to true when the user asks
-                about conflicts, overlaps, or full analysis. Default: false.
-              - RiskAssessRequired: ONLY set to true when the user asks about
-                security impact, risk, or full analysis. Default: false.
-            - When listing policies: just list them, do NOT describe each one.
-            - Do NOT call tools that the user did not ask for.
-            - Reuse results from earlier in the conversation instead of
-              re-calling tools for the same policy.
-
-            # Core Capabilities
-            1. **Policy Summary** - Configured settings and their values
-            2. **End-User Impact** - How policies affect daily user experience
-            3. **Security Impact** - Security posture and risk assessment
-            4. **Assignments & Filters** - Groups, exclusions, and filters
-            5. **Conflict Detection** - Cross-policy conflicts and overlaps
-            6. **Compliance Mapping** - NIST, CIS, ISO 27001, HIPAA, SOC 2, PCI DSS
-            7. **Recommendations** - Actionable optimization suggestions
+            # SCU Optimization
+            - ConflictAnalysisRequired: ONLY true when user asks about conflicts.
+            - RiskAssessRequired: ONLY true when user asks about security/risk.
+            - Do NOT call tools the user did not ask for.
+            - Reuse results from earlier in the conversation.
 
             # Workflow
-
-            ## Analyzing a specific policy:
-            1. Call DescribeIntunePolicy with the policy name provided by the user.
-            2. Set ConflictAnalysisRequired and RiskAssessRequired based on need.
-            3. Present the results organized by dimension.
-
-            ## Analyzing multiple policies:
-            1. For EACH policy, call DescribeIntunePolicy separately.
-            2. After all policies, provide cross-policy insights.
-
-            ## Reports:
-            Generate executive summary, policy-by-policy analysis, and
-            prioritized action items.
+            When the user provides a policy name, call DescribeIntunePolicy immediately.
+            When analyzing multiple policies, call DescribeIntunePolicy for each one.
+            Present results with clear section headers.
 
             # Output Formatting
-            - Use clear section headers
             - Severity: 🟢 Minimal | 🟡 Low | 🟠 Medium | 🔴 High | ⚫ Critical
-            - Include Intune admin center links where available
             - End multi-policy analysis with "Key Findings & Recommendations"
-        ChildSkills:
-          - DescribeIntunePolicy
-          - GetIntuneDeviceDiff
-          - GetIntuneDevices
-          - GetIntuneDeviceGroupMemberships
-          - IntunePolicyAdvisorRoutingSkill
-
-AgentDefinitions:
-  - Name: PolicyIntelligenceAgent
-    DisplayName: Policy Intelligence Agent
-    Description: >-
-      An interactive agent that performs deep analysis of Intune policies. It
-      summarizes policies, assesses end-user and security impact, reports
-      assignments with filters, detects conflicts, maps compliance frameworks, and
-      generates exportable reports. Leverages the built-in Intune skills in
-      Security Copilot for accurate, tenant-specific analysis.
-    Product: Microsoft Intune
-    Publisher: IntuneStuff
-    AgentSingleInstanceConstraint: Workspace
-    Triggers:
-      - Name: Default
-        DefaultPollPeriodSeconds: 0
-        ProcessSkill: PolicyIntelligenceAgent.PolicyIntelligenceAgent
-    PromptSkill: PolicyIntelligenceAgent.PolicyIntelligenceAgent
-    RequiredSkillsets:
-      - Intune
