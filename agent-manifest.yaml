@@ -57,8 +57,8 @@ SkillGroups:
             Description: >-
               The user's request. Can be a policy name, policy ID, a question
               about policies, or a request to analyze specific policies.
-            DefaultValue: ''
-            Required: true
+            DefaultValue: 'List all my Intune configuration policies'
+            Required: false
 
         SuggestedPrompts:
           # ── Starter Prompts (shown at agent launch) ─────────────────────────
