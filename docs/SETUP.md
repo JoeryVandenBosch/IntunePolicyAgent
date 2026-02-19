@@ -62,16 +62,29 @@ After upload, the agent builder will parse and display the components:
 
 ---
 
-## Step 4: Find Your Agent and Set Up
+## Step 4: Publish the Agent
 
-1. Navigate to **Agents** from the Security Copilot left menu
-2. Your "Policy Intelligence Agent" should appear in the library with status **"Ready for setup"**
-3. It will show:
-   - **IntuneStuff** as publisher
-   - **Preview** badge
-   - The description you defined
-4. **Click "Set up" first** — this is mandatory. It configures the agent instance and connects the required plugins (Microsoft Intune). You cannot chat with the agent until setup is complete.
-5. After setup completes, the **"Chat with agent"** button becomes available
+1. Click the **Publish** button (top-right)
+2. The publish dialog appears showing:
+   - Agent name and description
+   - Trigger configuration
+   - Required plugins
+3. Set **Scope** to "For everyone in my workspace (Upon Admin approval)"
+4. Click **Publish**
+5. You'll see the **"Agent published"** confirmation
+
+## Step 5: Find Your Agent and Start Chatting
+
+After publishing, you have two options:
+
+| Button | What It Does |
+|--------|-------------|
+| **Go to agent** | Opens the build/edit view — use this to make changes |
+| **Chat with agent** | Opens the interactive chat — **this is what you want** |
+
+1. Click **Chat with agent** to start using the agent
+2. The agent will show as **Active** in the agents library with publisher **IntuneStuff**
+3. You'll see clickable starter prompts — no typing needed
 
 ---
 
