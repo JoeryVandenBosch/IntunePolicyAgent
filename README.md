@@ -127,18 +127,22 @@ The `companion-webapp.jsx` file contains a React prototype for a standalone web 
 
 ## ⚡ SCU Consumption
 
-Each analysis call consumes Security Compute Units. Estimated consumption:
+The agent is optimized to minimize SCU usage by only enabling analysis flags when needed.
 
-| Action | Est. SCUs |
-|--------|-----------|
-| List policies | ~1 |
-| Describe single policy (with flags) | ~2-3 |
-| Full analysis of 5 policies | ~15-20 |
-| Full analysis of 10 policies | ~30-40 |
-| Compliance mapping | ~2-3 |
-| Report generation | ~2-3 |
+| Action | Est. SCUs | Notes |
+|--------|-----------|-------|
+| List policies | ~1 | Just queries, no per-policy analysis |
+| Describe single policy (summary only) | ~1-2 | Both flags off |
+| Describe single policy (with conflict + risk flags) | ~2-3 | Full analysis |
+| Full analysis of 5 policies | ~10-15 | Flags only when requested |
+| Full analysis of 10 policies | ~20-30 | Flags only when requested |
+| Compliance mapping | ~1-2 | Reuses existing analysis data |
+| Report generation | ~1-2 | Synthesizes already-fetched data |
 
-> **Note:** For M365 E5 customers, Security Copilot is included — SCU consumption counts against your allocated capacity.
+**Optimization tips:**
+- Ask for specific dimensions (e.g. "just show assignments") instead of full analysis
+- The agent reuses data from earlier in the conversation — ask follow-up questions instead of re-analyzing
+- Conflict and risk flags are only enabled when you specifically ask for them
 
 ---
 
