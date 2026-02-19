@@ -62,16 +62,16 @@ After upload, the agent builder will parse and display the components:
 
 ---
 
-## Step 4: Find Your Agent
+## Step 4: Find Your Agent and Set Up
 
 1. Navigate to **Agents** from the Security Copilot left menu
-2. Your "Policy Intelligence Agent" should appear in the library
+2. Your "Policy Intelligence Agent" should appear in the library with status **"Ready for setup"**
 3. It will show:
-   - **Custom** badge (since it's not a Microsoft-built agent)
    - **IntuneStuff** as publisher
+   - **Preview** badge
    - The description you defined
-4. Click **Set up** on the agent card to configure the instance
-5. Verify the required plugins are enabled
+4. **Click "Set up" first** — this is mandatory. It configures the agent instance and connects the required plugins (Microsoft Intune). You cannot chat with the agent until setup is complete.
+5. After setup completes, the **"Chat with agent"** button becomes available
 
 ---
 
