@@ -1,21 +1,6 @@
-# OS
+node_modules
+dist
 .DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-
-# Node (for companion webapp)
-node_modules/
-dist/
-build/
-
-# Env files
-.env
-.env.local
-*.env
-
-# Packages
-*.zip
+server/public
+vite.config.ts.*
+*.tar.gz
