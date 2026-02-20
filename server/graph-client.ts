@@ -150,6 +150,23 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
   return details;
 }
 
+export async function fetchAssignmentFilterDetails(token: string, filterId: string): Promise<any> {
+  try {
+    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/assignmentFilters('${filterId}')?$select=displayName,rule,platform`);
+    return {
+      name: data.displayName || filterId,
+      rule: data.rule || "",
+      platform: data.platform || "",
+    };
+  } catch {
+    return {
+      name: filterId,
+      rule: "",
+      platform: "",
+    };
+  }
+}
+
 export async function fetchGroupDetails(token: string, groupId: string): Promise<any> {
   try {
     const data = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}?$select=displayName,membershipRule,groupTypes&$count=true`);

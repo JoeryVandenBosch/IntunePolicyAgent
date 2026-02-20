@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails } from "./graph-client";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchAssignmentFilterDetails } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations } from "./ai-analyzer";
 import type { IntunePolicyRaw } from "./graph-client";
 
@@ -62,13 +62,86 @@ export async function registerRoutes(
         return info;
       };
 
+      const filterCache = new Map<string, any>();
+      const filterResolver = async (filterId: string) => {
+        if (filterCache.has(filterId)) return filterCache.get(filterId);
+        const info = await fetchAssignmentFilterDetails(token, filterId);
+        filterCache.set(filterId, info);
+        return info;
+      };
+
+      const enrichedDetails = await Promise.all(details.map(async (detail) => {
+        if (!detail) return detail;
+        const enriched = { ...detail };
+
+        if (enriched.assignments) {
+          enriched.assignments = await Promise.all(
+            enriched.assignments.map(async (assignment: any) => {
+              const enrichedAssignment = { ...assignment };
+              const target = assignment.target;
+              if (!target) return enrichedAssignment;
+
+              if (target.groupId) {
+                const groupInfo = await groupResolver(target.groupId);
+                enrichedAssignment.target = {
+                  ...target,
+                  _resolvedGroupName: groupInfo.name,
+                  _resolvedGroupType: groupInfo.type,
+                  _resolvedMemberCount: groupInfo.memberCount,
+                };
+              }
+
+              if (target.deviceAndAppManagementAssignmentFilterId) {
+                const filterInfo = await filterResolver(target.deviceAndAppManagementAssignmentFilterId);
+                enrichedAssignment.target = {
+                  ...enrichedAssignment.target,
+                  _resolvedFilterName: filterInfo.name,
+                  _resolvedFilterRule: filterInfo.rule,
+                };
+              }
+
+              return enrichedAssignment;
+            })
+          );
+        }
+
+        if (enriched.settings) {
+          enriched.settings = enriched.settings.map((setting: any) => {
+            const cleaned = { ...setting };
+            if (cleaned.settingInstance) {
+              const defId = cleaned.settingInstance.settingDefinitionId || "";
+              const friendlyName = defId
+                .replace(/^.*~/, "")
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c: string) => c.toUpperCase());
+              cleaned._settingFriendlyName = friendlyName;
+
+              if (cleaned.settingInstance.choiceSettingValue) {
+                const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
+                const friendlyValue = choiceValue
+                  .replace(/^.*~/, "")
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c: string) => c.toUpperCase());
+                cleaned._settingFriendlyValue = friendlyValue;
+              }
+              if (cleaned.settingInstance.simpleSettingValue) {
+                cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
+              }
+            }
+            return cleaned;
+          });
+        }
+
+        return enriched;
+      }));
+
       const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
-        analyzePolicySummaries(selectedPolicies, details),
-        analyzeEndUserImpact(selectedPolicies, details),
-        analyzeSecurityImpact(selectedPolicies, details),
-        analyzeAssignments(selectedPolicies, details, groupResolver),
-        analyzeConflicts(selectedPolicies, details),
-        analyzeRecommendations(selectedPolicies, details),
+        analyzePolicySummaries(selectedPolicies, enrichedDetails),
+        analyzeEndUserImpact(selectedPolicies, enrichedDetails),
+        analyzeSecurityImpact(selectedPolicies, enrichedDetails),
+        analyzeAssignments(selectedPolicies, enrichedDetails, groupResolver),
+        analyzeConflicts(selectedPolicies, enrichedDetails),
+        analyzeRecommendations(selectedPolicies, enrichedDetails),
       ]);
 
       res.json({

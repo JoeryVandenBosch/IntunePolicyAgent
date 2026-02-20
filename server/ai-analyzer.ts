@@ -18,16 +18,55 @@ async function callAI(systemPrompt: string, userPrompt: string, maxTokens: numbe
   return response.choices[0]?.message?.content || "";
 }
 
+function formatSettingsForContext(settings: any[]): string {
+  return settings.map((s, idx) => {
+    const name = s._settingFriendlyName || s.settingInstance?.settingDefinitionId || `Setting ${idx + 1}`;
+    const value = s._settingFriendlyValue || "Configured";
+    return `  - ${name}: ${value}`;
+  }).join("\n");
+}
+
+function formatAssignmentsForContext(assignments: any[]): string {
+  return assignments.map((a) => {
+    const target = a.target || {};
+    const type = target["@odata.type"] || "";
+    const groupName = target._resolvedGroupName || target.groupId || "Unknown";
+    const groupType = target._resolvedGroupType || "";
+    const memberCount = target._resolvedMemberCount || 0;
+    const filterName = target._resolvedFilterName || target.deviceAndAppManagementAssignmentFilterId || "";
+    const filterRule = target._resolvedFilterRule || "";
+    const filterType = target.deviceAndAppManagementAssignmentFilterType || "";
+
+    let line = "";
+    if (type.includes("allDevices")) {
+      line = "  - Target: All Devices";
+    } else if (type.includes("allLicensedUsers")) {
+      line = "  - Target: All Users";
+    } else if (type.includes("exclusion")) {
+      line = `  - Excluded Group: "${groupName}" (${groupType}, ${memberCount} members)`;
+    } else {
+      line = `  - Included Group: "${groupName}" (${groupType}, ${memberCount} members)`;
+    }
+
+    if (filterName && filterName !== target.deviceAndAppManagementAssignmentFilterId) {
+      line += `\n    Filter: "${filterName}" (mode: ${filterType})`;
+      if (filterRule) line += `\n    Filter Rule: ${filterRule}`;
+    }
+
+    return line;
+  }).join("\n");
+}
+
 function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string {
   return policies.map((p, i) => {
     const detail = details[i];
     let settingsInfo = "";
     if (detail?.settings) {
-      settingsInfo = `\nConfigured Settings (${detail.settings.length} total):\n${JSON.stringify(detail.settings.slice(0, 50), null, 2)}`;
+      settingsInfo = `\nConfigured Settings (${detail.settings.length} total):\n${formatSettingsForContext(detail.settings.slice(0, 50))}`;
     }
     let assignmentInfo = "";
     if (detail?.assignments) {
-      assignmentInfo = `\nAssignments:\n${JSON.stringify(detail.assignments, null, 2)}`;
+      assignmentInfo = `\nAssignments:\n${formatAssignmentsForContext(detail.assignments)}`;
     }
     return `
 ## Policy: ${p.name}
@@ -172,7 +211,8 @@ export async function analyzeAssignments(policies: IntunePolicyRaw[], details: a
 
         if (target.deviceAndAppManagementAssignmentFilterId) {
           filters.push({
-            name: target.deviceAndAppManagementAssignmentFilterId,
+            name: target._resolvedFilterName || target.deviceAndAppManagementAssignmentFilterId,
+            rule: target._resolvedFilterRule || "",
             mode: target.deviceAndAppManagementAssignmentFilterType === "include" ? "Include" : "Exclude",
           });
         }
