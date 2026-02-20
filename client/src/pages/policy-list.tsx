@@ -100,7 +100,7 @@ export default function PolicyListPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${selected.size > 0 ? "pb-24" : ""}`}>
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold text-foreground" data-testid="text-page-title">Select policies to analyze</h2>
