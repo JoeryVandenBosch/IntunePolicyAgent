@@ -150,6 +150,36 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
   return details;
 }
 
+export async function fetchSettingDefinitionDisplayName(token: string, definitionId: string): Promise<{ displayName: string; description: string }> {
+  try {
+    const encoded = encodeURIComponent(definitionId);
+    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/configurationSettings('${encoded}')?$select=displayName,description`);
+    return {
+      displayName: data.displayName || definitionId,
+      description: data.description || "",
+    };
+  } catch {
+    return {
+      displayName: definitionId,
+      description: "",
+    };
+  }
+}
+
+export async function fetchChoiceOptionDisplayName(token: string, definitionId: string, choiceValue: string): Promise<string> {
+  try {
+    const encoded = encodeURIComponent(definitionId);
+    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/configurationSettings('${encoded}')`);
+    if (data.options) {
+      const option = data.options.find((o: any) => o.itemId === choiceValue);
+      if (option?.displayName) return option.displayName;
+    }
+    return choiceValue;
+  } catch {
+    return choiceValue;
+  }
+}
+
 export async function fetchAssignmentFilterDetails(token: string, filterId: string): Promise<any> {
   try {
     const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/assignmentFilters('${filterId}')?$select=displayName,rule,platform`);

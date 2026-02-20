@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchAssignmentFilterDetails } from "./graph-client";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations } from "./ai-analyzer";
 import type { IntunePolicyRaw } from "./graph-client";
 
@@ -105,31 +105,40 @@ export async function registerRoutes(
           );
         }
 
+        const settingDefCache = new Map<string, { displayName: string; description: string }>();
         if (enriched.settings) {
-          enriched.settings = enriched.settings.map((setting: any) => {
-            const cleaned = { ...setting };
-            if (cleaned.settingInstance) {
-              const defId = cleaned.settingInstance.settingDefinitionId || "";
-              const friendlyName = defId
-                .replace(/^.*~/, "")
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (c: string) => c.toUpperCase());
-              cleaned._settingFriendlyName = friendlyName;
+          enriched.settings = await Promise.all(
+            enriched.settings.map(async (setting: any) => {
+              const cleaned = { ...setting };
+              if (cleaned.settingInstance) {
+                const defId = cleaned.settingInstance.settingDefinitionId || "";
 
-              if (cleaned.settingInstance.choiceSettingValue) {
-                const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
-                const friendlyValue = choiceValue
-                  .replace(/^.*~/, "")
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (c: string) => c.toUpperCase());
-                cleaned._settingFriendlyValue = friendlyValue;
+                if (defId) {
+                  let defInfo = settingDefCache.get(defId);
+                  if (!defInfo) {
+                    defInfo = await fetchSettingDefinitionDisplayName(token, defId);
+                    settingDefCache.set(defId, defInfo);
+                  }
+                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : defId.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                }
+
+                if (cleaned.settingInstance.choiceSettingValue) {
+                  const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
+                  if (choiceValue.includes("_1")) {
+                    cleaned._settingFriendlyValue = "Enabled";
+                  } else if (choiceValue.includes("_0")) {
+                    cleaned._settingFriendlyValue = "Disabled";
+                  } else {
+                    cleaned._settingFriendlyValue = choiceValue.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                  }
+                }
+                if (cleaned.settingInstance.simpleSettingValue) {
+                  cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
+                }
               }
-              if (cleaned.settingInstance.simpleSettingValue) {
-                cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
-              }
-            }
-            return cleaned;
-          });
+              return cleaned;
+            })
+          );
         }
 
         return enriched;
