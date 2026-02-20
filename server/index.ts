@@ -60,6 +60,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  try {
+    const { ensureAnalyticsTable } = await import("./db");
+    await ensureAnalyticsTable();
+  } catch (err) {
+    console.error("Analytics table init error:", err);
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

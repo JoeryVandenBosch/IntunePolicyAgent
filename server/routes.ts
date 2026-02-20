@@ -145,16 +145,21 @@ export async function registerRoutes(
         return enriched;
       }));
 
-      const policyTypes = Array.from(new Set(selectedPolicies.map(p => p.type))).join(", ");
-      const policyPlatforms = Array.from(new Set(selectedPolicies.map(p => p.platform))).join(", ");
-      trackEvent({
-        eventType: "analysis",
-        tenantId: req.session.tenantId,
-        userEmail: req.session.userEmail,
-        policyCount: selectedPolicies.length,
-        policyTypes,
-        platforms: policyPlatforms,
-      });
+      const uniquePlatforms = Array.from(new Set(selectedPolicies.map(p => p.platform)));
+      const uniqueTypes = Array.from(new Set(selectedPolicies.map(p => p.type)));
+      for (const platform of uniquePlatforms) {
+        const platformPolicies = selectedPolicies.filter(p => p.platform === platform);
+        for (const pType of Array.from(new Set(platformPolicies.map(p => p.type)))) {
+          trackEvent({
+            eventType: "analysis",
+            tenantId: req.session.tenantId,
+            userEmail: req.session.userEmail,
+            policyCount: platformPolicies.filter(p => p.type === pType).length,
+            policyTypes: pType,
+            platforms: platform,
+          });
+        }
+      }
 
       const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
         analyzePolicySummaries(selectedPolicies, enrichedDetails),
