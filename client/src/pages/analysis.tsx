@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, Loader2, BookOpen, Target } from "lucide-react";
+import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth-context";
 
 const SEVERITY_COLORS: Record<string, string> = {
   "Minimal": "bg-emerald-500/20 text-emerald-400",
@@ -32,6 +33,75 @@ const PLATFORM_COLORS: Record<string, string> = {
   "Android": "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
+function GroupMemberList({ groupId, groupName, memberCount }: { groupId: string; groupName: string; memberCount: number }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [members, setMembers] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleToggle = async () => {
+    if (!isOpen && members === null) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/groups/${groupId}/members`, { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          setMembers(data.members || []);
+        } else {
+          setMembers([]);
+        }
+      } catch {
+        setMembers([]);
+      }
+      setLoading(false);
+    }
+    setIsOpen(!isOpen);
+  };
+
+  const isSystemGroup = groupId === "all-devices" || groupId === "all-users";
+  if (isSystemGroup) {
+    return <span className="text-xs text-muted-foreground">All targeted</span>;
+  }
+
+  return (
+    <div className="flex flex-col items-end">
+      <button
+        onClick={handleToggle}
+        className="text-xs text-primary hover:underline flex items-center gap-1 cursor-pointer"
+        data-testid={`btn-expand-members-${groupId}`}
+      >
+        {loading ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : isOpen ? (
+          <ChevronDown className="w-3 h-3" />
+        ) : (
+          <ChevronRight className="w-3 h-3" />
+        )}
+        {memberCount} {memberCount === 1 ? "member" : "members"}
+      </button>
+      {isOpen && members && (
+        <div className="mt-2 w-full max-h-48 overflow-y-auto rounded border border-border/20 bg-background/50">
+          {members.length === 0 ? (
+            <p className="text-xs text-muted-foreground p-2">No members found</p>
+          ) : (
+            members.map((m, idx) => (
+              <div key={m.id || idx} className="flex items-center gap-2 px-2 py-1.5 border-b border-border/10 last:border-0" data-testid={`member-row-${m.id}`}>
+                {m.type === "device" ? (
+                  <Monitor className="w-3 h-3 text-blue-400 shrink-0" />
+                ) : (
+                  <User className="w-3 h-3 text-emerald-400 shrink-0" />
+                )}
+                <span className="text-xs text-foreground truncate">{m.displayName}</span>
+                {m.upn && <span className="text-[10px] text-muted-foreground truncate ml-auto">{m.upn}</span>}
+                {m.os && <span className="text-[10px] text-muted-foreground ml-auto">{m.os}</span>}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StatCard({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <div className="p-4 rounded-md bg-card border border-border/30 space-y-1">
@@ -49,7 +119,10 @@ function PolicySection({ policy, children }: { policy: IntunePolicy; children: R
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border border-border/30 rounded-md">
       <CollapsibleTrigger className="flex items-center gap-3 w-full p-4 text-left" data-testid={`trigger-policy-${policy.id}`}>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`} />
-        <span className="font-medium text-foreground text-sm">{policy.name}</span>
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground text-sm">{policy.name}</span>
+          <span className="text-[10px] text-muted-foreground font-mono">{policy.id}</span>
+        </div>
         <Badge variant="outline" className={`text-xs border ${platformColor}`}>{policy.platform}</Badge>
       </CollapsibleTrigger>
       <CollapsibleContent className="px-4 pb-4 pt-0">
@@ -75,6 +148,7 @@ function getSelectedPolicies(queryClientInstance: ReturnType<typeof useQueryClie
 
 export default function AnalysisPage() {
   const [, setLocation] = useLocation();
+  const { auth, logout } = useAuth();
   const queryClientInstance = useQueryClient();
   const selectedPolicies = getSelectedPolicies(queryClientInstance);
 
@@ -98,7 +172,9 @@ export default function AnalysisPage() {
   if (!selectedPolicies || selectedPolicies.length === 0) return null;
 
   const totalSettings = selectedPolicies.reduce((sum, p) => sum + p.settingsCount, 0);
-  const conflictCount = analysis?.conflicts?.length || 0;
+  const settingConflictCount = analysis?.settingConflicts?.length || 0;
+  const aiConflictCount = analysis?.conflicts?.length || 0;
+  const conflictCount = settingConflictCount + aiConflictCount;
   const recCount = analysis?.recommendations?.length || 0;
 
   const handleExport = async (format: "html" | "text") => {
@@ -142,6 +218,13 @@ export default function AnalysisPage() {
             <Button variant="ghost" size="sm" onClick={() => setLocation("/policies")} data-testid="button-new-analysis">
               <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
               New Analysis
+            </Button>
+            {auth?.user?.displayName && (
+              <span className="text-xs text-muted-foreground hidden sm:inline">{auth.user.displayName}</span>
+            )}
+            <Button variant="ghost" size="sm" onClick={logout} data-testid="button-logout">
+              <LogOut className="w-3.5 h-3.5 mr-1.5" />
+              Sign Out
             </Button>
           </div>
         </div>
@@ -220,14 +303,44 @@ export default function AnalysisPage() {
                   const impact = analysis.endUserImpact[policy.id];
                   if (!impact) return null;
                   const severityColor = SEVERITY_COLORS[impact.severity] || SEVERITY_COLORS["Minimal"];
+                  const hasStructuredData = impact.policySettingsAndImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
                     <PolicySection key={policy.id} policy={policy}>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${severityColor}`}>{impact.severity}</Badge>
                           <span className="text-xs text-muted-foreground">impact level</span>
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
+                        {hasStructuredData ? (
+                          <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                            {impact.policySettingsAndImpact && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Policy Settings and Impact on End-Users:</h4>
+                                <p>{impact.policySettingsAndImpact}</p>
+                              </div>
+                            )}
+                            {impact.assignmentScope && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
+                                <p>{impact.assignmentScope}</p>
+                              </div>
+                            )}
+                            {impact.riskAnalysis && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
+                                <p>{impact.riskAnalysis}</p>
+                              </div>
+                            )}
+                            {impact.overallSummary && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
+                                <p>{impact.overallSummary}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
+                        )}
                       </div>
                     </PolicySection>
                   );
@@ -239,20 +352,63 @@ export default function AnalysisPage() {
                   const impact = analysis.securityImpact[policy.id];
                   if (!impact) return null;
                   const ratingColor = SEVERITY_COLORS[impact.rating] || SEVERITY_COLORS["Medium"];
+                  const hasStructuredData = impact.policySettingsAndSecurityImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
                     <PolicySection key={policy.id} policy={policy}>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${ratingColor}`}>{impact.rating}</Badge>
                           <span className="text-xs text-muted-foreground">security rating</span>
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
-                        {impact.complianceFrameworks.length > 0 && (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                            {impact.complianceFrameworks.map(fw => (
-                              <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
-                            ))}
+                        {hasStructuredData ? (
+                          <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                            {impact.policySettingsAndSecurityImpact && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Policy Settings and Security Impact:</h4>
+                                <p>{impact.policySettingsAndSecurityImpact}</p>
+                              </div>
+                            )}
+                            {impact.assignmentScope && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
+                                <p>{impact.assignmentScope}</p>
+                              </div>
+                            )}
+                            {impact.riskAnalysis && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
+                                <p>{impact.riskAnalysis}</p>
+                              </div>
+                            )}
+                            {impact.overallSummary && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
+                                <p>{impact.overallSummary}</p>
+                              </div>
+                            )}
+                            {impact.complianceFrameworks?.length > 0 && (
+                              <div>
+                                <h4 className="text-xs font-bold text-foreground mb-1.5">Compliance Frameworks:</h4>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                                  {impact.complianceFrameworks.map(fw => (
+                                    <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
+                            {impact.complianceFrameworks?.length > 0 && (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                                {impact.complianceFrameworks.map(fw => (
+                                  <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -279,7 +435,7 @@ export default function AnalysisPage() {
                                   <span className="text-sm font-medium text-foreground">{g.name}</span>
                                   <span className="text-xs text-muted-foreground">{g.type}</span>
                                 </div>
-                                <span className="text-xs text-muted-foreground">{g.memberCount} members</span>
+                                <GroupMemberList groupId={g.id} groupName={g.name} memberCount={g.memberCount} />
                               </div>
                             ))}
                           </div>
@@ -295,7 +451,7 @@ export default function AnalysisPage() {
                                   <span className="text-sm font-medium text-foreground">{g.name}</span>
                                   <span className="text-xs text-muted-foreground">{g.type}</span>
                                 </div>
-                                <span className="text-xs text-muted-foreground">{g.memberCount} members</span>
+                                <GroupMemberList groupId={g.id} groupName={g.name} memberCount={g.memberCount} />
                               </div>
                             ))}
                           </div>
@@ -326,38 +482,159 @@ export default function AnalysisPage() {
                 })}
               </TabsContent>
 
-              <TabsContent value="conflicts" className="space-y-3">
-                {analysis.conflicts.length === 0 ? (
+              <TabsContent value="conflicts" className="space-y-6">
+                {/* Setting-Level Conflicts grouped by policy */}
+                {(analysis.settingConflicts?.length || 0) > 0 && (() => {
+                  const policyConflictMap = new Map<string, { policyName: string; intuneUrl: string; settings: Map<string, { settingName: string; myValue: string; others: { policyName: string; value: string; intuneUrl: string }[] }> }>();
+                  for (const sc of analysis.settingConflicts) {
+                    for (const sp of sc.sourcePolicies) {
+                      if (!policyConflictMap.has(sp.policyId)) {
+                        policyConflictMap.set(sp.policyId, { policyName: sp.policyName, intuneUrl: sp.intuneUrl, settings: new Map() });
+                      }
+                      const entry = policyConflictMap.get(sp.policyId)!;
+                      if (!entry.settings.has(sc.settingDefinitionId)) {
+                        entry.settings.set(sc.settingDefinitionId, {
+                          settingName: sc.settingName,
+                          myValue: sp.value,
+                          others: sc.sourcePolicies.filter(o => o.policyId !== sp.policyId).map(o => ({ policyName: o.policyName, value: o.value, intuneUrl: o.intuneUrl })),
+                        });
+                      }
+                    }
+                  }
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-orange-400" />
+                        <h3 className="text-sm font-semibold text-foreground">Setting Conflicts ({analysis.settingConflicts.length})</h3>
+                        <p className="text-xs text-muted-foreground ml-auto">Settings configured with different values across policies</p>
+                      </div>
+                      {Array.from(policyConflictMap.entries()).map(([policyId, policyData]) => (
+                        <Card key={policyId} className="border-border/30 border-l-2 border-l-orange-500/50" data-testid={`card-policy-conflicts-${policyId}`}>
+                          <CardContent className="pt-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={policyData.intuneUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-semibold text-foreground hover:text-primary flex items-center gap-1.5"
+                              >
+                                {policyData.policyName}
+                                <ExternalLink className="w-3 h-3 shrink-0 text-muted-foreground" />
+                              </a>
+                              <Badge variant="outline" className="text-xs border bg-orange-500/20 text-orange-400 border-orange-500/30">
+                                {policyData.settings.size} conflicting setting{policyData.settings.size !== 1 ? "s" : ""}
+                              </Badge>
+                            </div>
+                            <div className="space-y-2">
+                              {Array.from(policyData.settings.entries()).map(([defId, setting]) => (
+                                <div key={defId} className="rounded bg-card/50 border border-border/20 p-3 space-y-2" data-testid={`conflict-detail-${policyId}-${defId}`}>
+                                  <div className="flex items-center gap-1.5">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                                    <span className="text-sm font-medium text-orange-400">{setting.settingName}</span>
+                                  </div>
+                                  <div className="space-y-1.5 text-xs">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-muted-foreground">This policy:</span>
+                                      <Badge variant="outline" className="text-xs border-orange-500/30 text-orange-400">{setting.myValue}</Badge>
+                                    </div>
+                                    {setting.others.map((other, oi) => (
+                                      <div key={oi} className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-muted-foreground">Conflicts with</span>
+                                        <a
+                                          href={other.intuneUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary hover:underline inline-flex items-center gap-1"
+                                        >
+                                          {other.policyName}
+                                          <ExternalLink className="w-3 h-3 shrink-0" />
+                                        </a>
+                                        <Badge variant="outline" className="text-xs border-orange-500/30 text-orange-400">{other.value}</Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* AI-Powered Conflict Analysis */}
+                {analysis.conflicts.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-foreground">AI Conflict Analysis ({analysis.conflicts.length})</h3>
+                    </div>
+                    {analysis.conflicts.map((conflict, i) => {
+                      const color = CONFLICT_SEVERITY_COLORS[conflict.severity] || CONFLICT_SEVERITY_COLORS["Info"];
+                      const severityBorderColor = conflict.severity === "Critical" ? "border-l-red-500/50" : conflict.severity === "Warning" ? "border-l-orange-500/50" : "border-l-blue-500/50";
+                      const hasStructuredData = conflict.conflictingSettings || conflict.assignmentOverlap || conflict.impactAssessment || conflict.resolutionSteps;
+                      return (
+                        <Card key={i} className={`border-border/30 border-l-2 ${severityBorderColor}`} data-testid={`card-conflict-${i}`}>
+                          <CardContent className="pt-4 space-y-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <AlertTriangle className={`w-4 h-4 ${conflict.severity === "Critical" ? "text-red-400" : conflict.severity === "Warning" ? "text-orange-400" : "text-blue-400"}`} />
+                              <span className={`text-sm font-medium ${conflict.severity === "Critical" ? "text-red-400" : conflict.severity === "Warning" ? "text-orange-400" : "text-blue-400"}`}>{conflict.type}</span>
+                              <Badge variant="outline" className={`text-xs border ${color}`}>{conflict.severity}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{conflict.detail}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs text-muted-foreground font-medium">Policies:</span>
+                              {conflict.policies.map((p, j) => (
+                                <Badge key={j} variant="outline" className="text-xs">{p}</Badge>
+                              ))}
+                            </div>
+                            {hasStructuredData ? (
+                              <div className="space-y-4 text-sm text-muted-foreground leading-relaxed pt-2 border-t border-border/20">
+                                {conflict.conflictingSettings && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-foreground mb-1.5">Conflicting Settings:</h4>
+                                    <p>{conflict.conflictingSettings}</p>
+                                  </div>
+                                )}
+                                {conflict.assignmentOverlap && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Overlap:</h4>
+                                    <p>{conflict.assignmentOverlap}</p>
+                                  </div>
+                                )}
+                                {conflict.impactAssessment && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-foreground mb-1.5">Impact Assessment:</h4>
+                                    <p>{conflict.impactAssessment}</p>
+                                  </div>
+                                )}
+                                {conflict.resolutionSteps && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-foreground mb-1.5">Resolution Steps:</h4>
+                                    <p>{conflict.resolutionSteps}</p>
+                                  </div>
+                                )}
+                              </div>
+                            ) : conflict.recommendation ? (
+                              <div className="flex items-start gap-1.5 pt-1">
+                                <Lightbulb className="w-3.5 h-3.5 text-chart-4 mt-0.5 shrink-0" />
+                                <p className="text-xs text-chart-4">{conflict.recommendation}</p>
+                              </div>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {conflictCount === 0 && (
                   <Card className="border-border/30">
                     <CardContent className="pt-6 text-center">
                       <p className="text-sm text-emerald-400">No conflicts detected among the selected policies.</p>
                     </CardContent>
                   </Card>
-                ) : (
-                  analysis.conflicts.map((conflict, i) => {
-                    const color = CONFLICT_SEVERITY_COLORS[conflict.severity] || CONFLICT_SEVERITY_COLORS["Info"];
-                    return (
-                      <Card key={i} className="border-border/30 border-l-2 border-l-orange-500/50" data-testid={`card-conflict-${i}`}>
-                        <CardContent className="pt-4 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4 text-orange-400" />
-                            <span className="text-sm font-medium text-orange-400">{conflict.type}</span>
-                            <Badge variant="outline" className={`text-xs border ${color}`}>{conflict.severity}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{conflict.detail}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Policies: {conflict.policies.join(" <> ")}
-                          </p>
-                          {conflict.recommendation && (
-                            <div className="flex items-start gap-1.5 pt-1">
-                              <Lightbulb className="w-3.5 h-3.5 text-chart-4 mt-0.5 shrink-0" />
-                              <p className="text-xs text-chart-4">{conflict.recommendation}</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })
                 )}
               </TabsContent>
 

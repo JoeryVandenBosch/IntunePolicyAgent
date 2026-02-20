@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { IntunePolicyRaw } from "./graph-client";
+import type { SettingConflict, SettingComparison } from "@shared/schema";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -7,15 +8,113 @@ const openai = new OpenAI({
 });
 
 async function callAI(systemPrompt: string, userPrompt: string, maxTokens: number = 4096): Promise<string> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-5-nano",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    max_completion_tokens: maxTokens,
-  });
-  return response.choices[0]?.message?.content || "";
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5-nano",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_completion_tokens: maxTokens,
+      temperature: 0,
+    });
+    const content = response.choices[0]?.message?.content || "";
+    const finishReason = response.choices[0]?.finish_reason;
+    if (finishReason === "length") {
+      console.warn(`AI response truncated (hit ${maxTokens} token limit). Content length: ${content.length}`);
+    }
+    if (!content) {
+      console.error("AI returned empty content");
+    }
+    return content;
+  } catch (error: any) {
+    console.error("AI API call failed:", error?.message || error);
+    throw error;
+  }
+}
+
+function extractJSON(raw: string): any {
+  let cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch {}
+  }
+  const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrayMatch) {
+    try {
+      return JSON.parse(arrayMatch[0]);
+    } catch {}
+  }
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (lastBrace > 0) {
+    const truncated = cleaned.substring(0, lastBrace + 1);
+    try {
+      return JSON.parse(truncated);
+    } catch {}
+  }
+  // Try fixing truncated JSON by closing open braces/brackets
+  let attempt = cleaned;
+  const firstBrace = attempt.indexOf("{");
+  if (firstBrace >= 0) {
+    attempt = attempt.substring(firstBrace);
+    let openBraces = 0;
+    let openBrackets = 0;
+    let inString = false;
+    let escape = false;
+    for (const ch of attempt) {
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "{") openBraces++;
+      if (ch === "}") openBraces--;
+      if (ch === "[") openBrackets++;
+      if (ch === "]") openBrackets--;
+    }
+    // Truncate any incomplete string value
+    if (inString) {
+      const lastQuote = attempt.lastIndexOf('"');
+      if (lastQuote > 0) {
+        attempt = attempt.substring(0, lastQuote) + '"';
+        // Recount after truncation
+        openBraces = 0; openBrackets = 0; inString = false; escape = false;
+        for (const ch of attempt) {
+          if (escape) { escape = false; continue; }
+          if (ch === "\\") { escape = true; continue; }
+          if (ch === '"') { inString = !inString; continue; }
+          if (inString) continue;
+          if (ch === "{") openBraces++;
+          if (ch === "}") openBraces--;
+          if (ch === "[") openBrackets++;
+          if (ch === "]") openBrackets--;
+        }
+      }
+    }
+    attempt += "]".repeat(Math.max(0, openBrackets));
+    attempt += "}".repeat(Math.max(0, openBraces));
+    try {
+      return JSON.parse(attempt);
+    } catch {}
+  }
+  throw new Error("Could not parse AI response as JSON");
+}
+
+function formatSettingIdToName(defId: string): string {
+  let name = defId.replace(/^.*~/, "");
+  const vendorPrefixes = /^(device_vendor_msft_|user_vendor_msft_|vendor_msft_)/i;
+  name = name.replace(vendorPrefixes, "");
+  const parts = name.split("_").filter(Boolean);
+  if (parts.length <= 1) {
+    return name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase());
+  }
+  return parts.map(p =>
+    p.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase())
+  ).join(" > ");
 }
 
 function formatSettingsForContext(settings: any[]): string {
@@ -70,7 +169,7 @@ function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string
     }
     return `
 ## Policy: ${p.name}
-- ID: ${p.id}
+- JSON Key (use this EXACT value as the key in your JSON response): "${p.id}"
 - Type: ${p.type}
 - Platform: ${p.platform}
 - Last Modified: ${p.lastModified}
@@ -82,99 +181,233 @@ ${assignmentInfo}
   }).join("\n---\n");
 }
 
-export async function analyzePolicySummaries(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { overview: string; keySettings: number; lastModified: string }>> {
-  const context = buildPolicyContext(policies, details);
+function remapAIResponseKeys(aiResult: Record<string, any>, policies: IntunePolicyRaw[]): Record<string, any> {
+  const mapped: Record<string, any> = {};
+  const policyIds = policies.map(p => p.id);
+  const nameToId = new Map(policies.map(p => [p.name.toLowerCase(), p.id]));
+
+  for (const [key, value] of Object.entries(aiResult)) {
+    if (policyIds.includes(key)) {
+      mapped[key] = value;
+    } else {
+      const matchByName = nameToId.get(key.toLowerCase());
+      if (matchByName) {
+        mapped[matchByName] = value;
+      } else {
+        const partialMatch = policies.find(p =>
+          key.toLowerCase().includes(p.name.toLowerCase()) ||
+          p.name.toLowerCase().includes(key.toLowerCase()) ||
+          key.includes(p.id.substring(0, 8))
+        );
+        if (partialMatch) {
+          mapped[partialMatch.id] = value;
+        } else if (policies.length === 1) {
+          mapped[policies[0].id] = value;
+        } else {
+          mapped[key] = value;
+        }
+      }
+    }
+  }
+  return mapped;
+}
+
+async function analyzeSinglePolicySummary(policy: IntunePolicyRaw, detail: any): Promise<{ id: string; data: { overview: string; keySettings: number; lastModified: string } }> {
+  const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Analyze the provided policies and generate a comprehensive, detailed JSON object with summaries.
+    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Analyze the provided policy and generate a factual, data-driven summary.
 
-For each policy, provide:
-- overview: A thorough multi-paragraph summary structured as follows:
-  1. Start with what the policy configures and its purpose. Explain what the setting does when enabled vs disabled/not configured, and how it deviates from the default behavior.
-  2. "Key Configured Settings:" - List each configured setting with its value, explain what each setting does, and note whether it deviates from the default. Be specific about what the setting controls.
-  3. "Most Important Setting:" - Identify the most impactful setting and explain WHY it is important, including implications for storage, performance, security, or user experience.
-  4. "Assignment Scope Summary:" - Describe which groups are included/excluded, how many members each group has if known, and describe any assignment filters applied (what devices they target or exclude).
-  5. "Overall Summary:" - A final paragraph tying everything together: the policy's purpose, its scope, how many settings are configured, and the overall impact.
+CRITICAL RULES:
+- Base your summary ONLY on the actual setting names and values provided in the data. Do NOT infer, assume, or fabricate settings that are not listed.
+- If two policies have identical settings except for one, their summaries should be nearly identical except for that one difference.
+- List each configured setting exactly as it appears in the data with its exact value.
+- Do NOT add speculative commentary about settings not present in the data.
+
+Provide:
+- overview: A structured summary with these sections:
+  1. Policy name (with GUID), type, platform, and stated purpose/description.
+  2. "Configured Settings:" - List EVERY configured setting with its exact value from the data. For each, briefly explain what it controls.
+  3. "Assignment Scope:" - Which groups are targeted (include/exclude), member counts, and any assignment filters with their rules.
+  4. "Summary:" - A factual closing: how many settings are configured, the policy's scope, and the overall configuration approach.
   End with: "This summary covers N configured setting(s) for this policy."
 
 - keySettings: number of settings configured
 - lastModified: the last modified date
 
-Be detailed and specific. Do not be generic or vague. Reference actual setting names and values from the policy data. Explain the real-world impact of each configuration choice.
+IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON in this format:
-{
-  "policyId": { "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }
-}`,
-    `Analyze these Intune policies:\n${context}`,
-    8192
+{ "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }`,
+    `Analyze this Intune policy:\n${context}`,
+    12000
   );
 
   try {
-    const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
-    const fallback: Record<string, any> = {};
-    policies.forEach(p => {
-      fallback[p.id] = { overview: `${p.type} policy for ${p.platform} with ${p.settingsCount} configured settings.`, keySettings: p.settingsCount, lastModified: p.lastModified };
-    });
-    return fallback;
+    const parsed = extractJSON(result);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("AI returned non-object response for summary");
+    }
+    if (parsed.overview) {
+      return { id: policy.id, data: parsed };
+    }
+    const firstValue = Object.values(parsed)[0] as any;
+    if (firstValue?.overview) {
+      return { id: policy.id, data: firstValue };
+    }
+    throw new Error("Unexpected response structure");
+  } catch (e) {
+    console.error(`Failed to parse summary for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
+    return { id: policy.id, data: { overview: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`, keySettings: policy.settingsCount, lastModified: policy.lastModified } };
   }
 }
 
-export async function analyzeEndUserImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { severity: string; description: string; workarounds?: string }>> {
-  const context = buildPolicyContext(policies, details);
+export async function analyzePolicySummaries(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { overview: string; keySettings: number; lastModified: string }>> {
+  const results = await Promise.allSettled(
+    policies.map((policy, i) => analyzeSinglePolicySummary(policy, details[i]))
+  );
+  const merged: Record<string, any> = {};
+  results.forEach((result, i) => {
+    if (result.status === "fulfilled") {
+      merged[result.value.id] = result.value.data;
+    } else {
+      const p = policies[i];
+      console.error(`Summary analysis failed for policy ${p.name}:`, result.reason);
+      merged[p.id] = { overview: `${p.type} policy for ${p.platform} with ${p.settingsCount} configured settings.`, keySettings: p.settingsCount, lastModified: p.lastModified };
+    }
+  });
+  return merged;
+}
+
+async function analyzeSingleEndUserImpact(policy: IntunePolicyRaw, detail: any): Promise<{ id: string; data: any }> {
+  const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert focusing on end-user experience impact.
-For each policy, assess how it affects end-users daily workflow.
-Severity levels: Minimal, Low, Medium, High, Critical
+    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Provide a factual, data-driven end-user impact analysis for this policy.
+
+CRITICAL RULES:
+- Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
+- If two policies have identical settings, they should produce identical impact analyses. Only note differences where actual setting values differ.
+- Reference each setting by its exact name and value from the data.
+
+Provide these structured fields:
+- severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" - overall impact severity on end users
+- policySettingsAndImpact: For EACH configured setting listed in the data, explain: what it controls, its configured value, and the specific end-user impact. Only discuss settings that are actually present in the data.
+- assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows.
+- riskAnalysis: Based on the actual configured settings and their values, what are the risks? Focus on: user productivity impact, data availability, and any settings that deviate from defaults.
+- overallSummary: Factual closing: policy purpose, scope, number of configured settings, and net end-user impact.
+- description: Brief 1-2 sentence summary of end-user impact.
+
+Do NOT include any conflict analysis - conflicts are handled separately.
+
+IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON:
-{
-  "policyId": { "severity": "Minimal|Low|Medium|High|Critical", "description": "Detailed impact description", "workarounds": "Any workarounds or tips" }
-}`,
-    `Analyze end-user impact for these policies:\n${context}`
+{ "severity": "...", "description": "...", "policySettingsAndImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+    `Analyze end-user impact for this policy:\n${context}`,
+    12000
   );
 
   try {
-    const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
-    const fallback: Record<string, any> = {};
-    policies.forEach(p => {
-      fallback[p.id] = { severity: "Minimal", description: `Standard ${p.type} configuration with typical user impact.`, workarounds: "Contact IT for assistance." };
-    });
-    return fallback;
+    const parsed = extractJSON(result);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("AI returned non-object response");
+    }
+    if (parsed.severity) {
+      return { id: policy.id, data: parsed };
+    }
+    const firstValue = Object.values(parsed)[0] as any;
+    if (firstValue?.severity) {
+      return { id: policy.id, data: firstValue };
+    }
+    throw new Error("Unexpected response structure");
+  } catch (e) {
+    console.error(`Failed to parse end-user impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
+    return { id: policy.id, data: { severity: "Minimal", description: `Standard ${policy.type} configuration with typical user impact.`, policySettingsAndImpact: `This policy configures ${policy.type} settings for ${policy.platform}.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings.` } };
   }
 }
 
-export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { rating: string; description: string; complianceFrameworks: string[] }>> {
-  const context = buildPolicyContext(policies, details);
+export async function analyzeEndUserImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { severity: string; description: string; workarounds?: string; policySettingsAndImpact?: string; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
+  const results = await Promise.allSettled(
+    policies.map((policy, i) => analyzeSingleEndUserImpact(policy, details[i]))
+  );
+  const merged: Record<string, any> = {};
+  results.forEach((result, i) => {
+    if (result.status === "fulfilled") {
+      merged[result.value.id] = result.value.data;
+    } else {
+      const p = policies[i];
+      console.error(`End-user impact analysis failed for policy ${p.name}:`, result.reason);
+      merged[p.id] = { severity: "Minimal", description: `Standard ${p.type} configuration with typical user impact.`, policySettingsAndImpact: `This policy configures ${p.type} settings for ${p.platform}.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${p.name}" policy is a ${p.type} configuration for ${p.platform} with ${p.settingsCount} configured settings.` };
+    }
+  });
+  return merged;
+}
+
+async function analyzeSingleSecurityImpact(policy: IntunePolicyRaw, detail: any): Promise<{ id: string; data: any }> {
+  const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune security expert.
-For each policy, assess the security posture improvements.
-Rating levels: Low, Medium, High, Critical
-Include relevant compliance frameworks: NIST 800-53, NIST 800-171, CIS Benchmarks, ISO 27001, HIPAA, SOC 2, PCI DSS, etc.
+    `You are a Microsoft Intune security expert similar to Microsoft Security Copilot. Provide a factual, data-driven security impact analysis for this policy.
+
+CRITICAL RULES:
+- Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
+- If two policies have identical settings, they should produce identical security analyses. Only note differences where actual setting values differ.
+- Reference each setting by its exact name and value from the data.
+
+Provide these structured fields:
+- rating: "Low"|"Medium"|"High"|"Critical" - overall security impact rating
+- policySettingsAndSecurityImpact: For EACH configured setting listed in the data, explain: what it controls, its configured value, and the specific security implications (positive or negative).
+- assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows about which users/devices are protected.
+- riskAnalysis: Based on the actual configured settings and their values, what security risks are addressed and what residual risks remain? Focus on: data protection, access control, compliance.
+- overallSummary: Factual closing: policy purpose, scope, number of configured settings, and overall security posture impact. End with: "This summary covers N configured setting(s) for this policy."
+- description: Brief 1-2 sentence security impact summary.
+- complianceFrameworks: Array of relevant frameworks (NIST 800-53, CIS Benchmarks, ISO 27001, etc.)
+
+Do NOT include any conflict analysis - conflicts are handled separately.
+
+IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON:
-{
-  "policyId": { "rating": "Low|Medium|High|Critical", "description": "Security impact description", "complianceFrameworks": ["NIST 800-53", ...] }
-}`,
-    `Analyze security impact for these policies:\n${context}`
+{ "rating": "...", "description": "...", "complianceFrameworks": [...], "policySettingsAndSecurityImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+    `Analyze security impact for this policy:\n${context}`,
+    12000
   );
 
   try {
-    const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
-    const fallback: Record<string, any> = {};
-    policies.forEach(p => {
-      fallback[p.id] = { rating: "Medium", description: `Contributes to organizational security posture through ${p.type} enforcement.`, complianceFrameworks: ["General Best Practice"] };
-    });
-    return fallback;
+    const parsed = extractJSON(result);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("AI returned non-object response for security impact");
+    }
+    if (parsed.rating) {
+      return { id: policy.id, data: parsed };
+    }
+    const firstValue = Object.values(parsed)[0] as any;
+    if (firstValue?.rating) {
+      return { id: policy.id, data: firstValue };
+    }
+    throw new Error("Unexpected response structure");
+  } catch (e) {
+    console.error(`Failed to parse security impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
+    return { id: policy.id, data: { rating: "Medium", description: `Contributes to organizational security posture through ${policy.type} enforcement.`, complianceFrameworks: ["General Best Practice"], policySettingsAndSecurityImpact: `This policy configures ${policy.type} settings for ${policy.platform} with security implications.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings that contributes to organizational security.` } };
   }
+}
+
+export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { rating: string; description: string; complianceFrameworks: string[]; policySettingsAndSecurityImpact?: string; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
+  const results = await Promise.allSettled(
+    policies.map((policy, i) => analyzeSingleSecurityImpact(policy, details[i]))
+  );
+  const merged: Record<string, any> = {};
+  results.forEach((result, i) => {
+    if (result.status === "fulfilled") {
+      merged[result.value.id] = result.value.data;
+    } else {
+      const p = policies[i];
+      console.error(`Security impact analysis failed for policy ${p.name}:`, result.reason);
+      merged[p.id] = { rating: "Medium", description: `Contributes to organizational security posture through ${p.type} enforcement.`, complianceFrameworks: ["General Best Practice"], policySettingsAndSecurityImpact: `This policy configures ${p.type} settings for ${p.platform} with security implications.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${p.name}" policy is a ${p.type} configuration for ${p.platform} with ${p.settingsCount} configured settings that contributes to organizational security.` };
+    }
+  });
+  return merged;
 }
 
 export async function analyzeAssignments(policies: IntunePolicyRaw[], details: any[], groupResolver: (groupId: string) => Promise<any>): Promise<Record<string, { included: any[]; excluded: any[]; filters: any[] }>> {
@@ -197,6 +430,7 @@ export async function analyzeAssignments(policies: IntunePolicyRaw[], details: a
 
         if (targetType.includes("allDevices") || targetType.includes("allLicensedUsers")) {
           included.push({
+            id: targetType.includes("allDevices") ? "all-devices" : "all-users",
             name: targetType.includes("allDevices") ? "All Devices" : "All Users",
             type: "All devices/users",
             memberCount: 0,
@@ -225,28 +459,50 @@ export async function analyzeAssignments(policies: IntunePolicyRaw[], details: a
   return result;
 }
 
-export async function analyzeConflicts(policies: IntunePolicyRaw[], details: any[]): Promise<{ type: string; severity: string; policies: string[]; detail: string; recommendation: string }[]> {
+export async function analyzeConflicts(policies: IntunePolicyRaw[], details: any[]): Promise<{ type: string; severity: string; policies: string[]; detail: string; recommendation: string; conflictingSettings?: string; assignmentOverlap?: string; impactAssessment?: string; resolutionSteps?: string }[]> {
   const context = buildPolicyContext(policies, details);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy conflict expert.
+    `You are a Microsoft Intune policy conflict expert similar to Microsoft Security Copilot. Provide a thorough conflict analysis for the provided policies.
+
 Analyze the provided policies for:
-1. Direct setting conflicts (same setting, different values)
-2. Overlapping scopes (same platform, same type)
-3. Redundant configurations
+1. Direct setting conflicts (same setting configured with different values across policies)
+2. Overlapping assignment scopes (same platform, same type, targeting the same groups/users)
+3. Redundant configurations (duplicate settings across policies)
+4. Filter conflicts (assignment filters that may cause unexpected behavior)
+
+For each conflict found, provide these structured fields:
+- type: "Direct Conflict"|"Potential Overlap"|"Redundant"|"Filter Conflict"
+- severity: "Info"|"Warning"|"Critical"
+- policies: Array of policy names with GUIDs, e.g. ["V5-IMS-BP-U-Policy Name (guid-here)", "V5-IMS-BP-U-Other Policy (guid-here)"]
+- detail: Brief description of the conflict
+- conflictingSettings: Detailed paragraph identifying the exact settings that conflict, their configured values in each policy, and what the default behavior is. Reference actual setting names and values. If the conflict is about overlapping scope rather than settings, describe which settings overlap.
+- assignmentOverlap: Describe which groups and users are affected by both conflicting policies. Include group names, member counts, and assignment filters. Explain how the overlap causes the conflict to manifest for end users.
+- impactAssessment: Explain the real-world impact of this conflict on end users and devices. Consider: which setting value "wins" in Intune conflict resolution, what happens to affected users/devices, potential security gaps, performance implications, or user experience issues.
+- resolutionSteps: Provide specific, actionable steps to resolve the conflict. Include which policy to modify, which settings to change, or how to adjust assignments/filters to eliminate the overlap.
+- recommendation: Brief 1-2 sentence recommendation (kept for backward compatibility).
+
+Be specific and detailed. Reference actual setting names, group names, filter names, and values. Do not be generic or vague. Write as if you are Microsoft Security Copilot analyzing conflicts.
+IMPORTANT: Always refer to policies by their display NAME followed by the GUID in parentheses. Never use the GUID alone.
 
 Return ONLY valid JSON array:
 [
-  { "type": "Direct Conflict|Potential Overlap|Redundant", "severity": "Info|Warning|Critical", "policies": ["policy1", "policy2"], "detail": "Description", "recommendation": "What to do" }
+  { "type": "...", "severity": "...", "policies": [...], "detail": "...", "conflictingSettings": "...", "assignmentOverlap": "...", "impactAssessment": "...", "resolutionSteps": "...", "recommendation": "..." }
 ]
 Return an empty array [] if no conflicts found.`,
-    `Check these policies for conflicts:\n${context}`
+    `Check these policies for conflicts:\n${context}`,
+    12000
   );
 
   try {
-    const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
+    const parsed = extractJSON(result);
+    if (!Array.isArray(parsed)) {
+      console.error("Conflicts AI returned non-array:", typeof parsed);
+      return [];
+    }
+    return parsed;
+  } catch (e) {
+    console.error("Failed to parse conflicts AI response:", e, "Raw:", result.substring(0, 500));
     return [];
   }
 }
@@ -255,26 +511,181 @@ export async function analyzeRecommendations(policies: IntunePolicyRaw[], detail
   const context = buildPolicyContext(policies, details);
 
   const result = await callAI(
-    `You are a Microsoft Intune best practices advisor.
-Based on the provided policies, generate actionable recommendations for:
-1. Security hardening
-2. Policy optimization/consolidation
-3. Assignment best practices
-4. Compliance improvements
+    `You are a Microsoft Intune best practices advisor. Analyze the provided policies and generate specific, actionable recommendations.
+
+CRITICAL RULES:
+- Every recommendation must reference specific policy names, setting names, or values from the data.
+- Do NOT give generic advice. Each recommendation must be tied to something concrete in the provided policies.
+- Focus on what can be improved in the Intune admin center right now.
+
+Generate recommendations for:
+1. Security hardening - specific settings that should be enabled/changed and why
+2. Policy consolidation - if policies overlap or could be merged, explain exactly which ones and how
+3. Assignment optimization - specific assignment/filter changes to improve targeting
+4. Compliance alignment - specific settings that would help meet compliance frameworks
+
+IMPORTANT: Always refer to policies by their display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON array:
 [
-  { "type": "Security|Optimization|Best Practice|Compliance", "title": "Short title", "detail": "Detailed recommendation" }
+  { "type": "Security|Optimization|Best Practice|Compliance", "title": "Short actionable title", "detail": "Specific recommendation referencing actual policy names, settings, and values. Include what to change and where in the Intune portal." }
 ]`,
-    `Generate recommendations for these policies:\n${context}`
+    `Generate recommendations for these policies:\n${context}`,
+    8000
   );
 
   try {
-    const cleaned = result.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch {
+    const parsed = extractJSON(result);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error("Empty or invalid recommendations array");
+    }
+    return parsed;
+  } catch (e) {
+    console.error("Failed to parse recommendations AI response:", e, "Raw:", result.substring(0, 500));
+    const policyNames = policies.map(p => `"${p.name}"`).join(", ");
     return [
-      { type: "Best Practice", title: "Enable policy versioning", detail: "Set up change tracking for these policies to maintain an audit trail." },
+      { type: "Optimization", title: "Review policy overlap", detail: `Review ${policyNames} for overlapping settings. Policies with nearly identical configurations can often be consolidated into a single policy to simplify management. Compare settings side-by-side in the Intune admin center under Devices > Configuration.` },
+      { type: "Best Practice", title: "Verify assignment scope", detail: `Confirm that the assignment groups and filters for ${policyNames} target the intended devices and users. Use the Assignments tab in each policy to verify group membership and filter rules match your deployment rings.` },
     ];
   }
+}
+
+function getIntunePortalUrl(policy: IntunePolicyRaw): string {
+  const source = policy.rawData?._source || "";
+  const id = policy.id;
+  if (source === "configurationPolicies") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/SettingsCatalogProfiles/policyId/${id}/policyType~/%7B%22PolicyType%22%3A2%7D`;
+  } else if (source === "deviceConfigurations") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+  } else if (source === "deviceCompliancePolicies") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesComplianceMenu/policyId/${id}`;
+  } else if (source === "intents") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+  }
+  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/overview`;
+}
+
+function getSettingValue(setting: any): string {
+  if (setting._settingFriendlyValue) return setting._settingFriendlyValue;
+  if (setting.settingInstance) {
+    if (setting.settingInstance.choiceSettingValue) {
+      const val = setting.settingInstance.choiceSettingValue.value || "";
+      return val.replace(/^.*~/, "").replace(/_/g, " ");
+    }
+    if (setting.settingInstance.simpleSettingValue) {
+      return String(setting.settingInstance.simpleSettingValue.value || "");
+    }
+    if (setting.settingInstance.groupSettingCollectionValue) {
+      return `Collection (${setting.settingInstance.groupSettingCollectionValue.length || 0} items)`;
+    }
+  }
+  return "Configured";
+}
+
+function getSettingDefinitionId(setting: any): string {
+  return setting.settingInstance?.settingDefinitionId || "";
+}
+
+export function detectSettingConflicts(policies: IntunePolicyRaw[], details: any[]): { conflicts: SettingConflict[]; allSettings: SettingComparison[] } {
+  const settingMap = new Map<string, { policyIdx: number; setting: any; friendlyName: string; value: string }[]>();
+
+  console.log(`detectSettingConflicts: Processing ${policies.length} policies`);
+  for (let i = 0; i < policies.length; i++) {
+    const detail = details[i];
+    if (!detail) {
+      console.log(`  Policy ${i} (${policies[i]?.name}): no detail data`);
+      continue;
+    }
+
+    const source = policies[i].rawData?._source || "unknown";
+    const hasSettings = detail.settings && Array.isArray(detail.settings);
+    const settingsCount = hasSettings ? detail.settings.length : 0;
+    console.log(`  Policy ${i} (${policies[i]?.name}): source=${source}, settings=${settingsCount}, keys=${Object.keys(detail).length}`);
+
+    if (detail.settings && Array.isArray(detail.settings)) {
+      for (const setting of detail.settings) {
+        const defId = getSettingDefinitionId(setting);
+        if (!defId) continue;
+
+        const friendlyName = setting._settingFriendlyName || formatSettingIdToName(defId);
+        const value = getSettingValue(setting);
+
+        if (!settingMap.has(defId)) {
+          settingMap.set(defId, []);
+        }
+        settingMap.get(defId)!.push({ policyIdx: i, setting, friendlyName, value });
+      }
+    }
+
+    const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "_policyMeta", "assignments", "settings", "settingsCount", "isAssigned", "supportsScopeTags"]);
+    const policySource = policies[i].rawData?._source;
+    if (policySource === "deviceConfigurations" || policySource === "deviceCompliancePolicies") {
+      const rawData = detail;
+      let propCount = 0;
+      for (const [key, value] of Object.entries(rawData)) {
+        if (skipKeys.has(key) || key.startsWith("@") || key.startsWith("_")) continue;
+        if (value === null || value === undefined) continue;
+        if (typeof value === "object" && !Array.isArray(value)) continue;
+
+        propCount++;
+        const defId = `${policySource}/${key}`;
+        const friendlyName = key.replace(/([A-Z])/g, " $1").replace(/^./, (c: string) => c.toUpperCase()).trim();
+        const displayValue = Array.isArray(value) ? JSON.stringify(value) : String(value);
+
+        if (!settingMap.has(defId)) {
+          settingMap.set(defId, []);
+        }
+        settingMap.get(defId)!.push({ policyIdx: i, setting: rawData, friendlyName, value: displayValue });
+      }
+      console.log(`    ${policySource} properties extracted: ${propCount}`);
+    }
+  }
+
+  console.log(`  Total unique settings tracked: ${settingMap.size}`);
+
+  const conflicts: SettingConflict[] = [];
+  const allSettings: SettingComparison[] = [];
+
+  function normalizeValue(v: string): string {
+    const lower = v.toLowerCase().trim();
+    if (lower === "true" || lower === "enabled" || lower === "allow" || lower === "yes") return "true";
+    if (lower === "false" || lower === "disabled" || lower === "block" || lower === "no" || lower === "not configured" || lower === "notconfigured") return "false";
+    return lower;
+  }
+
+  settingMap.forEach((entries, defId) => {
+    const policyEntries = entries.map((e: { policyIdx: number; value: string }) => ({
+      policyId: policies[e.policyIdx].id,
+      policyName: policies[e.policyIdx].name,
+      value: e.value,
+      intuneUrl: getIntunePortalUrl(policies[e.policyIdx]),
+    }));
+
+    const hasMultiple = entries.length >= 2;
+    const uniqueValues = hasMultiple ? new Set(entries.map((e: { value: string }) => normalizeValue(e.value))) : new Set<string>();
+    const isConflict = hasMultiple && uniqueValues.size > 1;
+
+    if (isConflict) {
+      conflicts.push({
+        settingName: entries[0].friendlyName,
+        settingDefinitionId: defId,
+        sourcePolicies: policyEntries,
+      });
+    }
+
+    allSettings.push({
+      settingName: entries[0].friendlyName,
+      settingDefinitionId: defId,
+      isConflict,
+      policyValues: policyEntries,
+    });
+  });
+
+  allSettings.sort((a, b) => {
+    if (a.isConflict && !b.isConflict) return -1;
+    if (!a.isConflict && b.isConflict) return 1;
+    return a.settingName.localeCompare(b.settingName);
+  });
+
+  return { conflicts, allSettings };
 }

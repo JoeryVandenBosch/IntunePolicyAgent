@@ -39,15 +39,26 @@ export interface PolicyEndUserImpact {
   severity: "Minimal" | "Low" | "Medium" | "High" | "Critical";
   description: string;
   workarounds?: string;
+  policySettingsAndImpact?: string;
+  assignmentScope?: string;
+  riskAnalysis?: string;
+  conflictAnalysis?: string;
+  overallSummary?: string;
 }
 
 export interface PolicySecurityImpact {
   rating: "Low" | "Medium" | "High" | "Critical";
   description: string;
   complianceFrameworks: string[];
+  policySettingsAndSecurityImpact?: string;
+  assignmentScope?: string;
+  riskAnalysis?: string;
+  conflictAnalysis?: string;
+  overallSummary?: string;
 }
 
 export interface AssignmentGroup {
+  id: string;
   name: string;
   type: string;
   memberCount: number;
@@ -70,6 +81,10 @@ export interface PolicyConflict {
   policies: string[];
   detail: string;
   recommendation: string;
+  conflictingSettings?: string;
+  assignmentOverlap?: string;
+  impactAssessment?: string;
+  resolutionSteps?: string;
 }
 
 export interface PolicyRecommendation {
@@ -78,11 +93,36 @@ export interface PolicyRecommendation {
   detail: string;
 }
 
+export interface SettingConflict {
+  settingName: string;
+  settingDefinitionId: string;
+  sourcePolicies: {
+    policyId: string;
+    policyName: string;
+    value: string;
+    intuneUrl: string;
+  }[];
+}
+
+export interface SettingComparison {
+  settingName: string;
+  settingDefinitionId: string;
+  isConflict: boolean;
+  policyValues: {
+    policyId: string;
+    policyName: string;
+    value: string;
+    intuneUrl: string;
+  }[];
+}
+
 export interface AnalysisResult {
   summaries: Record<string, PolicySummary>;
   endUserImpact: Record<string, PolicyEndUserImpact>;
   securityImpact: Record<string, PolicySecurityImpact>;
   assignments: Record<string, PolicyAssignments>;
+  settingConflicts: SettingConflict[];
+  allSettings: SettingComparison[];
   conflicts: PolicyConflict[];
   recommendations: PolicyRecommendation[];
 }

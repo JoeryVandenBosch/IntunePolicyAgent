@@ -1,8 +1,8 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName } from "./graph-client";
-import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations } from "./ai-analyzer";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName } from "./graph-client";
+import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import type { IntunePolicyRaw } from "./graph-client";
 
@@ -33,6 +33,17 @@ export async function registerRoutes(
       })));
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch policies" });
+    }
+  });
+
+  app.get("/api/groups/:groupId/members", requireAuth, async (req: any, res) => {
+    try {
+      const token = await getAccessToken(req);
+      const { groupId } = req.params;
+      const members = await fetchGroupMembers(token, groupId);
+      res.json({ members });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch group members" });
     }
   });
 
@@ -161,20 +172,121 @@ export async function registerRoutes(
         }
       }
 
+      let conflictPolicies = selectedPolicies;
+      let conflictDetails = enrichedDetails;
+
+      const selectedIds = new Set(selectedPolicies.map(p => p.id));
+      const relatedPolicies = allPolicies.filter(p => {
+        if (selectedIds.has(p.id)) return false;
+        return selectedPolicies.some(sp => {
+          const spSource = sp.rawData?._source;
+          const pSource = p.rawData?._source;
+          if (spSource !== pSource) return false;
+          if (spSource === "deviceConfigurations") {
+            const sameOdataType = sp.rawData?.["@odata.type"] === p.rawData?.["@odata.type"];
+            const samePlatform = sp.platform === p.platform && sp.platform !== "Unknown";
+            return sameOdataType || samePlatform;
+          }
+          if (spSource === "configurationPolicies") {
+            return true;
+          }
+          if (spSource === "deviceCompliancePolicies") {
+            return sp.platform === p.platform;
+          }
+          return true;
+        });
+      });
+      console.log(`Found ${relatedPolicies.length} related policies in tenant for conflict comparison`);
+
+      if (relatedPolicies.length > 0) {
+        const maxRelated = 20;
+        const relatedSubset = relatedPolicies.slice(0, maxRelated);
+        console.log(`Fetching ${relatedSubset.length} related policies for cross-tenant conflict detection`);
+        const relatedDetails = await Promise.all(
+          relatedSubset.map(p => fetchPolicyDetails(token, p.id, allPolicies))
+        );
+        const relatedEnrichedDetails = await Promise.all(relatedDetails.map(async (detail) => {
+          if (!detail?.settings) return detail;
+          const enriched = { ...detail };
+          const settingDefCache = new Map<string, { displayName: string; description: string }>();
+          enriched.settings = await Promise.all(
+            enriched.settings.map(async (setting: any) => {
+              const cleaned = { ...setting };
+              if (cleaned.settingInstance) {
+                const defId = cleaned.settingInstance.settingDefinitionId || "";
+                if (defId) {
+                  let defInfo = settingDefCache.get(defId);
+                  if (!defInfo) {
+                    defInfo = await fetchSettingDefinitionDisplayName(token, defId);
+                    settingDefCache.set(defId, defInfo);
+                  }
+                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : defId.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                }
+                if (cleaned.settingInstance.choiceSettingValue) {
+                  const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
+                  if (choiceValue.includes("_1")) {
+                    cleaned._settingFriendlyValue = "Enabled";
+                  } else if (choiceValue.includes("_0")) {
+                    cleaned._settingFriendlyValue = "Disabled";
+                  } else {
+                    cleaned._settingFriendlyValue = choiceValue.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                  }
+                }
+                if (cleaned.settingInstance.simpleSettingValue) {
+                  cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
+                }
+              }
+              return cleaned;
+            })
+          );
+          return enriched;
+        }));
+        conflictPolicies = [...selectedPolicies, ...relatedSubset];
+        conflictDetails = [...enrichedDetails, ...relatedEnrichedDetails];
+      }
+
+      const { conflicts: settingConflicts, allSettings } = detectSettingConflicts(conflictPolicies, conflictDetails);
+      console.log(`Detected ${settingConflicts.length} setting-level conflicts, ${allSettings.length} total settings across ${conflictPolicies.length} policies (${selectedPolicies.length} selected + ${conflictPolicies.length - selectedPolicies.length} related)`);
+
       const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
         analyzePolicySummaries(selectedPolicies, enrichedDetails),
         analyzeEndUserImpact(selectedPolicies, enrichedDetails),
         analyzeSecurityImpact(selectedPolicies, enrichedDetails),
         analyzeAssignments(selectedPolicies, enrichedDetails, groupResolver),
-        analyzeConflicts(selectedPolicies, enrichedDetails),
+        analyzeConflicts(conflictPolicies, conflictDetails),
         analyzeRecommendations(selectedPolicies, enrichedDetails),
       ]);
+
+      for (const policy of selectedPolicies) {
+        const assign = assignments[policy.id];
+        if (!assign) continue;
+        const scopeParts: string[] = [];
+        if (assign.included.length > 0) {
+          scopeParts.push("Included groups: " + assign.included.map((g: any) => `"${g.name}" (${g.type}, ${g.memberCount} members)`).join(", "));
+        }
+        if (assign.excluded.length > 0) {
+          scopeParts.push("Excluded groups: " + assign.excluded.map((g: any) => `"${g.name}" (${g.type}, ${g.memberCount} members)`).join(", "));
+        }
+        if (assign.filters.length > 0) {
+          scopeParts.push("Filters: " + assign.filters.map((f: any) => `"${f.name}" (${f.mode})`).join(", "));
+        }
+        const resolvedScope = scopeParts.length > 0 ? scopeParts.join(". ") + "." : null;
+
+        if (endUserImpact[policy.id] && !endUserImpact[policy.id].assignmentScope && resolvedScope) {
+          endUserImpact[policy.id].assignmentScope = resolvedScope;
+        }
+        if (securityImpact[policy.id] && !securityImpact[policy.id].assignmentScope && resolvedScope) {
+          (securityImpact[policy.id] as any).assignmentScope = resolvedScope;
+        }
+      }
 
       res.json({
         summaries,
         endUserImpact,
         securityImpact,
         assignments,
+        settingConflicts,
+        allSettings,
         conflicts,
         recommendations,
       });
@@ -239,7 +351,14 @@ export async function registerRoutes(
       for (const p of policies) {
         const impact = analysis.endUserImpact?.[p.id];
         if (impact) {
-          html += `<div class="section"><h3>${p.name}</h3><span class="badge badge-${(impact.severity || "minimal").toLowerCase()}">${impact.severity}</span><p>${impact.description}</p></div>`;
+          html += `<div class="section"><h3>${p.name} (${p.id})</h3><span class="badge badge-${(impact.severity || "minimal").toLowerCase()}">${impact.severity}</span>`;
+          if (impact.policySettingsAndImpact) html += `<h4>Policy Settings and Impact:</h4><p>${impact.policySettingsAndImpact}</p>`;
+          if (impact.assignmentScope) html += `<h4>Assignment Scope:</h4><p>${impact.assignmentScope}</p>`;
+          if (impact.riskAnalysis) html += `<h4>Risk Analysis:</h4><p>${impact.riskAnalysis}</p>`;
+          if (impact.conflictAnalysis) html += `<h4>Conflict Analysis:</h4><p>${impact.conflictAnalysis}</p>`;
+          if (impact.overallSummary) html += `<h4>Overall Summary:</h4><p>${impact.overallSummary}</p>`;
+          if (!impact.policySettingsAndImpact) html += `<p>${impact.description}</p>`;
+          html += `</div>`;
         }
       }
 
@@ -247,7 +366,13 @@ export async function registerRoutes(
       for (const p of policies) {
         const impact = analysis.securityImpact?.[p.id];
         if (impact) {
-          html += `<div class="section"><h3>${p.name}</h3><span class="badge badge-${(impact.rating || "medium").toLowerCase()}">${impact.rating}</span><p>${impact.description}</p>`;
+          html += `<div class="section"><h3>${p.name} (${p.id})</h3><span class="badge badge-${(impact.rating || "medium").toLowerCase()}">${impact.rating}</span>`;
+          if (impact.policySettingsAndSecurityImpact) html += `<h4>Policy Settings and Security Impact:</h4><p>${impact.policySettingsAndSecurityImpact}</p>`;
+          if (impact.assignmentScope) html += `<h4>Assignment Scope:</h4><p>${impact.assignmentScope}</p>`;
+          if (impact.riskAnalysis) html += `<h4>Risk Analysis:</h4><p>${impact.riskAnalysis}</p>`;
+          if (impact.conflictAnalysis) html += `<h4>Conflict Analysis:</h4><p>${impact.conflictAnalysis}</p>`;
+          if (impact.overallSummary) html += `<h4>Overall Summary:</h4><p>${impact.overallSummary}</p>`;
+          if (!impact.policySettingsAndSecurityImpact) html += `<p>${impact.description}</p>`;
           if (impact.complianceFrameworks?.length) {
             html += `<p style="color: #8b949e; font-size: 0.85rem;">Frameworks: ${impact.complianceFrameworks.join(", ")}</p>`;
           }
@@ -255,10 +380,30 @@ export async function registerRoutes(
         }
       }
 
+      if (analysis.settingConflicts?.length > 0) {
+        html += `<h2>Setting-Level Conflicts</h2>`;
+        for (const sc of analysis.settingConflicts) {
+          html += `<div class="section conflict"><h3>${sc.settingName} <span class="badge badge-medium">Conflict</span></h3>`;
+          html += `<p style="color: #8b949e; font-size: 0.85rem;">${sc.settingDefinitionId}</p>`;
+          html += `<table style="width:100%;border-collapse:collapse;margin-top:8px;"><tr style="border-bottom:1px solid #333;"><th style="text-align:left;padding:4px 8px;color:#8b949e;">Policy</th><th style="text-align:left;padding:4px 8px;color:#8b949e;">Value</th></tr>`;
+          for (const sp of sc.sourcePolicies) {
+            html += `<tr style="border-bottom:1px solid #222;"><td style="padding:4px 8px;"><a href="${sp.intuneUrl}" target="_blank" style="color:#58a6ff;">${sp.policyName}</a></td><td style="padding:4px 8px;">${sp.value}</td></tr>`;
+          }
+          html += `</table></div>`;
+        }
+      }
+
       if (analysis.conflicts?.length > 0) {
-        html += `<h2>Conflicts</h2>`;
+        html += `<h2>AI Conflict Analysis</h2>`;
         for (const c of analysis.conflicts) {
-          html += `<div class="section conflict"><h3>${c.type} <span class="badge badge-medium">${c.severity}</span></h3><p>${c.detail}</p><p style="color: #8b949e;">Policies: ${c.policies.join(" / ")}</p></div>`;
+          html += `<div class="section conflict"><h3>${c.type} <span class="badge badge-medium">${c.severity}</span></h3>`;
+          html += `<p>${c.detail}</p>`;
+          html += `<p style="color: #8b949e;">Policies: ${c.policies.join(" / ")}</p>`;
+          if (c.conflictingSettings) html += `<h4>Conflicting Settings:</h4><p>${c.conflictingSettings}</p>`;
+          if (c.assignmentOverlap) html += `<h4>Assignment Overlap:</h4><p>${c.assignmentOverlap}</p>`;
+          if (c.impactAssessment) html += `<h4>Impact Assessment:</h4><p>${c.impactAssessment}</p>`;
+          if (c.resolutionSteps) html += `<h4>Resolution Steps:</h4><p>${c.resolutionSteps}</p>`;
+          html += `</div>`;
         }
       }
 
@@ -302,7 +447,13 @@ export async function registerRoutes(
       for (const p of policies) {
         const impact = analysis.endUserImpact?.[p.id];
         if (impact) {
-          text += `\n${p.name} - ${impact.severity} Impact\n${impact.description}\n`;
+          text += `\n${p.name} (${p.id}) - ${impact.severity} Impact\n`;
+          if (impact.policySettingsAndImpact) text += `\nPolicy Settings and Impact:\n${impact.policySettingsAndImpact}\n`;
+          if (impact.assignmentScope) text += `\nAssignment Scope:\n${impact.assignmentScope}\n`;
+          if (impact.riskAnalysis) text += `\nRisk Analysis:\n${impact.riskAnalysis}\n`;
+          if (impact.conflictAnalysis) text += `\nConflict Analysis:\n${impact.conflictAnalysis}\n`;
+          if (impact.overallSummary) text += `\nOverall Summary:\n${impact.overallSummary}\n`;
+          if (!impact.policySettingsAndImpact) text += `${impact.description}\n`;
         }
       }
 
@@ -310,14 +461,35 @@ export async function registerRoutes(
       for (const p of policies) {
         const impact = analysis.securityImpact?.[p.id];
         if (impact) {
-          text += `\n${p.name} - ${impact.rating} Rating\n${impact.description}\nFrameworks: ${impact.complianceFrameworks?.join(", ") || "N/A"}\n`;
+          text += `\n${p.name} (${p.id}) - ${impact.rating} Rating\n`;
+          if (impact.policySettingsAndSecurityImpact) text += `\nPolicy Settings and Security Impact:\n${impact.policySettingsAndSecurityImpact}\n`;
+          if (impact.assignmentScope) text += `\nAssignment Scope:\n${impact.assignmentScope}\n`;
+          if (impact.riskAnalysis) text += `\nRisk Analysis:\n${impact.riskAnalysis}\n`;
+          if (impact.conflictAnalysis) text += `\nConflict Analysis:\n${impact.conflictAnalysis}\n`;
+          if (impact.overallSummary) text += `\nOverall Summary:\n${impact.overallSummary}\n`;
+          if (!impact.policySettingsAndSecurityImpact) text += `${impact.description}\n`;
+          text += `Frameworks: ${impact.complianceFrameworks?.join(", ") || "N/A"}\n`;
+        }
+      }
+
+      if (analysis.settingConflicts?.length > 0) {
+        text += `\n\nSETTING-LEVEL CONFLICTS\n${"-".repeat(40)}\n`;
+        for (const sc of analysis.settingConflicts) {
+          text += `\n${sc.settingName} [CONFLICT]\n${sc.settingDefinitionId}\n`;
+          for (const sp of sc.sourcePolicies) {
+            text += `  - ${sp.policyName}: ${sp.value}\n    Intune: ${sp.intuneUrl}\n`;
+          }
         }
       }
 
       if (analysis.conflicts?.length > 0) {
-        text += `\n\nCONFLICTS\n${"-".repeat(40)}\n`;
+        text += `\n\nAI CONFLICT ANALYSIS\n${"-".repeat(40)}\n`;
         for (const c of analysis.conflicts) {
           text += `\n[${c.severity}] ${c.type}\n${c.detail}\nPolicies: ${c.policies.join(" / ")}\n`;
+          if (c.conflictingSettings) text += `\nConflicting Settings:\n${c.conflictingSettings}\n`;
+          if (c.assignmentOverlap) text += `\nAssignment Overlap:\n${c.assignmentOverlap}\n`;
+          if (c.impactAssessment) text += `\nImpact Assessment:\n${c.impactAssessment}\n`;
+          if (c.resolutionSteps) text += `\nResolution Steps:\n${c.resolutionSteps}\n`;
         }
       }
 

@@ -1,17 +1,23 @@
-async function graphGet(token: string, url: string): Promise<any> {
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
+async function graphGet(token: string, url: string, extraHeaders?: Record<string, string>): Promise<any> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    ...extraHeaders,
+  };
+  const res = await fetch(url, { headers });
 
   if (!res.ok) {
     const error = await res.text();
     throw new Error(`Graph API error (${res.status}): ${error}`);
   }
 
-  return res.json();
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json();
+  }
+  const text = await res.text();
+  const num = parseInt(text, 10);
+  return isNaN(num) ? text : num;
 }
 
 async function graphGetAll(token: string, url: string): Promise<any[]> {
@@ -199,24 +205,42 @@ export async function fetchAssignmentFilterDetails(token: string, filterId: stri
 
 export async function fetchGroupDetails(token: string, groupId: string): Promise<any> {
   try {
-    const data = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}?$select=displayName,membershipRule,groupTypes&$count=true`);
+    const data = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}?$select=displayName,membershipRule,groupTypes`);
     let memberCount = 0;
     try {
-      const members = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}/members/$count`);
-      memberCount = typeof members === "number" ? members : 0;
+      const countHeaders = { ConsistencyLevel: "eventual" };
+      const count = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}/members/$count`, countHeaders);
+      memberCount = typeof count === "number" ? count : 0;
     } catch {
       memberCount = 0;
     }
     return {
+      id: groupId,
       name: data.displayName || groupId,
       type: data.groupTypes?.includes("DynamicMembership") ? "Dynamic Group" : "Entra ID Group",
       memberCount,
     };
   } catch {
     return {
+      id: groupId,
       name: groupId,
       type: "Entra ID Group",
       memberCount: 0,
     };
+  }
+}
+
+export async function fetchGroupMembers(token: string, groupId: string): Promise<any[]> {
+  try {
+    const members = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}/members?$select=displayName,userPrincipalName,id,deviceId,operatingSystem&$top=100`);
+    return (members.value || []).map((m: any) => ({
+      id: m.id,
+      displayName: m.displayName || "Unknown",
+      type: m["@odata.type"]?.includes("device") ? "device" : "user",
+      upn: m.userPrincipalName || null,
+      os: m.operatingSystem || null,
+    }));
+  } catch {
+    return [];
   }
 }
