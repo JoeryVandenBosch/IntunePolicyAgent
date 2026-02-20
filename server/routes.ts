@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
 import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations } from "./ai-analyzer";
+import { trackEvent, getAnalyticsSummary } from "./analytics";
 import type { IntunePolicyRaw } from "./graph-client";
 
 async function getAccessToken(req: Request): Promise<string> {
@@ -143,6 +144,17 @@ export async function registerRoutes(
 
         return enriched;
       }));
+
+      const policyTypes = Array.from(new Set(selectedPolicies.map(p => p.type))).join(", ");
+      const policyPlatforms = Array.from(new Set(selectedPolicies.map(p => p.platform))).join(", ");
+      trackEvent({
+        eventType: "analysis",
+        tenantId: req.session.tenantId,
+        userEmail: req.session.userEmail,
+        policyCount: selectedPolicies.length,
+        policyTypes,
+        platforms: policyPlatforms,
+      });
 
       const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
         analyzePolicySummaries(selectedPolicies, enrichedDetails),
@@ -316,6 +328,16 @@ export async function registerRoutes(
       res.send(text);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/analytics", requireAuth, async (req: any, res) => {
+    try {
+      const summary = await getAnalyticsSummary();
+      res.json(summary);
+    } catch (error: any) {
+      console.error("Analytics error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch analytics" });
     }
   });
 

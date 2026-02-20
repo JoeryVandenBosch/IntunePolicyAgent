@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import LoginPage from "@/pages/login";
 import PolicyListPage from "@/pages/policy-list";
 import AnalysisPage from "@/pages/analysis";
+import AnalyticsDashboard from "@/pages/analytics.dashboard";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
@@ -30,6 +31,7 @@ function AuthenticatedRoutes() {
       <Route path="/" component={PolicyListPage} />
       <Route path="/policies" component={PolicyListPage} />
       <Route path="/analysis" component={AnalysisPage} />
+      <Route path="/analytics" component={AnalyticsDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

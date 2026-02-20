@@ -177,6 +177,16 @@ export function registerAuthRoutes(app: Express): void {
       }
 
       log(`User authenticated: ${req.session.userEmail || "unknown"}`, "auth");
+
+      try {
+        const { trackEvent } = await import("./analytics");
+        await trackEvent({
+          eventType: "login",
+          tenantId: req.session.tenantId,
+          userEmail: req.session.userEmail,
+        });
+      } catch {}
+
       res.redirect("/policies");
     } catch (err: any) {
       log(`Auth callback error: ${err.message}`, "auth");

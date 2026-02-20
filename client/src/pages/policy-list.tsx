@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Search, Sparkles, LogOut, RefreshCw } from "lucide-react";
+import { Shield, Search, Sparkles, LogOut, RefreshCw, BarChart3 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -92,6 +92,10 @@ export default function PolicyListPage() {
           </div>
           <div className="flex items-center gap-3">
             {userName && <span className="text-xs text-muted-foreground hidden sm:inline" data-testid="text-user-name">{userName}</span>}
+            <Button variant="ghost" size="sm" onClick={() => setLocation("/analytics")} data-testid="button-analytics">
+              <BarChart3 className="w-4 h-4 mr-1.5" />
+              Analytics
+            </Button>
             <Button variant="ghost" size="sm" onClick={logout} data-testid="button-logout">
               <LogOut className="w-4 h-4 mr-1.5" />
               Sign Out

@@ -15,6 +15,7 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 - **Conflict Detection** - Identify direct setting conflicts, overlapping scopes, and redundant configurations across selected policies.
 - **Recommendations** - Get actionable recommendations for security hardening, optimization, and compliance improvements.
 - **Export** - Export analysis results as HTML or plain text reports.
+- **Analytics Dashboard** - Track usage metrics: total analyses, unique users, tenants, platform distribution, daily activity charts, and recent event log.
 
 ## Architecture
 
@@ -32,7 +33,7 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 ## Prerequisites
 
 - **Node.js** 20 or later
-- **PostgreSQL** database (for session storage)
+- **PostgreSQL** database (for session storage and analytics)
 - **Azure AD App Registration** (see [Setup Guide](SETUP.md))
 - **OpenAI API key** (or compatible endpoint)
 
@@ -127,6 +128,7 @@ For each policy, the application also fetches:
 | `POST` | `/api/analyze` | Runs AI analysis on selected policies (requires auth) |
 | `POST` | `/api/export/html` | Generates downloadable HTML report |
 | `POST` | `/api/export/text` | Generates downloadable plain text report |
+| `GET` | `/api/analytics` | Returns usage analytics summary (requires auth) |
 
 ### Request/Response Examples
 
@@ -160,20 +162,23 @@ For each policy, the application also fetches:
 │       │   ├── queryClient.ts     # TanStack Query client configuration
 │       │   └── utils.ts           # Utility functions (cn)
 │       └── pages/
-│           ├── login.tsx          # Landing page with "Sign in with Microsoft"
-│           ├── policy-list.tsx    # Policy listing (search, filter, select)
-│           ├── analysis.tsx       # Tabbed analysis results (6 tabs)
-│           └── not-found.tsx      # 404 page
+│           ├── login.tsx              # Landing page with "Sign in with Microsoft"
+│           ├── policy-list.tsx        # Policy listing (search, filter, select)
+│           ├── analysis.tsx           # Tabbed analysis results (6 tabs)
+│           ├── analytics.dashboard.tsx # Usage analytics dashboard
+│           └── not-found.tsx          # 404 page
 ├── server/
 │   ├── index.ts                   # Express server entry point
 │   ├── auth.ts                    # OAuth2 flow (login, callback, logout, token refresh)
-│   ├── routes.ts                  # API routes (policies, analyze, export)
+│   ├── routes.ts                  # API routes (policies, analyze, export, analytics)
 │   ├── graph-client.ts            # Microsoft Graph API client
 │   ├── ai-analyzer.ts             # OpenAI-powered analysis functions
+│   ├── analytics.ts               # Analytics event tracking and queries
+│   ├── db.ts                      # Drizzle ORM database connection
 │   ├── storage.ts                 # Storage interface
 │   └── static.ts                  # Static file serving (production)
 ├── shared/
-│   └── schema.ts                  # TypeScript types (policies, analysis results)
+│   └── schema.ts                  # Drizzle schema + TypeScript types
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
