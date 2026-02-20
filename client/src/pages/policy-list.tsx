@@ -207,7 +207,7 @@ export default function PolicyListPage() {
                             isSelected ? "bg-primary/5" : "hover:bg-card/50"
                           }`}
                         >
-                          <td className="p-3">
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <Checkbox
                               data-testid={`checkbox-policy-${policy.id}`}
                               checked={isSelected}
@@ -249,21 +249,27 @@ export default function PolicyListPage() {
             </div>
           )}
 
-          {selected.size > 0 && (
-            <div className="flex justify-end">
-              <Button
-                data-testid="button-analyze"
-                onClick={handleAnalyze}
-                size="lg"
-                className="gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                Analyze {selected.size} {selected.size === 1 ? "Policy" : "Policies"}
-              </Button>
-            </div>
-          )}
         </div>
       </main>
+
+      {selected.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/95 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              {selected.size} {selected.size === 1 ? "policy" : "policies"} selected
+            </span>
+            <Button
+              data-testid="button-analyze"
+              onClick={handleAnalyze}
+              size="lg"
+              className="gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Analyze {selected.size} {selected.size === 1 ? "Policy" : "Policies"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

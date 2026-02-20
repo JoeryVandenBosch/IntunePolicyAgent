@@ -151,7 +151,7 @@ export default function AnalysisPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 space-y-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Analyzing {selectedPolicies.length} {selectedPolicies.length === 1 ? "policy" : "policies"} with AI...</p>
+            <p className="text-sm text-muted-foreground">Analyzing with IntuneStuff magic...</p>
             <p className="text-xs text-muted-foreground/70">This may take a moment depending on the number of policies</p>
           </div>
         ) : error ? (
