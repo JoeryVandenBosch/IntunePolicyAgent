@@ -6,14 +6,14 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
-async function callAI(systemPrompt: string, userPrompt: string): Promise<string> {
+async function callAI(systemPrompt: string, userPrompt: string, maxTokens: number = 4096): Promise<string> {
   const response = await openai.chat.completions.create({
     model: "gpt-5-nano",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    max_completion_tokens: 4096,
+    max_completion_tokens: maxTokens,
   });
   return response.choices[0]?.message?.content || "";
 }
@@ -23,7 +23,7 @@ function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string
     const detail = details[i];
     let settingsInfo = "";
     if (detail?.settings) {
-      settingsInfo = `\nConfigured Settings (${detail.settings.length} total):\n${JSON.stringify(detail.settings.slice(0, 20), null, 2)}`;
+      settingsInfo = `\nConfigured Settings (${detail.settings.length} total):\n${JSON.stringify(detail.settings.slice(0, 50), null, 2)}`;
     }
     let assignmentInfo = "";
     if (detail?.assignments) {
@@ -47,17 +47,28 @@ export async function analyzePolicySummaries(policies: IntunePolicyRaw[], detail
   const context = buildPolicyContext(policies, details);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert. Analyze the provided policies and generate a JSON object with summaries.
+    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Analyze the provided policies and generate a comprehensive, detailed JSON object with summaries.
+
 For each policy, provide:
-- overview: A detailed 2-3 sentence summary of what the policy configures and its purpose
+- overview: A thorough multi-paragraph summary structured as follows:
+  1. Start with what the policy configures and its purpose. Explain what the setting does when enabled vs disabled/not configured, and how it deviates from the default behavior.
+  2. "Key Configured Settings:" - List each configured setting with its value, explain what each setting does, and note whether it deviates from the default. Be specific about what the setting controls.
+  3. "Most Important Setting:" - Identify the most impactful setting and explain WHY it is important, including implications for storage, performance, security, or user experience.
+  4. "Assignment Scope Summary:" - Describe which groups are included/excluded, how many members each group has if known, and describe any assignment filters applied (what devices they target or exclude).
+  5. "Overall Summary:" - A final paragraph tying everything together: the policy's purpose, its scope, how many settings are configured, and the overall impact.
+  End with: "This summary covers N configured setting(s) for this policy."
+
 - keySettings: number of settings configured
 - lastModified: the last modified date
+
+Be detailed and specific. Do not be generic or vague. Reference actual setting names and values from the policy data. Explain the real-world impact of each configuration choice.
 
 Return ONLY valid JSON in this format:
 {
   "policyId": { "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }
 }`,
-    `Analyze these Intune policies:\n${context}`
+    `Analyze these Intune policies:\n${context}`,
+    8192
   );
 
   try {

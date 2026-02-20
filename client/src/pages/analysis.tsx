@@ -191,13 +191,28 @@ export default function AnalysisPage() {
               </TabsList>
 
               <TabsContent value="summary" className="space-y-3">
-                {selectedPolicies.map(policy => (
-                  <PolicySection key={policy.id} policy={policy}>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {analysis.summaries[policy.id]?.overview || "No summary available."}
-                    </p>
-                  </PolicySection>
-                ))}
+                {selectedPolicies.map(policy => {
+                  const overview = analysis.summaries[policy.id]?.overview || "No summary available.";
+                  return (
+                    <PolicySection key={policy.id} policy={policy}>
+                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3 whitespace-pre-line">
+                        {overview.split(/\n\n+/).map((paragraph, idx) => {
+                          const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Assignment Scope Summary:|Overall Summary:)/i.test(paragraph.trim());
+                          if (isHeader) {
+                            const [header, ...rest] = paragraph.split(/:\s*/);
+                            return (
+                              <div key={idx}>
+                                <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
+                                {rest.length > 0 && <p>{rest.join(": ")}</p>}
+                              </div>
+                            );
+                          }
+                          return <p key={idx}>{paragraph}</p>;
+                        })}
+                      </div>
+                    </PolicySection>
+                  );
+                })}
               </TabsContent>
 
               <TabsContent value="enduser" className="space-y-3">
