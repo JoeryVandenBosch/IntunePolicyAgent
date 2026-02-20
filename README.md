@@ -2,6 +2,8 @@
 
 AI-powered web application that analyzes Microsoft Intune policies. Users sign in with their Microsoft account, select policies from their tenant, and receive AI-powered analysis across six dimensions: summaries, end-user impact, security impact, assignments & filters, conflict detection, and recommendations.
 
+**Live at [policyagent.intunestuff.com](https://policyagent.intunestuff.com)**
+
 ---
 
 ## Features
@@ -169,7 +171,6 @@ For each policy, the application also fetches:
 │   ├── graph-client.ts            # Microsoft Graph API client
 │   ├── ai-analyzer.ts             # OpenAI-powered analysis functions
 │   ├── storage.ts                 # Storage interface
-│   ├── vite.ts                    # Vite dev server integration
 │   └── static.ts                  # Static file serving (production)
 ├── shared/
 │   └── schema.ts                  # TypeScript types (policies, analysis results)
@@ -189,9 +190,9 @@ For each policy, the application also fetches:
 | `AZURE_CLIENT_SECRET` | Yes | Azure AD app registration client secret value |
 | `SESSION_SECRET` | Yes | Random string for signing session cookies (min 32 characters recommended) |
 | `DATABASE_URL` | Yes | PostgreSQL connection string (e.g., `postgresql://user:pass@host:5432/dbname`) |
-| `AI_INTEGRATIONS_OPENAI_API_KEY` | Yes | OpenAI API key (or compatible provider) |
-| `AI_INTEGRATIONS_OPENAI_BASE_URL` | No | Custom OpenAI-compatible API base URL (defaults to OpenAI) |
-| `APP_DOMAIN` | No | Custom domain for redirect URI (e.g., `myapp.example.com`) |
+| `OPENAI_API_KEY` | Yes | OpenAI API key (or compatible provider) |
+| `OPENAI_BASE_URL` | No | Custom OpenAI-compatible API base URL (defaults to OpenAI) |
+| `APP_DOMAIN` | No | Custom domain for redirect URI (defaults to `policyagent.intunestuff.com`) |
 | `PORT` | No | Server port (defaults to 5000) |
 
 ## Scripts
@@ -202,14 +203,13 @@ For each policy, the application also fetches:
 | `npm run build` | Build for production |
 | `npm start` | Start production server |
 | `npm run check` | TypeScript type checking |
-| `npm run db:push` | Push database schema changes |
 
 ## Security
 
 - **No tenant data storage** - All policy data is fetched live from Microsoft Graph API. No tenant data is persisted on the server.
 - **Server-side token storage** - OAuth2 access and refresh tokens are stored exclusively in PostgreSQL-backed server sessions. They are never sent to the browser.
 - **CSRF protection** - OAuth2 state parameter is validated on callback to prevent cross-site request forgery.
-- **httpOnly cookies** - Session cookies are httpOnly and secure (HTTPS only), preventing JavaScript access.
+- **httpOnly cookies** - Session cookies are httpOnly and secure (HTTPS only in production), preventing JavaScript access.
 - **Read-only permissions** - Only read permissions are requested. The application makes no changes to tenant configuration.
 - **Automatic token refresh** - Access tokens are refreshed automatically before expiry, minimizing re-authentication prompts.
 

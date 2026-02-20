@@ -47,7 +47,7 @@ The application needs delegated permissions to read Intune policies and resolve 
 | Permission | Category | Purpose |
 |-----------|----------|---------|
 | `DeviceManagementConfiguration.Read.All` | Device Management | Read Intune configuration policies, compliance policies, endpoint security, and settings catalog |
-| `DeviceManagementManagedDevices.Read.All` | Device Management | Read managed device information |
+| `DeviceManagementManagedDevices.Read.All` | Device Management | Read Intune managed device information |
 | `Group.Read.All` | Group | Resolve group display names and member counts for policy assignments |
 | `Directory.Read.All` | Directory | Read organization information (tenant details) |
 | `offline_access` | OpenId | Obtain refresh tokens so users don't need to re-authenticate frequently |
@@ -82,28 +82,21 @@ The redirect URI tells Microsoft where to send users after they authenticate.
 
 | Environment | Redirect URI |
 |------------|-------------|
-| Replit (development) | `https://your-repl-name.your-username.replit.dev/api/auth/callback` |
-| Replit (published) | `https://your-app-name.replit.app/api/auth/callback` |
+| Production | `https://policyagent.intunestuff.com/api/auth/callback` |
 | Local development | `http://localhost:5000/api/auth/callback` |
 | Custom domain | `https://yourdomain.com/api/auth/callback` |
 
-3. You can add multiple redirect URIs. Add all environments you plan to use.
+3. You can add multiple redirect URIs. Add both your production and local development URIs so you can test locally.
 4. Under **Implicit grant and hybrid flows**, leave all checkboxes **unchecked** (we use the authorization code flow, not implicit).
 5. Click **Configure**.
 
-> **Tip**: If you are using Replit, the redirect URI for development is shown in the server logs when you start the app. Look for `Auth redirect to Microsoft login (redirect_uri: ...)`.
+> **Important**: The redirect URI must match exactly what the application sends. For production, this is `https://policyagent.intunestuff.com/api/auth/callback`. For local development, it is `http://localhost:5000/api/auth/callback`.
 
 ---
 
 ## 5. Set Up PostgreSQL Database
 
 The application uses PostgreSQL exclusively for session storage. No tenant or policy data is persisted.
-
-### Option A: Replit (built-in)
-
-If you are running on Replit, a PostgreSQL database is automatically provisioned. The `DATABASE_URL` environment variable is set for you. No additional setup is needed.
-
-### Option B: Local / Self-hosted
 
 1. Install PostgreSQL 14 or later.
 2. Create a database:
@@ -115,13 +108,15 @@ If you are running on Replit, a PostgreSQL database is automatically provisioned
    postgresql://username:password@localhost:5432/intune_policy_agent
    ```
 
+For managed PostgreSQL services (Azure Database for PostgreSQL, AWS RDS, Neon, Supabase, etc.), use the connection string provided by your service.
+
 The application automatically creates the `user_sessions` table on first startup (via `connect-pg-simple` with `createTableIfMissing: true`). No manual table creation or migrations are needed.
 
 ---
 
 ## 6. Configure Environment Variables
 
-Create a `.env` file in the project root (or set these in your hosting platform):
+Create a `.env` file in the project root (or set these in your hosting platform's environment configuration):
 
 ```env
 # Required: Azure AD App Registration
@@ -135,13 +130,13 @@ SESSION_SECRET=generate-a-random-string-at-least-32-characters-long
 DATABASE_URL=postgresql://username:password@localhost:5432/intune_policy_agent
 
 # Required: OpenAI API
-AI_INTEGRATIONS_OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
 
 # Optional: Custom OpenAI-compatible endpoint
-# AI_INTEGRATIONS_OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
+# OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
 
-# Optional: Custom domain (overrides auto-detected redirect URI)
-# APP_DOMAIN=yourdomain.com
+# Optional: Custom domain (defaults to policyagent.intunestuff.com for production)
+# APP_DOMAIN=policyagent.intunestuff.com
 
 # Optional: Server port (defaults to 5000)
 # PORT=5000
@@ -161,13 +156,6 @@ openssl rand -hex 32
 # Using Python
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
-
-### On Replit
-
-If you are running on Replit:
-- `DATABASE_URL` is automatically set.
-- `AI_INTEGRATIONS_OPENAI_API_KEY` and `AI_INTEGRATIONS_OPENAI_BASE_URL` are automatically set if you have the OpenAI integration enabled.
-- You only need to add `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, and `SESSION_SECRET` as secrets via the Secrets tab in the Replit sidebar.
 
 ---
 
@@ -195,7 +183,7 @@ This installs all required packages including:
 npm run dev
 ```
 
-This starts both the Express backend and Vite development server with hot module replacement (HMR) on port 5000.
+This starts both the Express backend and Vite development server with hot module replacement (HMR) on port 5000. Open `http://localhost:5000` in your browser.
 
 ### Production
 
@@ -206,6 +194,12 @@ npm start
 
 The build step compiles the frontend with Vite and bundles the backend with esbuild. The production server serves the compiled frontend as static files.
 
+For production deployment, ensure:
+- `NODE_ENV` is set to `production`
+- `APP_DOMAIN` is set to `policyagent.intunestuff.com` (or your custom domain)
+- HTTPS is configured via your reverse proxy or hosting platform
+- The `DATABASE_URL` points to your production PostgreSQL instance
+
 ---
 
 ## 9. Admin Consent
@@ -214,7 +208,7 @@ When a user from an organization signs in for the first time, a **Global Adminis
 
 ### Option A: Admin Consent During Sign-In
 
-1. A Global Administrator navigates to the application and clicks **Sign in with Microsoft**.
+1. A Global Administrator navigates to `https://policyagent.intunestuff.com` and clicks **Sign in with Microsoft**.
 2. After authenticating, Microsoft displays the permission consent screen.
 3. The admin checks **Consent on behalf of your organization** and clicks **Accept**.
 4. All users in that organization can now sign in without being prompted for consent again.
@@ -224,12 +218,10 @@ When a user from an organization signs in for the first time, a **Global Adminis
 Construct and share this URL with a Global Administrator:
 
 ```
-https://login.microsoftonline.com/common/adminconsent?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI
+https://login.microsoftonline.com/common/adminconsent?client_id=YOUR_CLIENT_ID&redirect_uri=https://policyagent.intunestuff.com/api/auth/callback
 ```
 
-Replace:
-- `YOUR_CLIENT_ID` with your Azure AD Application (client) ID
-- `YOUR_REDIRECT_URI` with your callback URL (e.g., `https://your-app.replit.app/api/auth/callback`)
+Replace `YOUR_CLIENT_ID` with your Azure AD Application (client) ID.
 
 ### Option C: Grant Consent in Azure Portal
 
@@ -243,12 +235,12 @@ Replace:
 
 ### "Azure Client ID not configured"
 
-The `AZURE_CLIENT_ID` environment variable is not set. Add it to your `.env` file or hosting platform secrets.
+The `AZURE_CLIENT_ID` environment variable is not set. Add it to your `.env` file or hosting platform's environment configuration.
 
 ### "Token exchange failed" on callback
 
 Common causes:
-- **Redirect URI mismatch**: The redirect URI in your app registration does not exactly match the one the application is using. Check the server logs for the actual redirect URI being used.
+- **Redirect URI mismatch**: The redirect URI in your app registration does not exactly match the one the application is using. For production, it must be exactly `https://policyagent.intunestuff.com/api/auth/callback`. Check the server logs for the actual redirect URI being used.
 - **Client secret expired**: Generate a new client secret in Azure Portal.
 - **Client secret incorrect**: Make sure you copied the secret **Value**, not the **Secret ID**.
 
@@ -270,7 +262,7 @@ The `AZURE_CLIENT_SECRET` environment variable is not set or is empty.
 ### "state_mismatch" error on login page
 
 This typically happens when:
-- The session cookie was not set (check that `secure: true` matches your protocol - HTTPS is required for secure cookies).
+- The session cookie was not set (check that HTTPS is properly configured in production — secure cookies require HTTPS).
 - The session expired between starting the login and completing it.
 - You have multiple browser tabs trying to authenticate simultaneously.
 
@@ -280,7 +272,8 @@ Try clearing your cookies and signing in again in a single tab.
 
 - Verify `DATABASE_URL` is correct and the PostgreSQL database is accessible.
 - Check that the `user_sessions` table was created (it is auto-created on first startup).
-- For local development over HTTP, the cookie `secure` flag is automatically disabled. If you have a reverse proxy adding HTTPS, make sure `trust proxy` is configured (it is set to `1` by default).
+- In production, ensure HTTPS is configured since session cookies are set with `secure: true` when `NODE_ENV=production`.
+- If running behind a reverse proxy (nginx, Cloudflare, etc.), the `trust proxy` setting is already configured in the application.
 
 ### "Graph API error (403): Insufficient privileges"
 
@@ -294,9 +287,9 @@ The signed-in user does not have admin consent for the required permissions, or 
 
 ### OpenAI analysis failing
 
-- Verify `AI_INTEGRATIONS_OPENAI_API_KEY` is set and valid.
-- If using a custom endpoint, verify `AI_INTEGRATIONS_OPENAI_BASE_URL` is correct.
-- The application uses the `gpt-5-nano` model. If your API key does not have access to this model, update the model name in `server/ai-analyzer.ts`.
+- Verify `OPENAI_API_KEY` is set and valid.
+- If using a custom endpoint, verify `OPENAI_BASE_URL` is correct.
+- The application uses the `gpt-5-nano` model by default. If your API key does not have access to this model, update the model name in `server/ai-analyzer.ts`.
 
 ---
 
@@ -304,7 +297,7 @@ The signed-in user does not have admin consent for the required permissions, or 
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Browser                          │
+│              Browser (User)                         │
 │  ┌───────────┐  ┌──────────┐  ┌──────────────────┐ │
 │  │ Login Page │  │ Policy   │  │ Analysis Page    │ │
 │  │           │  │ List     │  │ (6 tabs)         │ │
@@ -312,6 +305,7 @@ The signed-in user does not have admin consent for the required permissions, or 
 │        │              │                 │           │
 └────────┼──────────────┼─────────────────┼───────────┘
          │              │                 │
+         │    policyagent.intunestuff.com  │
     ┌────▼──────────────▼─────────────────▼────┐
     │              Express.js API               │
     │  ┌────────┐  ┌──────────┐  ┌───────────┐ │

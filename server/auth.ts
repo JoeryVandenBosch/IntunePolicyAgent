@@ -35,10 +35,7 @@ function getRedirectUri(): string {
   if (process.env.APP_DOMAIN) {
     return `https://${process.env.APP_DOMAIN}/api/auth/callback`;
   }
-  const base = process.env.REPLIT_DEV_DOMAIN
-    ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-    : `http://localhost:${process.env.PORT || 5000}`;
-  return `${base}/api/auth/callback`;
+  return `http://localhost:${process.env.PORT || 5000}/api/auth/callback`;
 }
 
 export function setupSession(app: Express): void {
@@ -58,7 +55,7 @@ export function setupSession(app: Express): void {
       saveUninitialized: false,
       proxy: true,
       cookie: {
-        secure: process.env.NODE_ENV === "production" || !!process.env.REPLIT_DEV_DOMAIN,
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         sameSite: "lax",
