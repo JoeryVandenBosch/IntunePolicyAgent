@@ -9,13 +9,16 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 ## Features
 
 - **Policy Summaries** - AI-generated overviews of each policy's purpose, configured settings, and scope in clear, actionable language.
-- **End-User Impact** - Assess how policies affect daily user workflows with severity ratings from Minimal to Critical, including workarounds.
-- **Security Impact** - Evaluate security posture improvements with compliance framework mappings (NIST 800-53, NIST 800-171, CIS Benchmarks, ISO 27001, HIPAA, SOC 2, PCI DSS).
-- **Assignments & Filters** - View included/excluded groups and assignment filters with resolved group names and member counts.
-- **Conflict Detection** - Identify direct setting conflicts, overlapping scopes, and redundant configurations across selected policies.
+- **End-User Impact** - Security Copilot-style structured analysis with severity ratings, per-setting impact breakdown, assignment scope, risk analysis, and overall summary.
+- **Security Impact** - Security Copilot-style structured analysis with compliance framework mappings (NIST 800-53, NIST 800-171, CIS Benchmarks, ISO 27001, HIPAA, SOC 2, PCI DSS), per-setting security impact, and risk analysis.
+- **Assignments & Filters** - View included/excluded groups and assignment filters with resolved group names, group types, and member counts.
+- **Settings & Conflict Detection** - Data-driven setting-level conflict detection with value normalization, cross-tenant comparison (auto-fetches up to 20 related policies), Intune portal deep links, and platform+source scoping to prevent false positives.
 - **Recommendations** - Get actionable recommendations for security hardening, optimization, and compliance improvements.
+- **Multi-Policy Analysis** - Select multiple policies for parallel AI analysis with per-policy dedicated AI calls and resilient fallbacks.
 - **Export** - Export analysis results as HTML or plain text reports.
-- **Analytics Dashboard** - Track usage metrics: total analyses, unique users, tenants, platform distribution, daily activity charts, and recent event log.
+- **Analytics Dashboard** - Global admin view with 4 tabs: Overview, Tenants, Users, Activity Log. Per-tenant and per-user breakdowns with daily activity charts.
+- **Light/Dark Theme** - Toggle between light and dark themes with localStorage persistence (dark by default).
+- **Consistent Setting Names** - Standardized PascalCase setting names across all OS platforms (Windows, macOS, iOS/iPadOS, Android Enterprise, Linux).
 
 ## Architecture
 
@@ -105,9 +108,12 @@ The application fetches policies from four Microsoft Graph Beta API endpoints:
 | `/deviceManagement/configurationPolicies` | Settings Catalog |
 
 For each policy, the application also fetches:
-- **Settings** (for Settings Catalog policies)
+- **Settings** - Settings Catalog via `/settings` endpoint, Endpoint Security via `/categories/{id}/settings`, Configuration Profiles and Compliance Policies via recursive property extraction, Custom (OMA-URI) policies via individual policy re-fetch
 - **Assignments** (included/excluded groups, assignment filters)
 - **Group details** (display name, type, member count via Microsoft Graph v1.0)
+- **Setting display names** (from Microsoft Graph `configurationSettings` API for Settings Catalog)
+
+Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterprise**, **Linux**
 
 ## API Endpoints
 
@@ -140,9 +146,11 @@ For each policy, the application also fetches:
 // Response
 {
   "summaries": { "policy-id-1": { "overview": "...", "keySettings": 5, "lastModified": "2026-01-15" } },
-  "endUserImpact": { "policy-id-1": { "severity": "Low", "description": "...", "workarounds": "..." } },
-  "securityImpact": { "policy-id-1": { "rating": "High", "description": "...", "complianceFrameworks": ["NIST 800-53", "CIS"] } },
+  "endUserImpact": { "policy-id-1": { "severity": "Low", "description": "...", "policySettingsAndImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." } },
+  "securityImpact": { "policy-id-1": { "rating": "High", "description": "...", "complianceFrameworks": ["NIST 800-53", "CIS"], "policySettingsAndSecurityImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." } },
   "assignments": { "policy-id-1": { "included": [...], "excluded": [...], "filters": [...] } },
+  "settingConflicts": [{ "settingName": "...", "settingDefinitionId": "...", "sourcePolicies": [...] }],
+  "allSettings": [{ "settingName": "...", "isConflict": false, "policyValues": [...] }],
   "conflicts": [{ "type": "Direct Conflict", "severity": "Warning", "policies": [...], "detail": "...", "recommendation": "..." }],
   "recommendations": [{ "type": "Security", "title": "...", "detail": "..." }]
 }
@@ -159,6 +167,7 @@ For each policy, the application also fetches:
 │       ├── index.css              # Global styles (dark theme)
 │       ├── lib/
 │       │   ├── auth-context.tsx   # React context for OAuth2 auth state
+│       │   ├── theme-context.tsx  # Theme provider (light/dark toggle)
 │       │   ├── queryClient.ts     # TanStack Query client configuration
 │       │   └── utils.ts           # Utility functions (cn)
 │       └── pages/

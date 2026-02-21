@@ -16,7 +16,6 @@ async function callAI(systemPrompt: string, userPrompt: string, maxTokens: numbe
         { role: "user", content: userPrompt },
       ],
       max_completion_tokens: maxTokens,
-      temperature: 0,
     });
     const content = response.choices[0]?.message?.content || "";
     const finishReason = response.choices[0]?.finish_reason;
@@ -109,20 +108,53 @@ function formatSettingIdToName(defId: string): string {
   const vendorPrefixes = /^(device_vendor_msft_|user_vendor_msft_|vendor_msft_)/i;
   name = name.replace(vendorPrefixes, "");
   const parts = name.split("_").filter(Boolean);
-  if (parts.length <= 1) {
-    return name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase());
+  if (parts.length <= 2) {
+    return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join("");
   }
-  return parts.map(p =>
-    p.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase())
-  ).join(" > ");
+  const meaningful = parts.slice(-3);
+  return meaningful.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" > ");
+}
+
+function cleanFriendlyName(name: string): string {
+  let clean = name.replace(/^(?:DeviceConfigurations|ConfigurationPolicies|DeviceCompliancePolicies|Intents|deviceManagementConfigurationPolicy)[/\\]/i, "");
+  clean = clean.replace(/^(device_vendor_msft_|user_vendor_msft_|vendor_msft_)/i, "");
+  return clean;
 }
 
 function formatSettingsForContext(settings: any[]): string {
   return settings.map((s, idx) => {
-    const name = s._settingFriendlyName || s.settingInstance?.settingDefinitionId || `Setting ${idx + 1}`;
-    const value = s._settingFriendlyValue || "Configured";
-    return `  - ${name}: ${value}`;
+    let name = s._settingFriendlyName || "";
+    if (!name) {
+      const defId = s.settingInstance?.settingDefinitionId || "";
+      name = defId ? formatSettingIdToName(defId) : `Setting ${idx + 1}`;
+    }
+    name = cleanFriendlyName(name);
+    const value = s._settingFriendlyValue || getSettingValueForContext(s) || "Configured";
+    const category = s._category ? ` [${s._category}]` : "";
+    const omaUri = s._omaUri ? ` (OMA-URI: ${s._omaUri})` : "";
+    return `  - ${name}: ${value}${category}${omaUri}`;
   }).join("\n");
+}
+
+function getSettingValueForContext(setting: any): string {
+  if (setting.settingInstance) {
+    if (setting.settingInstance.choiceSettingValue) {
+      const val = setting.settingInstance.choiceSettingValue.value || "";
+      if (val.includes("_1")) return "Enabled";
+      if (val.includes("_0")) return "Disabled";
+      return val.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+    }
+    if (setting.settingInstance.simpleSettingValue) {
+      return String(setting.settingInstance.simpleSettingValue.value || "");
+    }
+    if (setting.settingInstance.simpleSettingCollectionValue) {
+      const items = setting.settingInstance.simpleSettingCollectionValue;
+      if (Array.isArray(items)) {
+        return items.map((item: any) => String(item.value || item)).join(", ");
+      }
+    }
+  }
+  return "Configured";
 }
 
 function formatAssignmentsForContext(assignments: any[]): string {
@@ -161,19 +193,25 @@ function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string
     const detail = details[i];
     let settingsInfo = "";
     if (detail?.settings) {
-      settingsInfo = `\nConfigured Settings (${detail.settings.length} total):\n${formatSettingsForContext(detail.settings.slice(0, 50))}`;
+      const totalSettings = detail.settings.length;
+      const maxDisplay = 80;
+      const displayedSettings = detail.settings.slice(0, maxDisplay);
+      settingsInfo = `\nConfigured Settings (${totalSettings} total${totalSettings > maxDisplay ? `, showing first ${maxDisplay} of ${totalSettings}` : ""}):\n${formatSettingsForContext(displayedSettings)}`;
     }
     let assignmentInfo = "";
     if (detail?.assignments) {
       assignmentInfo = `\nAssignments:\n${formatAssignmentsForContext(detail.assignments)}`;
     }
+    const odataType = p.rawData?.["@odata.type"] || "";
+    const source = p.rawData?._source || "";
     return `
 ## Policy: ${p.name}
 - JSON Key (use this EXACT value as the key in your JSON response): "${p.id}"
 - Type: ${p.type}
 - Platform: ${p.platform}
+- Source: ${source}${odataType ? ` (${odataType})` : ""}
 - Last Modified: ${p.lastModified}
-- Settings Count: ${p.settingsCount}
+- Settings Count: ${detail?.settingsCount || p.settingsCount}
 - Description: ${p.description || "N/A"}
 ${settingsInfo}
 ${assignmentInfo}
@@ -227,7 +265,9 @@ CRITICAL RULES:
 Provide:
 - overview: A structured summary with these sections:
   1. Policy name (with GUID), type, platform, and stated purpose/description.
-  2. "Configured Settings:" - List EVERY configured setting with its exact value from the data. For each, briefly explain what it controls.
+  2. "Configured Settings:" - List each configured setting using this exact format, one per line:
+     SettingName: value — what it controls
+     Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Only discuss settings actually listed in the data.
   3. "Assignment Scope:" - Which groups are targeted (include/exclude), member counts, and any assignment filters with their rules.
   4. "Summary:" - A factual closing: how many settings are configured, the policy's scope, and the overall configuration approach.
   End with: "This summary covers N configured setting(s) for this policy."
@@ -292,7 +332,9 @@ CRITICAL RULES:
 
 Provide these structured fields:
 - severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" - overall impact severity on end users
-- policySettingsAndImpact: For EACH configured setting listed in the data, explain: what it controls, its configured value, and the specific end-user impact. Only discuss settings that are actually present in the data.
+- policySettingsAndImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
+  SettingName: value — end-user impact description
+  Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
 - assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows.
 - riskAnalysis: Based on the actual configured settings and their values, what are the risks? Focus on: user productivity impact, data availability, and any settings that deviate from defaults.
 - overallSummary: Factual closing: policy purpose, scope, number of configured settings, and net end-user impact.
@@ -303,7 +345,7 @@ Do NOT include any conflict analysis - conflicts are handled separately.
 IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON:
-{ "severity": "...", "description": "...", "policySettingsAndImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+{ "severity": "...", "description": "...", "policySettingsAndImpact": "SettingName1: value1 — impact1\nSettingName2: value2 — impact2\n...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
     `Analyze end-user impact for this policy:\n${context}`,
     12000
   );
@@ -357,7 +399,9 @@ CRITICAL RULES:
 
 Provide these structured fields:
 - rating: "Low"|"Medium"|"High"|"Critical" - overall security impact rating
-- policySettingsAndSecurityImpact: For EACH configured setting listed in the data, explain: what it controls, its configured value, and the specific security implications (positive or negative).
+- policySettingsAndSecurityImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
+  SettingName: value — security impact description
+  Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the security impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
 - assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows about which users/devices are protected.
 - riskAnalysis: Based on the actual configured settings and their values, what security risks are addressed and what residual risks remain? Focus on: data protection, access control, compliance.
 - overallSummary: Factual closing: policy purpose, scope, number of configured settings, and overall security posture impact. End with: "This summary covers N configured setting(s) for this policy."
@@ -369,7 +413,7 @@ Do NOT include any conflict analysis - conflicts are handled separately.
 IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
 Return ONLY valid JSON:
-{ "rating": "...", "description": "...", "complianceFrameworks": [...], "policySettingsAndSecurityImpact": "...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+{ "rating": "...", "description": "...", "complianceFrameworks": [...], "policySettingsAndSecurityImpact": "SettingName1: value1 — security impact1\nSettingName2: value2 — security impact2\n...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
     `Analyze security impact for this policy:\n${context}`,
     12000
   );
@@ -465,10 +509,17 @@ export async function analyzeConflicts(policies: IntunePolicyRaw[], details: any
   const result = await callAI(
     `You are a Microsoft Intune policy conflict expert similar to Microsoft Security Copilot. Provide a thorough conflict analysis for the provided policies.
 
+CRITICAL RULES:
+- A single policy CANNOT conflict with itself. Conflicts require AT LEAST TWO DIFFERENT policies.
+- Only compare policies on the SAME platform. A Windows policy can NEVER conflict with an Android or iOS policy.
+- Only compare policies of the SAME source type (e.g., two Settings Catalog policies, or two Configuration Profiles). Different policy types rarely conflict.
+- If only ONE policy is provided for a given platform/type, return an empty array [] for that group - there is nothing to compare against.
+- Base your analysis ONLY on the actual settings and values provided. Do NOT fabricate conflicts.
+
 Analyze the provided policies for:
-1. Direct setting conflicts (same setting configured with different values across policies)
+1. Direct setting conflicts (same setting configured with different values across TWO OR MORE policies of the same platform and type)
 2. Overlapping assignment scopes (same platform, same type, targeting the same groups/users)
-3. Redundant configurations (duplicate settings across policies)
+3. Redundant configurations (duplicate settings across policies of the same platform and type)
 4. Filter conflicts (assignment filters that may cause unexpected behavior)
 
 For each conflict found, provide these structured fields:
@@ -566,6 +617,7 @@ function getIntunePortalUrl(policy: IntunePolicyRaw): string {
 }
 
 function getSettingValue(setting: any): string {
+  if (setting._rawValue) return setting._rawValue;
   if (setting._settingFriendlyValue) return setting._settingFriendlyValue;
   if (setting.settingInstance) {
     if (setting.settingInstance.choiceSettingValue) {
@@ -575,8 +627,31 @@ function getSettingValue(setting: any): string {
     if (setting.settingInstance.simpleSettingValue) {
       return String(setting.settingInstance.simpleSettingValue.value || "");
     }
+    if (setting.settingInstance.simpleSettingCollectionValue) {
+      const items = setting.settingInstance.simpleSettingCollectionValue;
+      if (Array.isArray(items)) {
+        return items.map((item: any) => String(item.value || item)).join(", ");
+      }
+    }
     if (setting.settingInstance.groupSettingCollectionValue) {
-      return `Collection (${setting.settingInstance.groupSettingCollectionValue.length || 0} items)`;
+      const collection = setting.settingInstance.groupSettingCollectionValue;
+      if (Array.isArray(collection) && collection.length > 0) {
+        const summaries = collection.slice(0, 5).map((group: any, idx: number) => {
+          if (group.children && Array.isArray(group.children)) {
+            const childValues = group.children.slice(0, 5).map((child: any) => {
+              const childName = child.settingDefinitionId?.replace(/^.*~/, "").replace(/_/g, " ") || "";
+              const childVal = child.choiceSettingValue?.value?.replace(/^.*~/, "").replace(/_/g, " ")
+                || child.simpleSettingValue?.value
+                || "Configured";
+              return `${childName}: ${childVal}`;
+            }).join("; ");
+            return `[${idx + 1}] ${childValues}`;
+          }
+          return `[${idx + 1}] Configured`;
+        });
+        return `${collection.length} rule(s): ${summaries.join(" | ")}`;
+      }
+      return `Collection (${collection.length || 0} items)`;
     }
   }
   return "Configured";
@@ -598,47 +673,28 @@ export function detectSettingConflicts(policies: IntunePolicyRaw[], details: any
     }
 
     const source = policies[i].rawData?._source || "unknown";
+    const platform = policies[i].platform || "Unknown";
     const hasSettings = detail.settings && Array.isArray(detail.settings);
     const settingsCount = hasSettings ? detail.settings.length : 0;
-    console.log(`  Policy ${i} (${policies[i]?.name}): source=${source}, settings=${settingsCount}, keys=${Object.keys(detail).length}`);
+    console.log(`  Policy ${i} (${policies[i]?.name}): source=${source}, platform=${platform}, settings=${settingsCount}`);
 
     if (detail.settings && Array.isArray(detail.settings)) {
       for (const setting of detail.settings) {
         const defId = getSettingDefinitionId(setting);
         if (!defId) continue;
 
-        const friendlyName = setting._settingFriendlyName || formatSettingIdToName(defId);
+        const scopedKey = `${platform}||${source}||${defId}`;
+        const rawName = setting._settingFriendlyName || formatSettingIdToName(defId);
+        const friendlyName = cleanFriendlyName(rawName);
         const value = getSettingValue(setting);
 
-        if (!settingMap.has(defId)) {
-          settingMap.set(defId, []);
+        if (!settingMap.has(scopedKey)) {
+          settingMap.set(scopedKey, []);
         }
-        settingMap.get(defId)!.push({ policyIdx: i, setting, friendlyName, value });
+        settingMap.get(scopedKey)!.push({ policyIdx: i, setting, friendlyName, value });
       }
     }
 
-    const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "_policyMeta", "assignments", "settings", "settingsCount", "isAssigned", "supportsScopeTags"]);
-    const policySource = policies[i].rawData?._source;
-    if (policySource === "deviceConfigurations" || policySource === "deviceCompliancePolicies") {
-      const rawData = detail;
-      let propCount = 0;
-      for (const [key, value] of Object.entries(rawData)) {
-        if (skipKeys.has(key) || key.startsWith("@") || key.startsWith("_")) continue;
-        if (value === null || value === undefined) continue;
-        if (typeof value === "object" && !Array.isArray(value)) continue;
-
-        propCount++;
-        const defId = `${policySource}/${key}`;
-        const friendlyName = key.replace(/([A-Z])/g, " $1").replace(/^./, (c: string) => c.toUpperCase()).trim();
-        const displayValue = Array.isArray(value) ? JSON.stringify(value) : String(value);
-
-        if (!settingMap.has(defId)) {
-          settingMap.set(defId, []);
-        }
-        settingMap.get(defId)!.push({ policyIdx: i, setting: rawData, friendlyName, value: displayValue });
-      }
-      console.log(`    ${policySource} properties extracted: ${propCount}`);
-    }
   }
 
   console.log(`  Total unique settings tracked: ${settingMap.size}`);
@@ -647,23 +703,52 @@ export function detectSettingConflicts(policies: IntunePolicyRaw[], details: any
   const allSettings: SettingComparison[] = [];
 
   function normalizeValue(v: string): string {
-    const lower = v.toLowerCase().trim();
-    if (lower === "true" || lower === "enabled" || lower === "allow" || lower === "yes") return "true";
-    if (lower === "false" || lower === "disabled" || lower === "block" || lower === "no" || lower === "not configured" || lower === "notconfigured") return "false";
+    let lower = v.toLowerCase().trim();
+    lower = lower.replace(/^.*~/, "").replace(/_/g, " ").trim();
+    if (lower === "true" || lower === "enabled" || lower === "allow" || lower === "yes" || lower === "1") return "true";
+    if (lower === "false" || lower === "disabled" || lower === "block" || lower === "no" || lower === "not configured" || lower === "notconfigured" || lower === "0") return "false";
     return lower;
   }
 
-  settingMap.forEach((entries, defId) => {
-    const policyEntries = entries.map((e: { policyIdx: number; value: string }) => ({
+  settingMap.forEach((entries, scopedKey) => {
+    const parts = scopedKey.split("||");
+    const defId = parts.length === 3 ? parts[2] : scopedKey;
+
+    const uniquePolicyIds = new Set(entries.map(e => policies[e.policyIdx].id));
+    if (uniquePolicyIds.size < 2) {
+      const policyEntries = entries.map((e: { policyIdx: number; value: string }) => ({
+        policyId: policies[e.policyIdx].id,
+        policyName: policies[e.policyIdx].name,
+        value: e.value,
+        intuneUrl: getIntunePortalUrl(policies[e.policyIdx]),
+      }));
+      allSettings.push({
+        settingName: entries[0].friendlyName,
+        settingDefinitionId: defId,
+        isConflict: false,
+        policyValues: policyEntries,
+      });
+      return;
+    }
+
+    const deduped = new Map<string, typeof entries[0]>();
+    for (const entry of entries) {
+      const pid = policies[entry.policyIdx].id;
+      if (!deduped.has(pid)) {
+        deduped.set(pid, entry);
+      }
+    }
+    const dedupedEntries = Array.from(deduped.values());
+
+    const policyEntries = dedupedEntries.map((e) => ({
       policyId: policies[e.policyIdx].id,
       policyName: policies[e.policyIdx].name,
       value: e.value,
       intuneUrl: getIntunePortalUrl(policies[e.policyIdx]),
     }));
 
-    const hasMultiple = entries.length >= 2;
-    const uniqueValues = hasMultiple ? new Set(entries.map((e: { value: string }) => normalizeValue(e.value))) : new Set<string>();
-    const isConflict = hasMultiple && uniqueValues.size > 1;
+    const uniqueValues = new Set(dedupedEntries.map((e) => normalizeValue(e.value)));
+    const isConflict = uniqueValues.size > 1;
 
     if (isConflict) {
       conflicts.push({

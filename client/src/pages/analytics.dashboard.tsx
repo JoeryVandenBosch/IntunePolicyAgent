@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, Legend } from "recharts";
-import { ArrowLeft, BarChart3, Users, Building2, FileText, Clock, Shield, TrendingUp, LogIn } from "lucide-react";
+import { ArrowLeft, BarChart3, Users, Building2, FileText, Clock, Shield, TrendingUp, LogIn, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
 
 const CHART_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#84cc16"];
 
@@ -48,6 +49,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 
 export default function AnalyticsDashboard() {
   const { auth, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"overview" | "tenants" | "users" | "activity">("overview");
 
@@ -128,6 +130,9 @@ export default function AnalyticsDashboard() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">{auth?.user?.displayName}</span>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme-analytics" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
             <Button variant="ghost" size="sm" onClick={logout} data-testid="button-logout">
               Sign Out
             </Button>

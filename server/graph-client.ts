@@ -33,30 +33,118 @@ async function graphGetAll(token: string, url: string): Promise<any[]> {
   return results;
 }
 
+function toPascalCaseSettingName(fullKey: string): string {
+  return fullKey.split('.').map(part => {
+    const cleaned = part.replace(/\[(\d+)\]/g, '[$1]');
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }).join(' > ');
+}
+
+function cleanSettingDefinitionId(defId: string): string {
+  let name = defId.replace(/^.*~/, "");
+  name = name.replace(/^(device_vendor_msft_|user_vendor_msft_|vendor_msft_)/i, "");
+  const parts = name.split("_").filter(Boolean);
+  if (parts.length <= 2) {
+    return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join("");
+  }
+  const meaningful = parts.slice(-3);
+  return meaningful.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" > ");
+}
+
 function getPlatformFromOdataType(policy: any): string {
-  const platforms = policy.platforms || "";
+  const platforms = (policy.platforms || "").toLowerCase();
   if (platforms.includes("windows")) return "Windows";
-  if (platforms.includes("iOS") || platforms.includes("iphone") || platforms.includes("ipad")) return "iOS/iPadOS";
-  if (platforms.includes("macOS") || platforms.includes("mac")) return "macOS";
+  if (platforms.includes("ios")) return "iOS/iPadOS";
+  if (platforms.includes("macos")) return "macOS";
   if (platforms.includes("android")) return "Android Enterprise";
+  if (platforms.includes("linux")) return "Linux";
+
+  const odataType = (policy["@odata.type"] || "").toLowerCase();
+  if (odataType.includes("windows") || odataType.includes("win32") || odataType.includes("edgehomebutton") || odataType.includes("sharedpc")) return "Windows";
+  if (odataType.includes("ios") || odataType.includes("iphone") || odataType.includes("ipad")) return "iOS/iPadOS";
+  if (odataType.includes("macos") || odataType.includes("osx")) return "macOS";
+  if (odataType.includes("android")) return "Android Enterprise";
+
+  const templateId = (policy.templateReference?.templateId || policy.templateId || "").toLowerCase();
+  if (templateId) {
+    const templateDisplay = (policy.templateReference?.templateDisplayName || "").toLowerCase();
+    if (templateDisplay.includes("windows") || templateDisplay.includes("defender") || templateDisplay.includes("bitlocker") || templateDisplay.includes("firewall")) return "Windows";
+    if (templateDisplay.includes("ios") || templateDisplay.includes("iphone")) return "iOS/iPadOS";
+    if (templateDisplay.includes("macos")) return "macOS";
+    if (templateDisplay.includes("android")) return "Android Enterprise";
+    if (templateDisplay.includes("linux")) return "Linux";
+  }
 
   const name = (policy.displayName || policy.name || "").toLowerCase();
-  if (name.includes("windows") || name.includes("win")) return "Windows";
+  if (name.includes("windows") || name.includes("win10") || name.includes("win11")) return "Windows";
   if (name.includes("ios") || name.includes("iphone") || name.includes("ipad")) return "iOS/iPadOS";
-  if (name.includes("macos") || name.includes("mac")) return "macOS";
+  if (name.includes("macos")) return "macOS";
   if (name.includes("android")) return "Android Enterprise";
+  if (name.includes("linux")) return "Linux";
 
-  return "Windows";
+  const source = policy._source || "";
+  if (source === "intents") {
+    const intentTemplateId = policy.templateId || "";
+    if (intentTemplateId) return "Windows";
+  }
+
+  return "Unknown";
 }
 
 function getPolicyType(policy: any, source: string): string {
-  if (source === "deviceConfigurations") return "Configuration Profile";
+  if (source === "deviceConfigurations") {
+    const odataType = (policy["@odata.type"] || "").toLowerCase();
+    if (odataType.includes("customconfiguration") || odataType.includes("custom")) {
+      return "Custom (OMA-URI)";
+    }
+    if (policy.omaSettings && Array.isArray(policy.omaSettings) && policy.omaSettings.length > 0) {
+      return "Custom (OMA-URI)";
+    }
+    return "Configuration Profile";
+  }
   if (source === "deviceCompliancePolicies") return "Compliance Policy";
   if (source === "intents") return "Endpoint Security";
   if (source === "configurationPolicies") return "Settings Catalog";
   if (source === "managedAppPolicies" || source === "mdmWindowsInformationProtectionPolicies") return "App Protection";
   if (source === "windowsAutopilotDeploymentProfiles") return "Autopilot Profile";
   return "Configuration Profile";
+}
+
+function countPolicySettings(item: any, source: string): number {
+  if (source === "configurationPolicies") {
+    return item.settingCount || 0;
+  }
+  if (source === "intents") {
+    return item.settingCount || 0;
+  }
+  if (source === "deviceConfigurations") {
+    if (item.omaSettings && Array.isArray(item.omaSettings)) {
+      return item.omaSettings.length;
+    }
+    const odataType = (item["@odata.type"] || "").toLowerCase();
+    const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "assignments", "isAssigned", "supportsScopeTags", "deviceManagementApplicabilityRuleOsEdition", "deviceManagementApplicabilityRuleOsVersion", "deviceManagementApplicabilityRuleDeviceMode"]);
+    let count = 0;
+    for (const [key, value] of Object.entries(item)) {
+      if (skipKeys.has(key) || key.startsWith("@") || key.startsWith("_")) continue;
+      if (value === null || value === undefined) continue;
+      count++;
+    }
+    if (count === 0 && odataType.includes("custom")) {
+      return -1;
+    }
+    return count;
+  }
+  if (source === "deviceCompliancePolicies") {
+    const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "assignments", "isAssigned", "supportsScopeTags", "scheduledActionsForRule"]);
+    let count = 0;
+    for (const [key, value] of Object.entries(item)) {
+      if (skipKeys.has(key) || key.startsWith("@") || key.startsWith("_")) continue;
+      if (value === null || value === undefined) continue;
+      count++;
+    }
+    return count;
+  }
+  return 0;
 }
 
 export interface IntunePolicyRaw {
@@ -69,6 +157,8 @@ export interface IntunePolicyRaw {
   description?: string;
   rawData?: any;
 }
+
+export { cleanSettingDefinitionId };
 
 export async function fetchAllPolicies(token: string): Promise<IntunePolicyRaw[]> {
   const baseUrl = "https://graph.microsoft.com/beta/deviceManagement";
@@ -106,7 +196,7 @@ export async function fetchAllPolicies(token: string): Promise<IntunePolicyRaw[]
           type: getPolicyType(item, item._source),
           platform: getPlatformFromOdataType(item),
           lastModified: new Date(lastModified).toISOString().split("T")[0],
-          settingsCount: item.settingCount || item.settingsCount || 0,
+          settingsCount: countPolicySettings(item, item._source),
           description: item.description || "",
           rawData: item,
         });
@@ -131,8 +221,158 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
       const settings = await graphGetAll(token, `${baseUrl}/configurationPolicies('${policyId}')/settings`);
       details.settings = settings;
       details.settingsCount = settings.length;
+      console.log(`  Fetched ${settings.length} settings from Settings Catalog for "${policy.name}"`);
+    } else if (source === "intents") {
+      const allIntentSettings: any[] = [];
+      try {
+        const categories = await graphGetAll(token, `${baseUrl}/intents('${policyId}')/categories`);
+        for (const category of categories) {
+          try {
+            const catSettings = await graphGetAll(token, `${baseUrl}/intents('${policyId}')/categories('${category.id}')/settings`);
+            for (const setting of catSettings) {
+              const defId = setting.definitionId || setting.id || "";
+              const displayName = setting.displayName || defId.replace(/^.*_/, "").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase());
+              let value = "Configured";
+              if (setting.value !== undefined && setting.value !== null) {
+                value = String(setting.value);
+              } else if (setting.valueJson) {
+                try {
+                  const parsed = JSON.parse(setting.valueJson);
+                  value = typeof parsed === "object" ? JSON.stringify(parsed) : String(parsed);
+                } catch { value = setting.valueJson; }
+              }
+              allIntentSettings.push({
+                _settingFriendlyName: displayName,
+                _settingFriendlyValue: value,
+                settingInstance: { settingDefinitionId: defId },
+                _category: category.displayName || category.id,
+              });
+            }
+          } catch (catErr: any) {
+            console.warn(`Failed to fetch settings for intent category ${category.id}:`, catErr?.message);
+          }
+        }
+      } catch (intentErr: any) {
+        console.warn(`Failed to fetch intent categories for ${policyId}:`, intentErr?.message);
+      }
+      if (allIntentSettings.length === 0) {
+        try {
+          const directSettings = await graphGetAll(token, `${baseUrl}/intents('${policyId}')/settings`);
+          for (const setting of directSettings) {
+            const defId = setting.definitionId || setting.id || "";
+            const displayName = setting.displayName || defId.replace(/^.*_/, "").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (c: string) => c.toUpperCase());
+            let value = "Configured";
+            if (setting.value !== undefined && setting.value !== null) {
+              value = String(setting.value);
+            } else if (setting.valueJson) {
+              try {
+                const parsed = JSON.parse(setting.valueJson);
+                value = typeof parsed === "object" ? JSON.stringify(parsed) : String(parsed);
+              } catch { value = setting.valueJson; }
+            }
+            allIntentSettings.push({
+              _settingFriendlyName: displayName,
+              _settingFriendlyValue: value,
+              settingInstance: { settingDefinitionId: defId },
+            });
+          }
+        } catch (directErr: any) {
+          console.warn(`Failed to fetch direct intent settings for ${policyId}:`, directErr?.message);
+        }
+      }
+      details.settings = allIntentSettings;
+      details.settingsCount = allIntentSettings.length;
+      console.log(`  Fetched ${allIntentSettings.length} settings from Endpoint Security intent for "${policy.name}"`);
+    } else if (source === "deviceConfigurations" || source === "deviceCompliancePolicies") {
+      const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "_policyMeta", "assignments", "settings", "settingsCount", "isAssigned", "supportsScopeTags", "deviceManagementApplicabilityRuleOsEdition", "deviceManagementApplicabilityRuleOsVersion", "deviceManagementApplicabilityRuleDeviceMode", "omaSettings"]);
+      const extractedSettings: any[] = [];
+
+      let omaSettings = details.omaSettings;
+      if (!omaSettings && source === "deviceConfigurations") {
+        const odataType = (details["@odata.type"] || "").toLowerCase();
+        if (odataType.includes("custom")) {
+          try {
+            const fullPolicy = await graphGet(token, `${baseUrl}/deviceConfigurations('${policyId}')`);
+            omaSettings = fullPolicy.omaSettings;
+            console.log(`  Re-fetched individual policy for OMA-URI settings: found ${omaSettings?.length || 0} OMA settings`);
+          } catch (fetchErr: any) {
+            console.warn(`  Failed to re-fetch individual policy for OMA-URI: ${fetchErr?.message}`);
+          }
+        }
+      }
+
+      if (omaSettings && Array.isArray(omaSettings) && omaSettings.length > 0) {
+        for (const oma of omaSettings) {
+          const omaName = oma.displayName || oma["@odata.type"] || "OMA-URI Setting";
+          const omaUri = oma.omaUri || "";
+          let omaValue = "Configured";
+          if (oma.value !== undefined && oma.value !== null) {
+            omaValue = String(oma.value);
+          } else if (oma.fileName) {
+            omaValue = `File: ${oma.fileName}`;
+          }
+          const omaType = oma["@odata.type"] || "";
+          let dataType = "String";
+          if (omaType.includes("Integer")) dataType = "Integer";
+          else if (omaType.includes("Boolean")) dataType = "Boolean";
+          else if (omaType.includes("Base64")) dataType = "Base64";
+          else if (omaType.includes("Xml")) dataType = "XML";
+          else if (omaType.includes("DateTime")) dataType = "DateTime";
+          else if (omaType.includes("FloatingPoint")) dataType = "Float";
+
+          const displayValue = omaValue.length > 200 ? omaValue.substring(0, 200) + "..." : omaValue;
+          extractedSettings.push({
+            _settingFriendlyName: `${omaName} (${dataType})`,
+            _settingFriendlyValue: displayValue,
+            _rawValue: omaValue,
+            _omaUri: omaUri,
+            settingInstance: { settingDefinitionId: `omaUri:${omaUri}` },
+          });
+        }
+      } else {
+        const flattenSettings = (obj: any, prefix: string, depth: number = 0): void => {
+          if (depth > 5) return;
+          for (const [key, value] of Object.entries(obj)) {
+            if (skipKeys.has(key) || key.startsWith("@") || key.startsWith("_")) continue;
+            if (value === null || value === undefined) continue;
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (Array.isArray(value)) {
+              if (value.length > 0 && typeof value[0] === "object") {
+                value.forEach((item: any, idx: number) => {
+                  if (typeof item === "object" && item !== null) {
+                    flattenSettings(item, `${fullKey}[${idx}]`, depth + 1);
+                  }
+                });
+              } else {
+                const friendlyName = toPascalCaseSettingName(fullKey);
+                extractedSettings.push({
+                  _settingFriendlyName: friendlyName,
+                  _settingFriendlyValue: value.join(", "),
+                  settingInstance: { settingDefinitionId: `${source}/${fullKey}` },
+                });
+              }
+            } else if (typeof value === "object") {
+              flattenSettings(value, fullKey, depth + 1);
+            } else {
+              const friendlyName = toPascalCaseSettingName(fullKey);
+              extractedSettings.push({
+                _settingFriendlyName: friendlyName,
+                _settingFriendlyValue: String(value),
+                settingInstance: { settingDefinitionId: `${source}/${fullKey}` },
+              });
+            }
+          }
+        };
+
+        flattenSettings(details, "", 0);
+      }
+      details.settings = extractedSettings;
+      details.settingsCount = extractedSettings.length;
+      console.log(`  Extracted ${extractedSettings.length} settings from ${source} for "${policy.name}"`);
     }
-  } catch {}
+  } catch (settingsErr: any) {
+    console.error(`Failed to fetch settings for policy "${policy.name}" (${policyId}):`, settingsErr?.message);
+  }
 
   try {
     let assignmentsUrl = "";
@@ -151,7 +391,9 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
       const assignments = await graphGetAll(token, assignmentsUrl);
       details.assignments = assignments;
     }
-  } catch {}
+  } catch (assignErr: any) {
+    console.error(`Failed to fetch assignments for policy "${policy.name}" (${policyId}):`, assignErr?.message);
+  }
 
   return details;
 }

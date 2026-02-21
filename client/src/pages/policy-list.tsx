@@ -9,8 +9,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Search, Sparkles, LogOut, RefreshCw, BarChart3 } from "lucide-react";
+import { Shield, Search, Sparkles, LogOut, RefreshCw, BarChart3, ExternalLink, Sun, Moon } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { useTheme } from "@/lib/theme-context";
+
+function getIntuneUrl(policy: IntunePolicy): string {
+  const source = policy.source || "";
+  const id = policy.id;
+  if (source === "configurationPolicies") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/SettingsCatalogProfiles/policyId/${id}/policyType~/%7B%22PolicyType%22%3A2%7D`;
+  } else if (source === "deviceConfigurations") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+  } else if (source === "deviceCompliancePolicies") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesComplianceMenu/policyId/${id}`;
+  } else if (source === "intents") {
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+  }
+  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/overview`;
+}
 
 const PLATFORM_COLORS: Record<string, string> = {
   "Windows": "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -29,6 +45,7 @@ export default function PolicyListPage() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  const { theme, toggleTheme } = useTheme();
   const { data: policies, isLoading, error, refetch, isFetching } = useQuery<IntunePolicy[]>({
     queryKey: ["/api/policies"],
   });
@@ -87,11 +104,14 @@ export default function PolicyListPage() {
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground leading-tight">Intune Policy Intelligence Agent</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by AI</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by IntuneStuff</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {userName && <span className="text-xs text-muted-foreground hidden sm:inline" data-testid="text-user-name">{userName}</span>}
+            <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setLocation("/analytics")} data-testid="button-analytics">
               <BarChart3 className="w-4 h-4 mr-1.5" />
               Analytics
@@ -113,7 +133,7 @@ export default function PolicyListPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sticky top-14 z-40 bg-background py-3 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-b border-border/30">
             <div className="relative flex-1 w-full sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -155,9 +175,22 @@ export default function PolicyListPage() {
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             </Button>
-            <span className="text-sm text-muted-foreground whitespace-nowrap ml-auto">
-              {selected.size > 0 && `${selected.size} of `}{filtered.length} {filtered.length === 1 ? 'policy' : 'policies'}
-            </span>
+            <div className="flex items-center gap-2 ml-auto">
+              {filtered.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="button-select-all-filtered"
+                  onClick={toggleAll}
+                  className="text-xs h-8"
+                >
+                  {selected.size === filtered.length ? "Deselect All" : `Select All (${filtered.length})`}
+                </Button>
+              )}
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                {selected.size > 0 && `${selected.size} of `}{filtered.length} {filtered.length === 1 ? 'policy' : 'policies'}
+              </span>
+            </div>
           </div>
 
           {isLoading ? (
@@ -219,9 +252,22 @@ export default function PolicyListPage() {
                             />
                           </td>
                           <td className="p-3">
-                            <span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-foreground"}`}>
-                              {policy.name}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-foreground"}`}>
+                                {policy.name}
+                              </span>
+                              <a
+                                href={getIntuneUrl(policy)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-muted-foreground/50 hover:text-primary transition-colors shrink-0"
+                                title="Open in Intune admin center"
+                                data-testid={`link-intune-${policy.id}`}
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
                           </td>
                           <td className="p-3 hidden md:table-cell">
                             <span className="text-sm text-muted-foreground">{policy.type}</span>
@@ -235,7 +281,7 @@ export default function PolicyListPage() {
                             <span className="text-sm text-muted-foreground">{policy.lastModified}</span>
                           </td>
                           <td className="p-3 text-right hidden sm:table-cell">
-                            <span className="text-sm text-muted-foreground">{policy.settingsCount}</span>
+                            <span className="text-sm text-muted-foreground">{policy.settingsCount === -1 ? "—" : policy.settingsCount}</span>
                           </td>
                         </tr>
                       );

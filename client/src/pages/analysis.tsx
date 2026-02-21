@@ -7,9 +7,107 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor } from "lucide-react";
+import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
+
+function stripSourcePrefix(name: string): string {
+  return name.replace(/^(?:DeviceConfigurations|ConfigurationPolicies|DeviceCompliancePolicies|Intents|deviceManagementConfigurationPolicy|device_vendor_msft|user_vendor_msft|vendor_msft)[/\\.\\\\]/i, "");
+}
+
+function parseSettingLine(line: string): { name: string; value: string; detail: string } | null {
+  const settingMatch = line.match(/^[-•*]?\s*([\w/.>: ]+(?:\[.*?\])?)\s*[:]\s*(.+)/);
+  const emDashMatch = !settingMatch ? line.match(/^[-•*]?\s*([\w/.>: ]+(?:\[.*?\])?)\s*[—–]\s*(.+)/) : null;
+  const match = settingMatch || emDashMatch;
+  if (!match) return null;
+
+  let name = stripSourcePrefix(match[1].trim());
+  const rest = match[2];
+  const dashSplit = rest.split(/\s+[—–]\s+/);
+  if (dashSplit.length >= 2) {
+    return { name, value: dashSplit[0].trim(), detail: dashSplit.slice(1).join(" — ").trim() };
+  }
+  const semiSplit = rest.split(/;\s*(?:security impact|end-user impact|impact|note|user impact)\s*:\s*/i);
+  return { name, value: semiSplit[0]?.trim() || "", detail: semiSplit.slice(1).join("; ").trim() };
+}
+
+function FormattedSettingsBlock({ text }: { text: string }) {
+  let lines = text.split(/\n/).filter(l => l.trim());
+
+  if (lines.length <= 2) {
+    const inlinePattern = /(?:^|(?:\.\s+))([A-Z][\w]+(?:[A-Z][\w]*)+)\s*:\s*([^.]+(?:\.[^A-Z][^.]*)*)/g;
+    const inlineItems: { name: string; value: string; detail: string }[] = [];
+    let m;
+    while ((m = inlinePattern.exec(text)) !== null) {
+      const name = stripSourcePrefix(m[1].trim());
+      const rest = m[2].trim();
+      const dashSplit = rest.split(/\s+[—–]\s+/);
+      if (dashSplit.length >= 2) {
+        inlineItems.push({ name, value: dashSplit[0].trim(), detail: dashSplit.slice(1).join(" — ").trim() });
+      } else {
+        inlineItems.push({ name, value: rest, detail: "" });
+      }
+    }
+    if (inlineItems.length >= 3) {
+      return (
+        <div className="space-y-1">
+          {inlineItems.map((item, idx) => (
+            <div key={idx} className="rounded-md bg-muted/30 border border-border/30 px-3 py-1.5 text-xs">
+              <div className="flex flex-wrap gap-x-2">
+                <span className="text-foreground font-medium break-all">{item.name}:</span>
+                <span className="text-muted-foreground">{item.value}</span>
+              </div>
+              {item.detail && (
+                <p className="text-muted-foreground/80 mt-0.5 text-[11px] italic">{item.detail}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <p className="whitespace-pre-line">{text}</p>;
+  }
+
+  const items: { name: string; value: string; detail: string }[] = [];
+  const plainLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const parsed = parseSettingLine(trimmed);
+    if (parsed) {
+      items.push(parsed);
+    } else {
+      plainLines.push(trimmed);
+    }
+  }
+
+  if (items.length === 0) {
+    return <p className="whitespace-pre-line">{text}</p>;
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {plainLines.length > 0 && (
+        <p className="mb-2">{plainLines.join(". ")}</p>
+      )}
+      <div className="space-y-1">
+        {items.map((item, idx) => (
+          <div key={idx} className="rounded-md bg-muted/30 border border-border/30 px-3 py-1.5 text-xs">
+            <div className="flex flex-wrap gap-x-2">
+              <span className="text-foreground font-medium break-all">{item.name}:</span>
+              <span className="text-muted-foreground">{item.value}</span>
+            </div>
+            {item.detail && (
+              <p className="text-muted-foreground/80 mt-0.5 text-[11px] italic">{item.detail}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const SEVERITY_COLORS: Record<string, string> = {
   "Minimal": "bg-emerald-500/20 text-emerald-400",
@@ -149,11 +247,14 @@ function getSelectedPolicies(queryClientInstance: ReturnType<typeof useQueryClie
 export default function AnalysisPage() {
   const [, setLocation] = useLocation();
   const { auth, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const queryClientInstance = useQueryClient();
   const selectedPolicies = getSelectedPolicies(queryClientInstance);
 
+  const [analysisRunId] = useState(() => Date.now());
+  const policyIdKey = selectedPolicies ? selectedPolicies.map(p => p.id).sort().join(",") : "";
   const { data: analysis, isLoading, error } = useQuery<AnalysisResult>({
-    queryKey: ["/api/analyze"],
+    queryKey: ["/api/analyze", policyIdKey, analysisRunId],
     queryFn: async () => {
       if (!selectedPolicies || selectedPolicies.length === 0) throw new Error("No policies selected");
       const res = await apiRequest("POST", "/api/analyze", { policyIds: selectedPolicies.map(p => p.id) });
@@ -161,6 +262,8 @@ export default function AnalysisPage() {
     },
     enabled: !!selectedPolicies && selectedPolicies.length > 0,
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   useEffect(() => {
@@ -171,7 +274,7 @@ export default function AnalysisPage() {
 
   if (!selectedPolicies || selectedPolicies.length === 0) return null;
 
-  const totalSettings = selectedPolicies.reduce((sum, p) => sum + p.settingsCount, 0);
+  const totalSettings = selectedPolicies.reduce((sum, p) => sum + Math.max(0, p.settingsCount), 0);
   const settingConflictCount = analysis?.settingConflicts?.length || 0;
   const aiConflictCount = analysis?.conflicts?.length || 0;
   const conflictCount = settingConflictCount + aiConflictCount;
@@ -203,10 +306,13 @@ export default function AnalysisPage() {
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground leading-tight">Intune Policy Intelligence Agent</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by AI</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by IntuneStuff</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme-analysis" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
             <Button variant="secondary" size="sm" onClick={() => handleExport("html")} data-testid="button-export-html" disabled={!analysis}>
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Export HTML
@@ -215,7 +321,7 @@ export default function AnalysisPage() {
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Export Text
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/policies")} data-testid="button-new-analysis">
+            <Button variant="ghost" size="sm" onClick={() => { queryClientInstance.removeQueries({ predicate: (q) => q.queryKey[0] === "/api/analyze" }); setLocation("/policies"); }} data-testid="button-new-analysis">
               <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
               New Analysis
             </Button>
@@ -240,14 +346,14 @@ export default function AnalysisPage() {
         ) : error ? (
           <div className="text-center py-16 space-y-3">
             <p className="text-destructive text-sm" data-testid="text-analysis-error">Analysis failed: {(error as Error).message}</p>
-            <Button variant="secondary" size="sm" onClick={() => setLocation("/policies")}>Go Back</Button>
+            <Button variant="secondary" size="sm" onClick={() => { queryClientInstance.removeQueries({ predicate: (q) => q.queryKey[0] === "/api/analyze" }); setLocation("/policies"); }}>Go Back</Button>
           </div>
         ) : analysis ? (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard label="Policies Analyzed" value={selectedPolicies.length} color="text-primary" />
               <StatCard label="Total Settings" value={totalSettings} color="text-primary" />
-              <StatCard label="Conflicts Found" value={conflictCount} color={conflictCount > 0 ? "text-orange-400" : "text-emerald-400"} />
+              <StatCard label="Conflicting Settings" value={settingConflictCount} color={settingConflictCount > 0 ? "text-orange-400" : "text-emerald-400"} />
               <StatCard label="Recommendations" value={recCount} color="text-chart-4" />
             </div>
 
@@ -266,7 +372,7 @@ export default function AnalysisPage() {
                   <Target className="w-3.5 h-3.5" /> Assignments & Filters
                 </TabsTrigger>
                 <TabsTrigger value="conflicts" data-testid="tab-conflicts" className="gap-1.5 text-xs">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Conflicts ({conflictCount})
+                  <AlertTriangle className="w-3.5 h-3.5" /> Conflicts ({settingConflictCount})
                 </TabsTrigger>
                 <TabsTrigger value="recommendations" data-testid="tab-recommendations" className="gap-1.5 text-xs">
                   <Lightbulb className="w-3.5 h-3.5" /> Recommendations
@@ -278,20 +384,33 @@ export default function AnalysisPage() {
                   const overview = analysis.summaries[policy.id]?.overview || "No summary available.";
                   return (
                     <PolicySection key={policy.id} policy={policy}>
-                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3 whitespace-pre-line">
-                        {overview.split(/\n\n+/).map((paragraph, idx) => {
-                          const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Assignment Scope Summary:|Overall Summary:)/i.test(paragraph.trim());
-                          if (isHeader) {
-                            const [header, ...rest] = paragraph.split(/:\s*/);
-                            return (
-                              <div key={idx}>
-                                <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
-                                {rest.length > 0 && <p>{rest.join(": ")}</p>}
-                              </div>
-                            );
-                          }
-                          return <p key={idx}>{paragraph}</p>;
-                        })}
+                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                        <div className="bg-muted/30 rounded-md p-3 text-xs space-y-0.5 border border-border/40">
+                          <div><span className="text-foreground font-medium">Policy name:</span> {policy.name} ({policy.id})</div>
+                          <div><span className="text-foreground font-medium">Type:</span> {policy.type}</div>
+                          <div><span className="text-foreground font-medium">Platform:</span> {policy.platform}</div>
+                          <div><span className="text-foreground font-medium">Last Modified:</span> {policy.lastModified}</div>
+                          {policy.description && (
+                            <div><span className="text-foreground font-medium">Description:</span> {policy.description}</div>
+                          )}
+                        </div>
+                        <div className="whitespace-pre-line">
+                          {overview.split(/\n\n+/).map((paragraph, idx) => {
+                            const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());
+                            if (isHeader) {
+                              const colonIdx = paragraph.indexOf(":");
+                              const header = paragraph.substring(0, colonIdx).trim();
+                              const rest = paragraph.substring(colonIdx + 1).trim();
+                              return (
+                                <div key={idx}>
+                                  <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
+                                  {rest && <p>{rest}</p>}
+                                </div>
+                              );
+                            }
+                            return <p key={idx}>{paragraph}</p>;
+                          })}
+                        </div>
                       </div>
                     </PolicySection>
                   );
@@ -316,25 +435,25 @@ export default function AnalysisPage() {
                             {impact.policySettingsAndImpact && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Policy Settings and Impact on End-Users:</h4>
-                                <p>{impact.policySettingsAndImpact}</p>
+                                <FormattedSettingsBlock text={impact.policySettingsAndImpact} />
                               </div>
                             )}
                             {impact.assignmentScope && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
-                                <p>{impact.assignmentScope}</p>
+                                <FormattedSettingsBlock text={impact.assignmentScope} />
                               </div>
                             )}
                             {impact.riskAnalysis && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
-                                <p>{impact.riskAnalysis}</p>
+                                <FormattedSettingsBlock text={impact.riskAnalysis} />
                               </div>
                             )}
                             {impact.overallSummary && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
-                                <p>{impact.overallSummary}</p>
+                                <FormattedSettingsBlock text={impact.overallSummary} />
                               </div>
                             )}
                           </div>
@@ -365,25 +484,25 @@ export default function AnalysisPage() {
                             {impact.policySettingsAndSecurityImpact && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Policy Settings and Security Impact:</h4>
-                                <p>{impact.policySettingsAndSecurityImpact}</p>
+                                <FormattedSettingsBlock text={impact.policySettingsAndSecurityImpact} />
                               </div>
                             )}
                             {impact.assignmentScope && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
-                                <p>{impact.assignmentScope}</p>
+                                <FormattedSettingsBlock text={impact.assignmentScope} />
                               </div>
                             )}
                             {impact.riskAnalysis && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
-                                <p>{impact.riskAnalysis}</p>
+                                <FormattedSettingsBlock text={impact.riskAnalysis} />
                               </div>
                             )}
                             {impact.overallSummary && (
                               <div>
                                 <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
-                                <p>{impact.overallSummary}</p>
+                                <FormattedSettingsBlock text={impact.overallSummary} />
                               </div>
                             )}
                             {impact.complianceFrameworks?.length > 0 && (
@@ -474,7 +593,15 @@ export default function AnalysisPage() {
                           </div>
                         )}
                         {assign.included.length === 0 && assign.excluded.length === 0 && assign.filters.length === 0 && (
-                          <p className="text-sm text-muted-foreground">No assignment information available.</p>
+                          <div className="rounded-md bg-yellow-500/10 border border-yellow-500/30 p-3 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                              <span className="text-sm font-medium text-yellow-400">Unassigned Policy</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground pl-6">
+                              This policy has no group assignments or filters configured. Unassigned policies have no effect on devices or users and may be candidates for cleanup or intentional staging.
+                            </p>
+                          </div>
                         )}
                       </div>
                     </PolicySection>

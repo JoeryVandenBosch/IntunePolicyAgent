@@ -26,6 +26,7 @@ export interface IntunePolicy {
   lastModified: string;
   settingsCount: number;
   description?: string;
+  source?: string;
 }
 
 export interface PolicySummary {

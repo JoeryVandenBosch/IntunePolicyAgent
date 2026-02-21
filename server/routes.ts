@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName } from "./graph-client";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, cleanSettingDefinitionId } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import type { IntunePolicyRaw } from "./graph-client";
@@ -30,6 +30,7 @@ export async function registerRoutes(
         lastModified: p.lastModified,
         settingsCount: p.settingsCount,
         description: p.description,
+        source: p.rawData?._source || "",
       })));
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch policies" });
@@ -131,7 +132,7 @@ export async function registerRoutes(
                     defInfo = await fetchSettingDefinitionDisplayName(token, defId);
                     settingDefCache.set(defId, defInfo);
                   }
-                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : defId.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : cleanSettingDefinitionId(defId);
                 }
 
                 if (cleaned.settingInstance.choiceSettingValue) {
@@ -182,17 +183,7 @@ export async function registerRoutes(
           const spSource = sp.rawData?._source;
           const pSource = p.rawData?._source;
           if (spSource !== pSource) return false;
-          if (spSource === "deviceConfigurations") {
-            const sameOdataType = sp.rawData?.["@odata.type"] === p.rawData?.["@odata.type"];
-            const samePlatform = sp.platform === p.platform && sp.platform !== "Unknown";
-            return sameOdataType || samePlatform;
-          }
-          if (spSource === "configurationPolicies") {
-            return true;
-          }
-          if (spSource === "deviceCompliancePolicies") {
-            return sp.platform === p.platform;
-          }
+          if (sp.platform !== p.platform) return false;
           return true;
         });
       });
@@ -220,7 +211,7 @@ export async function registerRoutes(
                     defInfo = await fetchSettingDefinitionDisplayName(token, defId);
                     settingDefCache.set(defId, defInfo);
                   }
-                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : defId.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : cleanSettingDefinitionId(defId);
                 }
                 if (cleaned.settingInstance.choiceSettingValue) {
                   const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";

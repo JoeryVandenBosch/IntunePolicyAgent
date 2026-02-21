@@ -3,7 +3,8 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LogIn, FileText, ShieldCheck, Users, AlertTriangle, Lightbulb, Sparkles, Lock, ServerOff } from "lucide-react";
+import { Shield, LogIn, FileText, ShieldCheck, Users, AlertTriangle, Lightbulb, Sparkles, Lock, ServerOff, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
 
 function FeatureCard({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
   return (
@@ -36,6 +37,7 @@ function StepCard({ step, title, description }: { step: number; title: string; d
 export default function LoginPage() {
   const { auth } = useAuth();
   const [, setLocation] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (auth?.authenticated) {
@@ -56,9 +58,12 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground leading-tight">Intune Policy Intelligence Agent</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by AI</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by IntuneStuff</p>
             </div>
           </div>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme-login" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
         </div>
       </header>
 
@@ -243,7 +248,7 @@ export default function LoginPage() {
 
       <footer className="border-t border-border/30 py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center text-xs text-muted-foreground/60">
-          Intune Policy Intelligence Agent — Powered by AI
+          Intune Policy Intelligence Agent — Powered by IntuneStuff
         </div>
       </footer>
     </div>
