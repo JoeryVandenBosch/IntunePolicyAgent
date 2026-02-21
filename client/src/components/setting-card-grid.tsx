@@ -1,0 +1,105 @@
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, ChevronRight, ShieldCheck } from "lucide-react";
+import type { SecuritySettingDetail } from "@shared/schema";
+
+const RATING_COLORS: Record<string, string> = {
+  "Critical": "bg-red-700/20 text-red-500 border-red-500/30",
+  "High": "bg-red-500/20 text-red-400 border-red-500/30",
+  "Medium": "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  "Low": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+};
+
+const FRAMEWORK_COLOR = "bg-muted text-muted-foreground border-border/40";
+
+function SettingCard({ setting }: { setting: SecuritySettingDetail }) {
+  const [expanded, setExpanded] = useState(false);
+  const ratingColor = RATING_COLORS[setting.securityRating] || RATING_COLORS["Medium"];
+
+  return (
+    <div className="rounded-lg bg-card border border-border/30 p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <Badge variant="outline" className={`text-[10px] font-semibold border shrink-0 ${ratingColor}`}>
+            {setting.securityRating}
+          </Badge>
+          <span className="text-sm font-medium text-foreground break-all">{setting.settingName}</span>
+        </div>
+        {(setting.recommendation || setting.detail) && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-muted-foreground hover:text-foreground shrink-0 mt-0.5"
+          >
+            {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+        )}
+      </div>
+
+      <div className="text-xs text-muted-foreground font-mono">
+        Value: {setting.settingValue}
+      </div>
+
+      {expanded && (
+        <div className="space-y-2 pt-1 border-t border-border/20">
+          {setting.detail && (
+            <p className="text-xs text-muted-foreground leading-relaxed">{setting.detail}</p>
+          )}
+          {setting.recommendation && (
+            <div className="rounded bg-primary/5 border border-primary/10 px-2.5 py-1.5">
+              <p className="text-xs text-primary/90">
+                <span className="font-medium">Recommendation:</span> {setting.recommendation}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {setting.frameworks && setting.frameworks.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {setting.frameworks.map((fw) => (
+            <Badge key={fw} variant="outline" className={`text-[10px] border ${FRAMEWORK_COLOR}`}>
+              {fw}
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SettingCardGridProps {
+  settings: SecuritySettingDetail[];
+}
+
+export default function SettingCardGrid({ settings }: SettingCardGridProps) {
+  const counts = {
+    Critical: settings.filter(s => s.securityRating === "Critical").length,
+    High: settings.filter(s => s.securityRating === "High").length,
+    Medium: settings.filter(s => s.securityRating === "Medium").length,
+    Low: settings.filter(s => s.securityRating === "Low").length,
+  };
+
+  // Sort: Critical first, then High, Medium, Low
+  const sortOrder: Record<string, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  const sorted = [...settings].sort((a, b) =>
+    (sortOrder[a.securityRating] ?? 4) - (sortOrder[b.securityRating] ?? 4)
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 flex-wrap text-xs">
+        <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
+        {counts.Critical > 0 && <span className="text-red-500 font-medium">{counts.Critical} Critical</span>}
+        {counts.High > 0 && <span className="text-red-400 font-medium">{counts.High} High</span>}
+        {counts.Medium > 0 && <span className="text-orange-400 font-medium">{counts.Medium} Medium</span>}
+        {counts.Low > 0 && <span className="text-yellow-400 font-medium">{counts.Low} Low</span>}
+        <span className="text-muted-foreground">({settings.length} settings)</span>
+      </div>
+      <div className="grid gap-2">
+        {sorted.map((setting, idx) => (
+          <SettingCard key={idx} setting={setting} />
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -333,9 +333,9 @@ CRITICAL RULES:
 
 Provide these structured fields:
 - severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" - overall impact severity on end users
-- policySettingsAndImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
-  SettingName: value — end-user impact description
-  Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
+- settings: A JSON array where each element represents ONE configured setting with these fields:
+  { "settingName": "Human-readable setting name (NOT raw OMA-URI)", "technicalName": "The actual setting path, OMA-URI, or settingDefinitionId", "settingValue": "The configured value", "impactLevel": "Minimal"|"Low"|"Medium"|"High"|"Critical", "userExperience": "What the end user will actually see or experience in plain language", "workaround": "Any workaround the user can apply, or null if none needed" }
+  Include EVERY setting from the data. Use human-readable names for settingName (e.g., "Require Work Profile Password" not "device_vendor_msft_policy_config_...").
 - assignmentScope: A clear paragraph explaining who is affected. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it has no active impact."
 - riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what real-world risks this policy introduces for end users. Consider: Will employees be locked out of features they use daily? Could they lose access to data? Are there settings that could frustrate users or slow down their workflow? Are there gaps where important protections are missing? Write like a senior IT consultant briefing a CTO — concrete, specific, and referencing actual settings and their values.
 - overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that summarizes the policy's purpose, its scope of impact, the number of configured settings, and the net effect on end users. Mention whether the policy is currently assigned and actively impacting users. End with a clear assessment of whether this policy is well-balanced for user productivity vs. security. Write as a consultant summarizing findings for leadership.
@@ -345,8 +345,8 @@ Do NOT include any conflict analysis - conflicts are handled separately.
 
 IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
-Return ONLY valid JSON:
-{ "severity": "...", "description": "...", "policySettingsAndImpact": "SettingName1: value1 — impact1\nSettingName2: value2 — impact2\n...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+Return ONLY valid JSON. No markdown, no backticks, no preamble:
+{ "severity": "...", "description": "...", "settings": [ { "settingName": "...", "technicalName": "...", "settingValue": "...", "impactLevel": "...", "userExperience": "...", "workaround": "..." }, ... ], "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
     `Analyze end-user impact for this policy:\n${context}`,
     12000
   );
@@ -370,7 +370,7 @@ Return ONLY valid JSON:
   }
 }
 
-export async function analyzeEndUserImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { severity: string; description: string; workarounds?: string; policySettingsAndImpact?: string; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
+export async function analyzeEndUserImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { severity: string; description: string; workarounds?: string; policySettingsAndImpact?: string; settings?: any[] | null; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
   const results = await Promise.allSettled(
     policies.map((policy, i) => analyzeSingleEndUserImpact(policy, details[i]))
   );
@@ -401,21 +401,21 @@ CRITICAL RULES:
 
 Provide these structured fields:
 - rating: "Low"|"Medium"|"High"|"Critical" - overall security impact rating
-- policySettingsAndSecurityImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
-  SettingName: value — security impact description
-  Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the security impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
+- settings: A JSON array where each element represents ONE configured setting with these fields:
+  { "settingName": "Human-readable setting name", "settingValue": "The configured value", "securityRating": "Critical"|"High"|"Medium"|"Low", "detail": "What this setting protects and why it matters in business terms", "frameworks": ["CIS 1.2.3", "NIST AC-7", ...], "recommendation": "What to improve or keep, be specific" }
+  Include EVERY setting from the data. Use human-readable names (e.g., "Require Device Encryption" not "device_vendor_msft_...").
 - assignmentScope: A clear paragraph explaining which users and devices are protected by this policy. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it provides no active security protection."
 - riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what security measures this policy enforces and what gaps remain. Consider: Does it adequately protect corporate data? Are there settings that are too permissive (e.g., allowing copy/paste between work and personal)? Are strong authentication mechanisms enforced? What could an attacker exploit if these are the only protections in place? Are there industry best practices not being followed? Write like a senior security consultant briefing a CISO — concrete, referencing actual settings and their configured values.
 - overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that a CISO could read aloud in a board meeting. Summarize the policy's security controls, its assignment scope, the number of configured settings, what it protects well, and where gaps exist. Mention whether the policy is currently active. End with a clear verdict on the overall security posture this policy provides. Reference specific settings to support your assessment.
 - description: Brief 1-2 sentence security impact summary.
-- complianceFrameworks: Array of relevant frameworks (NIST 800-53, CIS Benchmarks, ISO 27001, etc.)
+- complianceFrameworks: Array of relevant frameworks (NIST 800-53, CIS Benchmarks, ISO 27001, etc.) — this is the OVERALL list for the entire policy
 
 Do NOT include any conflict analysis - conflicts are handled separately.
 
 IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
 
-Return ONLY valid JSON:
-{ "rating": "...", "description": "...", "complianceFrameworks": [...], "policySettingsAndSecurityImpact": "SettingName1: value1 — security impact1\nSettingName2: value2 — security impact2\n...", "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+Return ONLY valid JSON. No markdown, no backticks, no preamble:
+{ "rating": "...", "description": "...", "complianceFrameworks": [...], "settings": [ { "settingName": "...", "settingValue": "...", "securityRating": "...", "detail": "...", "frameworks": [...], "recommendation": "..." }, ... ], "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
     `Analyze security impact for this policy:\n${context}`,
     12000
   );
@@ -439,7 +439,7 @@ Return ONLY valid JSON:
   }
 }
 
-export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { rating: string; description: string; complianceFrameworks: string[]; policySettingsAndSecurityImpact?: string; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
+export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { rating: string; description: string; complianceFrameworks: string[]; policySettingsAndSecurityImpact?: string; settings?: any[] | null; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
   const results = await Promise.allSettled(
     policies.map((policy, i) => analyzeSingleSecurityImpact(policy, details[i]))
   );

@@ -272,6 +272,17 @@ export async function registerRoutes(
         }
       }
 
+      // Detect unassigned policies
+      let unassignedCount = 0;
+      for (const policy of selectedPolicies) {
+        const assign = assignments[policy.id] as any;
+        if (assign) {
+          const isUnassigned = assign.included.length === 0 && assign.excluded.length === 0;
+          assign.isUnassigned = isUnassigned;
+          if (isUnassigned) unassignedCount++;
+        }
+      }
+
       res.json({
         summaries,
         endUserImpact,
@@ -281,6 +292,7 @@ export async function registerRoutes(
         allSettings,
         conflicts,
         recommendations,
+        unassignedCount,
       });
     } catch (error: any) {
       console.error("Analysis error:", error);

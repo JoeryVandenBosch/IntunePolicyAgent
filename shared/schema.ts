@@ -36,15 +36,34 @@ export interface PolicySummary {
   configuredSettings?: string[];
 }
 
+export interface EndUserSettingDetail {
+  settingName: string;
+  technicalName: string;
+  settingValue: string;
+  impactLevel: "Minimal" | "Low" | "Medium" | "High" | "Critical";
+  userExperience: string;
+  workaround: string | null;
+}
+
 export interface PolicyEndUserImpact {
   severity: "Minimal" | "Low" | "Medium" | "High" | "Critical";
   description: string;
   workarounds?: string;
   policySettingsAndImpact?: string;
+  settings?: EndUserSettingDetail[] | null;
   assignmentScope?: string;
   riskAnalysis?: string;
   conflictAnalysis?: string;
   overallSummary?: string;
+}
+
+export interface SecuritySettingDetail {
+  settingName: string;
+  settingValue: string;
+  securityRating: "Critical" | "High" | "Medium" | "Low";
+  detail: string;
+  frameworks: string[];
+  recommendation: string;
 }
 
 export interface PolicySecurityImpact {
@@ -52,6 +71,7 @@ export interface PolicySecurityImpact {
   description: string;
   complianceFrameworks: string[];
   policySettingsAndSecurityImpact?: string;
+  settings?: SecuritySettingDetail[] | null;
   assignmentScope?: string;
   riskAnalysis?: string;
   conflictAnalysis?: string;
@@ -74,6 +94,7 @@ export interface PolicyAssignments {
   included: AssignmentGroup[];
   excluded: AssignmentGroup[];
   filters: AssignmentFilter[];
+  isUnassigned?: boolean;
 }
 
 export interface PolicyConflict {
@@ -126,4 +147,5 @@ export interface AnalysisResult {
   allSettings: SettingComparison[];
   conflicts: PolicyConflict[];
   recommendations: PolicyRecommendation[];
+  unassignedCount?: number;
 }

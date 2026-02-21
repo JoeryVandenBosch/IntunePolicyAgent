@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon, Square, FileDown } from "lucide-react";
+import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon, Square, FileDown, AlertCircle } from "lucide-react";
 import PdfBrandingDialog, { type PdfBrandingSettings } from "@/components/pdf-branding-dialog";
+import SettingCardGrid from "@/components/setting-card-grid";
+import EndUserImpactCards from "@/components/enduser-impact-cards";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -210,7 +212,7 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-function PolicySection({ policy, children }: { policy: IntunePolicy; children: React.ReactNode }) {
+function PolicySection({ policy, children, isUnassigned }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const platformColor = PLATFORM_COLORS[policy.platform] || "bg-muted text-muted-foreground";
 
@@ -223,6 +225,11 @@ function PolicySection({ policy, children }: { policy: IntunePolicy; children: R
           <span className="text-[10px] text-muted-foreground font-mono">{policy.id}</span>
         </div>
         <Badge variant="outline" className={`text-xs border ${platformColor}`}>{policy.platform}</Badge>
+        {isUnassigned && (
+          <Badge variant="outline" className="text-[10px] border border-amber-500/30 bg-amber-500/10 text-amber-500">
+            Cleanup Candidate
+          </Badge>
+        )}
       </CollapsibleTrigger>
       <CollapsibleContent className="px-4 pb-4 pt-0">
         {children}
@@ -426,6 +433,21 @@ export default function AnalysisPage() {
               <StatCard label="Recommendations" value={recCount} color="text-chart-4" />
             </div>
 
+            {/* Unassigned policy banner (#15) */}
+            {analysis.unassignedCount != null && analysis.unassignedCount > 0 && (
+              <div className="flex items-start gap-2.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3" data-testid="banner-unassigned">
+                <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <span className="text-amber-500 font-medium">
+                    {analysis.unassignedCount} of {selectedPolicies.length} analyzed {analysis.unassignedCount === 1 ? "policy is" : "policies are"} unassigned
+                  </span>
+                  <span className="text-muted-foreground">
+                    {" "}— These policies have no group assignments and are not actively enforced. Consider assigning them or removing them to reduce policy clutter.
+                  </span>
+                </div>
+              </div>
+            )}
+
             <Tabs defaultValue="summary" className="space-y-4">
               <TabsList className="bg-card border border-border/40 p-1 h-auto flex-wrap">
                 <TabsTrigger value="summary" data-testid="tab-summary" className="gap-1.5 text-xs">
@@ -452,7 +474,7 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const overview = analysis.summaries[policy.id]?.overview || "No summary available.";
                   return (
-                    <PolicySection key={policy.id} policy={policy}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
                       <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
                         <div className="bg-muted/30 rounded-md p-3 text-xs space-y-0.5 border border-border/40">
                           <div><span className="text-foreground font-medium">Policy name:</span> {policy.name} ({policy.id})</div>
@@ -491,15 +513,26 @@ export default function AnalysisPage() {
                   const impact = analysis.endUserImpact[policy.id];
                   if (!impact) return null;
                   const severityColor = SEVERITY_COLORS[impact.severity] || SEVERITY_COLORS["Minimal"];
+                  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
                   const hasStructuredData = impact.policySettingsAndImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
-                    <PolicySection key={policy.id} policy={policy}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${severityColor}`}>{impact.severity}</Badge>
                           <span className="text-xs text-muted-foreground">impact level</span>
                         </div>
-                        {hasStructuredData ? (
+
+                        {/* Per-setting structured cards (Sprint 1 #14) */}
+                        {hasSettingsArray && (
+                          <div className="mb-4">
+                            <h4 className="text-xs font-bold text-foreground mb-2">Settings Impact on End-Users:</h4>
+                            <EndUserImpactCards settings={impact.settings!} />
+                          </div>
+                        )}
+
+                        {/* Fallback: old text-based sections */}
+                        {!hasSettingsArray && hasStructuredData ? (
                           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                             {impact.policySettingsAndImpact && (
                               <div>
@@ -507,28 +540,32 @@ export default function AnalysisPage() {
                                 <FormattedSettingsBlock text={impact.policySettingsAndImpact} />
                               </div>
                             )}
-                            {impact.assignmentScope && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
-                                <FormattedSettingsBlock text={impact.assignmentScope} />
-                              </div>
-                            )}
-                            {impact.riskAnalysis && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
-                                <FormattedSettingsBlock text={impact.riskAnalysis} />
-                              </div>
-                            )}
-                            {impact.overallSummary && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
-                                <FormattedSettingsBlock text={impact.overallSummary} />
-                              </div>
-                            )}
                           </div>
-                        ) : (
+                        ) : !hasSettingsArray ? (
                           <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
-                        )}
+                        ) : null}
+
+                        {/* These sections always render when available */}
+                        <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                          {impact.assignmentScope && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
+                              <p className="whitespace-pre-line">{impact.assignmentScope}</p>
+                            </div>
+                          )}
+                          {impact.riskAnalysis && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
+                              <p className="whitespace-pre-line">{impact.riskAnalysis}</p>
+                            </div>
+                          )}
+                          {impact.overallSummary && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
+                              <p className="whitespace-pre-line">{impact.overallSummary}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </PolicySection>
                   );
@@ -540,15 +577,26 @@ export default function AnalysisPage() {
                   const impact = analysis.securityImpact[policy.id];
                   if (!impact) return null;
                   const ratingColor = SEVERITY_COLORS[impact.rating] || SEVERITY_COLORS["Medium"];
+                  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
                   const hasStructuredData = impact.policySettingsAndSecurityImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
-                    <PolicySection key={policy.id} policy={policy}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${ratingColor}`}>{impact.rating}</Badge>
                           <span className="text-xs text-muted-foreground">security rating</span>
                         </div>
-                        {hasStructuredData ? (
+
+                        {/* Per-setting structured cards (Sprint 1 #13) */}
+                        {hasSettingsArray && (
+                          <div className="mb-4">
+                            <h4 className="text-xs font-bold text-foreground mb-2">Security Impact per Setting:</h4>
+                            <SettingCardGrid settings={impact.settings!} />
+                          </div>
+                        )}
+
+                        {/* Fallback: old text-based sections */}
+                        {!hasSettingsArray && hasStructuredData ? (
                           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                             {impact.policySettingsAndSecurityImpact && (
                               <div>
@@ -556,49 +604,45 @@ export default function AnalysisPage() {
                                 <FormattedSettingsBlock text={impact.policySettingsAndSecurityImpact} />
                               </div>
                             )}
-                            {impact.assignmentScope && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
-                                <FormattedSettingsBlock text={impact.assignmentScope} />
-                              </div>
-                            )}
-                            {impact.riskAnalysis && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
-                                <FormattedSettingsBlock text={impact.riskAnalysis} />
-                              </div>
-                            )}
-                            {impact.overallSummary && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
-                                <FormattedSettingsBlock text={impact.overallSummary} />
-                              </div>
-                            )}
-                            {impact.complianceFrameworks?.length > 0 && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Compliance Frameworks:</h4>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                                  {impact.complianceFrameworks.map(fw => (
-                                    <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
                           </div>
-                        ) : (
+                        ) : !hasSettingsArray ? (
                           <div className="space-y-3">
                             <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
-                            {impact.complianceFrameworks?.length > 0 && (
+                          </div>
+                        ) : null}
+
+                        {/* These sections always render when available */}
+                        <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                          {impact.assignmentScope && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
+                              <p className="whitespace-pre-line">{impact.assignmentScope}</p>
+                            </div>
+                          )}
+                          {impact.riskAnalysis && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
+                              <p className="whitespace-pre-line">{impact.riskAnalysis}</p>
+                            </div>
+                          )}
+                          {impact.overallSummary && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
+                              <p className="whitespace-pre-line">{impact.overallSummary}</p>
+                            </div>
+                          )}
+                          {impact.complianceFrameworks?.length > 0 && (
+                            <div>
+                              <h4 className="text-xs font-bold text-foreground mb-1.5">Compliance Frameworks:</h4>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
                                 {impact.complianceFrameworks.map(fw => (
                                   <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
                                 ))}
                               </div>
-                            )}
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </PolicySection>
                   );
@@ -610,7 +654,7 @@ export default function AnalysisPage() {
                   const assign = analysis.assignments[policy.id];
                   if (!assign) return null;
                   return (
-                    <PolicySection key={policy.id} policy={policy}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
                       <div className="space-y-4">
                         {assign.included.length > 0 && (
                           <div className="space-y-2">
