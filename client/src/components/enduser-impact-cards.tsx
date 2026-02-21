@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, Users, ChevronsUpDown } from "lucide-react";
 import type { EndUserSettingDetail } from "@shared/schema";
 
 const IMPACT_COLORS: Record<string, string> = {
@@ -11,9 +11,13 @@ const IMPACT_COLORS: Record<string, string> = {
   "Minimal": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
 };
 
-function EndUserSettingCard({ setting }: { setting: EndUserSettingDetail }) {
+function EndUserSettingCard({ setting, forceOpen }: { setting: EndUserSettingDetail; forceOpen?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const impactColor = IMPACT_COLORS[setting.impactLevel] || IMPACT_COLORS["Minimal"];
+
+  useEffect(() => {
+    if (forceOpen !== undefined) setExpanded(forceOpen);
+  }, [forceOpen]);
 
   return (
     <div className="rounded-lg bg-card border border-border/30 p-3 space-y-2">
@@ -70,6 +74,9 @@ interface EndUserImpactCardsProps {
 }
 
 export default function EndUserImpactCards({ settings }: EndUserImpactCardsProps) {
+  const [allExpanded, setAllExpanded] = useState(false);
+  const [forceOpen, setForceOpen] = useState<boolean | undefined>(undefined);
+
   const counts = {
     Critical: settings.filter(s => s.impactLevel === "Critical").length,
     High: settings.filter(s => s.impactLevel === "High").length,
@@ -93,10 +100,20 @@ export default function EndUserImpactCards({ settings }: EndUserImpactCardsProps
         {counts.Low > 0 && <span className="text-yellow-400 font-medium">{counts.Low} Low</span>}
         {counts.Minimal > 0 && <span className="text-emerald-400 font-medium">{counts.Minimal} Minimal</span>}
         <span className="text-muted-foreground">({settings.length} settings)</span>
+        {settings.length > 1 && (
+          <button
+            onClick={() => { const next = !allExpanded; setAllExpanded(next); setForceOpen(next); }}
+            className="ml-auto flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="button-expand-collapse-cards"
+          >
+            <ChevronsUpDown className="w-3 h-3" />
+            <span className="text-[10px]">{allExpanded ? "Collapse" : "Expand"} All</span>
+          </button>
+        )}
       </div>
       <div className="grid gap-2">
         {sorted.map((setting, idx) => (
-          <EndUserSettingCard key={idx} setting={setting} />
+          <EndUserSettingCard key={idx} setting={setting} forceOpen={forceOpen} />
         ))}
       </div>
     </div>

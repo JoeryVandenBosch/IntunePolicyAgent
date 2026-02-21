@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronRight, ShieldCheck, ChevronsUpDown } from "lucide-react";
 import type { SecuritySettingDetail } from "@shared/schema";
 
 const RATING_COLORS: Record<string, string> = {
@@ -12,9 +12,13 @@ const RATING_COLORS: Record<string, string> = {
 
 const FRAMEWORK_COLOR = "bg-muted text-muted-foreground border-border/40";
 
-function SettingCard({ setting }: { setting: SecuritySettingDetail }) {
+function SettingCard({ setting, forceOpen }: { setting: SecuritySettingDetail; forceOpen?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const ratingColor = RATING_COLORS[setting.securityRating] || RATING_COLORS["Medium"];
+
+  useEffect(() => {
+    if (forceOpen !== undefined) setExpanded(forceOpen);
+  }, [forceOpen]);
 
   return (
     <div className="rounded-lg bg-card border border-border/30 p-3 space-y-2">
@@ -72,6 +76,9 @@ interface SettingCardGridProps {
 }
 
 export default function SettingCardGrid({ settings }: SettingCardGridProps) {
+  const [allExpanded, setAllExpanded] = useState(false);
+  const [forceOpen, setForceOpen] = useState<boolean | undefined>(undefined);
+
   const counts = {
     Critical: settings.filter(s => s.securityRating === "Critical").length,
     High: settings.filter(s => s.securityRating === "High").length,
@@ -79,7 +86,6 @@ export default function SettingCardGrid({ settings }: SettingCardGridProps) {
     Low: settings.filter(s => s.securityRating === "Low").length,
   };
 
-  // Sort: Critical first, then High, Medium, Low
   const sortOrder: Record<string, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 };
   const sorted = [...settings].sort((a, b) =>
     (sortOrder[a.securityRating] ?? 4) - (sortOrder[b.securityRating] ?? 4)
@@ -94,10 +100,20 @@ export default function SettingCardGrid({ settings }: SettingCardGridProps) {
         {counts.Medium > 0 && <span className="text-orange-400 font-medium">{counts.Medium} Medium</span>}
         {counts.Low > 0 && <span className="text-yellow-400 font-medium">{counts.Low} Low</span>}
         <span className="text-muted-foreground">({settings.length} settings)</span>
+        {settings.length > 1 && (
+          <button
+            onClick={() => { const next = !allExpanded; setAllExpanded(next); setForceOpen(next); }}
+            className="ml-auto flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="button-expand-collapse-security-cards"
+          >
+            <ChevronsUpDown className="w-3 h-3" />
+            <span className="text-[10px]">{allExpanded ? "Collapse" : "Expand"} All</span>
+          </button>
+        )}
       </div>
       <div className="grid gap-2">
         {sorted.map((setting, idx) => (
-          <SettingCard key={idx} setting={setting} />
+          <SettingCard key={idx} setting={setting} forceOpen={forceOpen} />
         ))}
       </div>
     </div>

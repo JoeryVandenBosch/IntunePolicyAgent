@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon, Square, FileDown, AlertCircle } from "lucide-react";
+import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon, Square, FileDown, AlertCircle, ChevronsUpDown, Info } from "lucide-react";
 import PdfBrandingDialog, { type PdfBrandingSettings } from "@/components/pdf-branding-dialog";
 import SettingCardGrid from "@/components/setting-card-grid";
 import EndUserImpactCards from "@/components/enduser-impact-cards";
@@ -212,9 +212,13 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-function PolicySection({ policy, children, isUnassigned }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean }) {
+function PolicySection({ policy, children, isUnassigned, forceOpen }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean; forceOpen?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const platformColor = PLATFORM_COLORS[policy.platform] || "bg-muted text-muted-foreground";
+
+  useEffect(() => {
+    if (forceOpen !== undefined) setIsOpen(forceOpen);
+  }, [forceOpen]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border border-border/30 rounded-md">
@@ -238,6 +242,61 @@ function PolicySection({ policy, children, isUnassigned }: { policy: IntunePolic
   );
 }
 
+function ExpandCollapseBar({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) {
+  return (
+    <div className="flex items-center justify-end">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        data-testid="button-expand-collapse-all"
+      >
+        <ChevronsUpDown className="w-3.5 h-3.5" />
+        {expanded ? "Collapse All" : "Expand All"}
+      </button>
+    </div>
+  );
+}
+
+const ENDUSER_LEVEL_DESCRIPTIONS: Record<string, string> = {
+  "Critical": "Fundamentally changes how users work. Blocks access to key features or requires major workflow changes.",
+  "High": "Noticeably disrupts daily workflow. Users will need to adapt their habits or learn new processes.",
+  "Medium": "Moderate friction. Users will notice the change but can adapt quickly with minimal disruption.",
+  "Low": "Minor inconvenience. Most users won't notice or will adapt immediately.",
+  "Minimal": "No perceptible impact on daily work. Runs silently in the background.",
+};
+
+const SECURITY_LEVEL_DESCRIPTIONS: Record<string, string> = {
+  "Critical": "Directly prevents data breaches, unauthorized access, or compliance violations. Disabling creates immediate, severe risk.",
+  "High": "Significantly strengthens security posture. Weakening it would leave a notable gap attackers could exploit.",
+  "Medium": "Contributes to defense-in-depth. Important but not the last line of defense — other controls may partially compensate.",
+  "Low": "Best practice or hardening measure. Useful but has minimal direct security impact on its own.",
+};
+
+function SeverityTooltip({ level, descriptions }: { level: string; descriptions: Record<string, string> }) {
+  const [show, setShow] = useState(false);
+  const desc = descriptions[level];
+  if (!desc) return null;
+  return (
+    <div className="relative inline-flex">
+      <button
+        onClick={() => setShow(!show)}
+        className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        data-testid="button-severity-tooltip"
+      >
+        <Info className="w-3 h-3" />
+      </button>
+      {show && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 bg-card border border-border/30 rounded-lg p-2.5 w-[280px] shadow-xl">
+          <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-card border-r border-b border-border/30 rotate-45" />
+          <span className="text-xs text-muted-foreground leading-snug">
+            <strong className="text-foreground">{level}</strong> — {desc}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function getSelectedPolicies(queryClientInstance: ReturnType<typeof useQueryClient>): IntunePolicy[] | undefined {
   let policies = queryClientInstance.getQueryData<IntunePolicy[]>(["selectedPolicies"]);
   if (!policies) {
@@ -258,6 +317,13 @@ export default function AnalysisPage() {
   const { theme, toggleTheme } = useTheme();
   const queryClientInstance = useQueryClient();
   const selectedPolicies = getSelectedPolicies(queryClientInstance);
+
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [enduserExpanded, setEnduserExpanded] = useState(false);
+  const [securityExpanded, setSecurityExpanded] = useState(false);
+  const [summaryForce, setSummaryForce] = useState<boolean | undefined>(undefined);
+  const [enduserForce, setEnduserForce] = useState<boolean | undefined>(undefined);
+  const [securityForce, setSecurityForce] = useState<boolean | undefined>(undefined);
 
   const [analysisRunId] = useState(() => Date.now());
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -471,10 +537,11 @@ export default function AnalysisPage() {
               </TabsList>
 
               <TabsContent value="summary" className="space-y-3">
+                <ExpandCollapseBar expanded={summaryExpanded} onToggle={() => { const next = !summaryExpanded; setSummaryExpanded(next); setSummaryForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const overview = analysis.summaries[policy.id]?.overview || "No summary available.";
                   return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={summaryForce}>
                       <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
                         <div className="bg-muted/30 rounded-md p-3 text-xs space-y-0.5 border border-border/40">
                           <div><span className="text-foreground font-medium">Policy name:</span> {policy.name} ({policy.id})</div>
@@ -509,6 +576,7 @@ export default function AnalysisPage() {
               </TabsContent>
 
               <TabsContent value="enduser" className="space-y-3">
+                <ExpandCollapseBar expanded={enduserExpanded} onToggle={() => { const next = !enduserExpanded; setEnduserExpanded(next); setEnduserForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const impact = analysis.endUserImpact[policy.id];
                   if (!impact) return null;
@@ -516,10 +584,11 @@ export default function AnalysisPage() {
                   const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
                   const hasStructuredData = impact.policySettingsAndImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={enduserForce}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${severityColor}`}>{impact.severity}</Badge>
+                          <SeverityTooltip level={impact.severity} descriptions={ENDUSER_LEVEL_DESCRIPTIONS} />
                           <span className="text-xs text-muted-foreground">impact level</span>
                         </div>
 
@@ -573,6 +642,7 @@ export default function AnalysisPage() {
               </TabsContent>
 
               <TabsContent value="security" className="space-y-3">
+                <ExpandCollapseBar expanded={securityExpanded} onToggle={() => { const next = !securityExpanded; setSecurityExpanded(next); setSecurityForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const impact = analysis.securityImpact[policy.id];
                   if (!impact) return null;
@@ -580,10 +650,11 @@ export default function AnalysisPage() {
                   const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
                   const hasStructuredData = impact.policySettingsAndSecurityImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned}>
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={securityForce}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${ratingColor}`}>{impact.rating}</Badge>
+                          <SeverityTooltip level={impact.rating} descriptions={SECURITY_LEVEL_DESCRIPTIONS} />
                           <span className="text-xs text-muted-foreground">security rating</span>
                         </div>
 
@@ -759,7 +830,7 @@ export default function AnalysisPage() {
                                 className="text-sm font-semibold text-foreground hover:text-primary flex items-center gap-1.5"
                               >
                                 {policyData.policyName}
-                                <ExternalLink className="w-3 h-3 shrink-0 text-muted-foreground" />
+                                <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                               </a>
                               <Badge variant="outline" className="text-xs border bg-orange-500/20 text-orange-400 border-orange-500/30">
                                 {policyData.settings.size} conflicting setting{policyData.settings.size !== 1 ? "s" : ""}

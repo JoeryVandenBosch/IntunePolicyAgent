@@ -606,16 +606,17 @@ Return ONLY valid JSON array:
 function getIntunePortalUrl(policy: IntunePolicyRaw): string {
   const source = policy.rawData?._source || "";
   const id = policy.id;
+  const encodedName = encodeURIComponent(policy.name || "");
   if (source === "configurationPolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/SettingsCatalogProfiles/policyId/${id}/policyType~/%7B%22PolicyType%22%3A2%7D`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/2/isAssigned~/true`;
   } else if (source === "deviceConfigurations") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/74/isAssigned~/true`;
   } else if (source === "deviceCompliancePolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesComplianceMenu/policyId/${id}`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/6/isAssigned~/true`;
   } else if (source === "intents") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/1/isAssigned~/true`;
   }
-  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/overview`;
+  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configuration`;
 }
 
 function getSettingValue(setting: any): string {

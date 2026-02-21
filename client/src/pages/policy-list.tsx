@@ -17,15 +17,15 @@ function getIntuneUrl(policy: IntunePolicy): string {
   const source = policy.source || "";
   const id = policy.id;
   if (source === "configurationPolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/SettingsCatalogProfiles/policyId/${id}/policyType~/%7B%22PolicyType%22%3A2%7D`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_Workflows/SecurityManagementMenu/~/SettingsCatalog/policyId/${id}/policyType~/%7B%22PolicyType%22%3A2%7D`;
   } else if (source === "deviceConfigurations") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}`;
   } else if (source === "deviceCompliancePolicies") {
     return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesComplianceMenu/policyId/${id}`;
   } else if (source === "intents") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/configurationId/${id}/policyType~/0`;
+    return `https://intune.microsoft.com/#view/Microsoft_Intune_Workflows/SecurityManagementMenu/~/EndpointSecurityDetail/policyId/${id}`;
   }
-  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesConfigurationMenu/overview`;
+  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configuration`;
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -274,11 +274,12 @@ export default function PolicyListPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-muted-foreground/50 hover:text-primary transition-colors shrink-0"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors shrink-0 px-1.5 py-0.5 rounded border border-border/40 hover:border-primary/40 hover:bg-primary/5"
                                 title="Open in Intune admin center"
                                 data-testid={`link-intune-${policy.id}`}
                               >
-                                <ExternalLink className="w-3 h-3" />
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Intune</span>
                               </a>
                             </div>
                           </td>

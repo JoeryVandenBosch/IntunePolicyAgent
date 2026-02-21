@@ -15,6 +15,8 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 - **Settings & Conflict Detection** - Data-driven setting-level conflict detection with value normalization, cross-tenant comparison (auto-fetches up to 20 related policies), Intune portal deep links, and platform+source scoping to prevent false positives.
 - **Recommendations** - Get actionable recommendations for security hardening, optimization, and compliance improvements.
 - **Multi-Policy Analysis** - Select multiple policies for parallel AI analysis with per-policy dedicated AI calls and resilient fallbacks.
+- **Expand/Collapse All** - Quickly expand or collapse all policy sections per tab, plus expand/collapse all inner setting cards within End-User Impact and Security Impact views.
+- **Severity Tooltips** - Contextual info tooltips next to each policy's severity badge explaining what that level means (different descriptions for End-User Impact vs Security Impact).
 - **Export** - Export analysis results as HTML (interactive report with search & collapsible sections), CSV (spreadsheet format), or PDF (full branding customization with cover page, watermark, custom colors, and three detail levels).
 - **Analytics Dashboard** - Admin-protected global view with 4 tabs: Overview, Tenants, Users, Activity Log. Per-tenant and per-user breakdowns with daily activity charts.
 - **Light/Dark Theme** - Toggle between light and dark themes with localStorage persistence (dark by default).
@@ -192,7 +194,9 @@ Settings are saved to localStorage for persistence between sessions.
 │       ├── main.tsx               # React entry point
 │       ├── index.css              # Global styles (light/dark theme)
 │       ├── components/
-│       │   └── pdf-branding-dialog.tsx  # PDF export settings dialog
+│       │   ├── pdf-branding-dialog.tsx  # PDF export settings dialog
+│       │   ├── enduser-impact-cards.tsx # Per-setting end-user impact cards with expand/collapse
+│       │   └── setting-card-grid.tsx    # Per-setting security impact cards with expand/collapse
 │       ├── lib/
 │       │   ├── auth-context.tsx   # React context for OAuth2 auth state
 │       │   ├── theme-context.tsx  # Theme provider (light/dark toggle)
