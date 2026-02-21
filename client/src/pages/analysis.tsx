@@ -134,6 +134,18 @@ const PLATFORM_COLORS: Record<string, string> = {
   "Android": "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
+const SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Minimal"];
+
+/** Calculate a deterministic policy-level severity from per-setting data.
+ *  Rule: highest severity present among all settings wins. */
+function calculatePolicySeverity(settings: { impactLevel?: string; securityRating?: string }[]): string {
+  if (!settings || settings.length === 0) return "Medium";
+  for (const level of SEVERITY_ORDER) {
+    if (settings.some(s => (s.impactLevel || s.securityRating) === level)) return level;
+  }
+  return "Medium";
+}
+
 function GroupMemberList({ groupId, groupName, memberCount }: { groupId: string; groupName: string; memberCount: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [members, setMembers] = useState<any[] | null>(null);
@@ -277,16 +289,12 @@ function SeverityTooltip({ level, descriptions }: { level: string; descriptions:
   const desc = descriptions[level];
   if (!desc) return null;
   return (
-    <div className="relative inline-flex">
-      <button
-        onClick={() => setShow(!show)}
-        className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-        data-testid="button-severity-tooltip"
-      >
+    <div className="relative inline-flex" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      <span className="text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-help">
         <Info className="w-3 h-3" />
-      </button>
+      </span>
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 bg-card border border-border/30 rounded-lg p-2.5 w-[280px] shadow-xl">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 bg-card border border-border/30 rounded-lg p-2.5 w-[280px] shadow-xl pointer-events-none">
           <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-card border-r border-b border-border/30 rotate-45" />
           <span className="text-xs text-muted-foreground leading-snug">
             <strong className="text-foreground">{level}</strong> — {desc}
@@ -434,8 +442,8 @@ export default function AnalysisPage() {
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/20">
-              <Shield className="w-4 h-4 text-primary" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 overflow-hidden">
+              <img src="/intunestuff-logo.png" alt="IntuneStuff" className="w-6 h-6 object-contain" />
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground leading-tight">Intune Policy Intelligence Agent</h1>
@@ -477,7 +485,13 @@ export default function AnalysisPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+              <div className="absolute inset-2 flex items-center justify-center">
+                <img src="/intunestuff-logo.png" alt="" className="w-8 h-8 object-contain animate-pulse" />
+              </div>
+            </div>
             <p className="text-sm text-muted-foreground">Analyzing with IntuneStuff magic...</p>
             <p className="text-xs text-muted-foreground/70">This may take a moment depending on the number of policies</p>
             <Button variant="destructive" size="sm" onClick={handleStopAnalysis} data-testid="button-stop-analysis" className="mt-4">
@@ -580,16 +594,17 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const impact = analysis.endUserImpact[policy.id];
                   if (!impact) return null;
-                  const severityColor = SEVERITY_COLORS[impact.severity] || SEVERITY_COLORS["Minimal"];
                   const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
+                  const effectiveSeverity = hasSettingsArray ? calculatePolicySeverity(impact.settings!) : (impact.severity || "Medium");
+                  const severityColor = SEVERITY_COLORS[effectiveSeverity] || SEVERITY_COLORS["Minimal"];
                   const hasStructuredData = impact.policySettingsAndImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
                     <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={enduserForce}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge className={`text-xs ${severityColor}`}>{impact.severity}</Badge>
-                          <SeverityTooltip level={impact.severity} descriptions={ENDUSER_LEVEL_DESCRIPTIONS} />
-                          <span className="text-xs text-muted-foreground">impact level</span>
+                          <Badge className={`text-xs ${severityColor}`}>{effectiveSeverity}</Badge>
+                          <SeverityTooltip level={effectiveSeverity} descriptions={ENDUSER_LEVEL_DESCRIPTIONS} />
+                          <span className="text-xs text-muted-foreground">impact level{hasSettingsArray ? " (based on highest setting)" : ""}</span>
                         </div>
 
                         {/* Per-setting structured cards (Sprint 1 #14) */}
@@ -646,16 +661,17 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const impact = analysis.securityImpact[policy.id];
                   if (!impact) return null;
-                  const ratingColor = SEVERITY_COLORS[impact.rating] || SEVERITY_COLORS["Medium"];
                   const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
+                  const effectiveRating = hasSettingsArray ? calculatePolicySeverity(impact.settings!) : (impact.rating || "Medium");
+                  const ratingColor = SEVERITY_COLORS[effectiveRating] || SEVERITY_COLORS["Medium"];
                   const hasStructuredData = impact.policySettingsAndSecurityImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
                   return (
                     <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={securityForce}>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge className={`text-xs ${ratingColor}`}>{impact.rating}</Badge>
-                          <SeverityTooltip level={impact.rating} descriptions={SECURITY_LEVEL_DESCRIPTIONS} />
-                          <span className="text-xs text-muted-foreground">security rating</span>
+                          <Badge className={`text-xs ${ratingColor}`}>{effectiveRating}</Badge>
+                          <SeverityTooltip level={effectiveRating} descriptions={SECURITY_LEVEL_DESCRIPTIONS} />
+                          <span className="text-xs text-muted-foreground">security rating{hasSettingsArray ? " (based on highest setting)" : ""}</span>
                         </div>
 
                         {/* Per-setting structured cards (Sprint 1 #13) */}

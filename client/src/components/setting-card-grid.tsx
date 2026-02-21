@@ -11,6 +11,46 @@ const RATING_COLORS: Record<string, string> = {
 };
 
 const FRAMEWORK_COLOR = "bg-muted text-muted-foreground border-border/40";
+const FRAMEWORK_LINK_COLOR = "bg-muted text-muted-foreground border-border/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer";
+
+/** Map AI-generated framework labels to reference documentation URLs */
+function getFrameworkUrl(fw: string): string | null {
+  const f = fw.trim();
+
+  // NIST SP 800-53 controls: e.g. "NIST AC-7", "NIST SC-28", "NIST SP 800-53 AC-7"
+  const nistMatch = f.match(/(?:NIST\s*(?:SP\s*)?(?:800-53\s*)?)?([A-Z]{2})-(\d+)/i);
+  if (nistMatch && /NIST|SP.?800/i.test(f)) {
+    const family = nistMatch[1].toLowerCase();
+    const num = nistMatch[2];
+    return `https://csf.tools/reference/nist-sp-800-53/r5/${family}/${family}-${num}/`;
+  }
+
+  // CIS Controls: e.g. "CIS 1.1.1", "CIS Control 4.1", "CIS Critical Security Controls"
+  const cisMatch = f.match(/CIS\s*(?:Control\s*)?(?:Critical\s*Security\s*Controls?\s*)?(\d+(?:\.\d+)*)/i);
+  if (cisMatch) {
+    return `https://www.cisecurity.org/controls/v8`;
+  }
+  if (/CIS/i.test(f) && !cisMatch) {
+    return `https://www.cisecurity.org/controls/v8`;
+  }
+
+  // ISO 27001: e.g. "ISO 27001 A.10", "ISO/IEC 27001:2022"
+  if (/ISO.*27001/i.test(f)) {
+    return `https://www.iso.org/standard/27001`;
+  }
+
+  // NIST CSF: e.g. "NIST CSF PR.DS-1"
+  if (/NIST\s*CSF/i.test(f)) {
+    return `https://www.nist.gov/cyberframework`;
+  }
+
+  // Generic NIST (no specific control)
+  if (/NIST/i.test(f)) {
+    return `https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final`;
+  }
+
+  return null;
+}
 
 function SettingCard({ setting, forceOpen }: { setting: SecuritySettingDetail; forceOpen?: boolean }) {
   const [expanded, setExpanded] = useState(false);
@@ -60,11 +100,21 @@ function SettingCard({ setting, forceOpen }: { setting: SecuritySettingDetail; f
 
       {setting.frameworks && setting.frameworks.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap">
-          {setting.frameworks.map((fw) => (
-            <Badge key={fw} variant="outline" className={`text-[10px] border ${FRAMEWORK_COLOR}`}>
-              {fw}
-            </Badge>
-          ))}
+          {setting.frameworks.map((fw) => {
+            const url = getFrameworkUrl(fw);
+            return url ? (
+              <a key={fw} href={url} target="_blank" rel="noopener noreferrer" className="no-underline">
+                <Badge variant="outline" className={`text-[10px] border ${FRAMEWORK_LINK_COLOR}`}>
+                  {fw} ↗
+                </Badge>
+              </a>
+            ) : (
+              <Badge key={fw} variant="outline" className={`text-[10px] border ${FRAMEWORK_COLOR}`}>
+                {fw}
+              </Badge>
+            );
+          })}
+          <span className="text-[9px] text-muted-foreground/40 italic ml-1">AI-suggested mappings</span>
         </div>
       )}
     </div>
