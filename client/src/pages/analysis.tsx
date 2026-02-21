@@ -601,12 +601,6 @@ export default function AnalysisPage() {
                   return (
                     <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={enduserForce}>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge className={`text-xs ${severityColor}`}>{effectiveSeverity}</Badge>
-                          <span className="text-xs text-muted-foreground">impact level{hasSettingsArray ? " (based on highest setting)" : ""}</span>
-                        </div>
-
-                        {/* Per-setting structured cards (Sprint 1 #14) */}
                         {hasSettingsArray && (
                           <div className="mb-4">
                             <h4 className="text-xs font-bold text-foreground mb-2">Settings Impact on End-Users:</h4>
@@ -667,12 +661,6 @@ export default function AnalysisPage() {
                   return (
                     <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={securityForce}>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge className={`text-xs ${ratingColor}`}>{effectiveRating}</Badge>
-                          <span className="text-xs text-muted-foreground">security rating{hasSettingsArray ? " (based on highest setting)" : ""}</span>
-                        </div>
-
-                        {/* Per-setting structured cards (Sprint 1 #13) */}
                         {hasSettingsArray && (
                           <div className="mb-4">
                             <h4 className="text-xs font-bold text-foreground mb-2">Security Impact per Setting:</h4>

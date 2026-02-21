@@ -16,12 +16,12 @@ function ImpactTooltip({ level }: { level: string }) {
   const desc = IMPACT_DESCRIPTIONS[level];
   if (!desc) return null;
   return (
-    <div className="relative inline-flex shrink-0">
-      <button onClick={(e) => { e.stopPropagation(); setShow(!show); }} className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+    <div className="relative inline-flex shrink-0" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      <span className="text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-help">
         <Info className="w-3 h-3" />
-      </button>
+      </span>
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-popover border border-border rounded-lg p-2.5 w-[240px] shadow-xl">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-popover border border-border rounded-lg p-2.5 w-[240px] shadow-xl pointer-events-none">
           <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45" />
           <span className="text-xs text-muted-foreground leading-snug">
             <strong className="text-foreground">{level}</strong> — {desc}
