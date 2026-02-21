@@ -46,11 +46,11 @@ const defaultSettings: PdfBrandingSettings = {
   website: "",
   logoDataUrl: "",
   logoPosition: "cover",
-  preset: "minimal",
-  primaryColor: "#000000",
-  secondaryColor: "#666666",
-  accentColor: "#000000",
-  textColor: "#000000",
+  preset: "corporate",
+  primaryColor: "#1a5276",
+  secondaryColor: "#5d6d7e",
+  accentColor: "#2980b9",
+  textColor: "#2c3e50",
   fontFamily: "Helvetica",
   headerFontSize: 13,
   bodyFontSize: 10,
@@ -69,7 +69,7 @@ const defaultSettings: PdfBrandingSettings = {
 };
 
 const presetColors = {
-  corporate: { primaryColor: "#1a365d", secondaryColor: "#4a5568", accentColor: "#2b6cb0", textColor: "#1a202c" },
+  corporate: { primaryColor: "#1a5276", secondaryColor: "#5d6d7e", accentColor: "#2980b9", textColor: "#2c3e50" },
   modern: { primaryColor: "#6b46c1", secondaryColor: "#718096", accentColor: "#d53f8c", textColor: "#2d3748" },
   minimal: { primaryColor: "#000000", secondaryColor: "#666666", accentColor: "#000000", textColor: "#000000" },
 };

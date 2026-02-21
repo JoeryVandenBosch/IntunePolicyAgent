@@ -216,7 +216,6 @@
 
   .no-default-active-elevate {}
 
-
   /**
    * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
    * This way they can stack/compound. Both will overlap the parent's borders!

@@ -211,7 +211,7 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
 }
 
 function PolicySection({ policy, children }: { policy: IntunePolicy; children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const platformColor = PLATFORM_COLORS[policy.platform] || "bg-muted text-muted-foreground";
 
   return (
