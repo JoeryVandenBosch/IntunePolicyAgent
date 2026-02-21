@@ -23,11 +23,18 @@ async function graphGet(token: string, url: string, extraHeaders?: Record<string
 async function graphGetAll(token: string, url: string): Promise<any[]> {
   let results: any[] = [];
   let nextLink: string | null = url;
+  let pageCount = 0;
 
   while (nextLink) {
     const data = await graphGet(token, nextLink);
-    results = results.concat(data.value || []);
+    const pageItems = data.value || [];
+    results = results.concat(pageItems);
+    pageCount++;
     nextLink = data["@odata.nextLink"] || null;
+  }
+
+  if (pageCount > 1) {
+    console.log(`[graphGetAll] Fetched ${results.length} items across ${pageCount} pages from ${url.split("?")[0]}`);
   }
 
   return results;
@@ -174,11 +181,13 @@ export async function fetchAllPolicies(token: string): Promise<IntunePolicyRaw[]
     endpoints.map(async (ep) => {
       try {
         const items = await graphGetAll(token, ep.url);
+        console.log(`[fetchAllPolicies] ${ep.source}: fetched ${items.length} policies`);
         return items.map((item: any) => ({
           ...item,
           _source: ep.source,
         }));
-      } catch {
+      } catch (err: any) {
+        console.error(`[fetchAllPolicies] ${ep.source} FAILED: ${err?.message}`);
         return [];
       }
     })
@@ -204,6 +213,7 @@ export async function fetchAllPolicies(token: string): Promise<IntunePolicyRaw[]
     }
   }
 
+  console.log(`[fetchAllPolicies] Total: ${allPolicies.length} policies across all endpoints`);
   allPolicies.sort((a, b) => a.name.localeCompare(b.name));
   return allPolicies;
 }

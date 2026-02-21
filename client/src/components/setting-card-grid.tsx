@@ -1,7 +1,36 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, ShieldCheck, ChevronsUpDown } from "lucide-react";
+import { ChevronDown, ChevronRight, ShieldCheck, ChevronsUpDown, Info } from "lucide-react";
 import type { SecuritySettingDetail } from "@shared/schema";
+
+const SECURITY_DESCRIPTIONS: Record<string, string> = {
+  "Critical": "Addresses a severe security risk. Without this, the organization is exposed to significant threats.",
+  "High": "Strong security control. Significantly reduces attack surface and protects against common threats.",
+  "Medium": "Moderate security benefit. Adds a meaningful layer of defense but is not the sole protection.",
+  "Low": "Minor security enhancement. Provides incremental improvement to the overall security posture.",
+  "Minimal": "Negligible direct security impact. Primarily an operational or user-experience setting.",
+};
+
+function RatingTooltip({ level }: { level: string }) {
+  const [show, setShow] = useState(false);
+  const desc = SECURITY_DESCRIPTIONS[level];
+  if (!desc) return null;
+  return (
+    <div className="relative inline-flex shrink-0">
+      <button onClick={(e) => { e.stopPropagation(); setShow(!show); }} className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+        <Info className="w-3 h-3" />
+      </button>
+      {show && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-popover border border-border rounded-lg p-2.5 w-[240px] shadow-xl">
+          <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45" />
+          <span className="text-xs text-muted-foreground leading-snug">
+            <strong className="text-foreground">{level}</strong> — {desc}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const RATING_COLORS: Record<string, string> = {
   "Critical": "bg-red-700/20 text-red-500 border-red-500/30",
@@ -67,6 +96,7 @@ function SettingCard({ setting, forceOpen }: { setting: SecuritySettingDetail; f
           <Badge variant="outline" className={`text-[10px] font-semibold border shrink-0 ${ratingColor}`}>
             {setting.securityRating}
           </Badge>
+          <RatingTooltip level={setting.securityRating} />
           <span className="text-sm font-medium text-foreground break-all">{setting.settingName}</span>
         </div>
         {(setting.recommendation || setting.detail) && (

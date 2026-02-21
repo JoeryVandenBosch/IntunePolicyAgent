@@ -1,7 +1,36 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Users, ChevronsUpDown } from "lucide-react";
+import { ChevronDown, ChevronRight, Users, ChevronsUpDown, Info } from "lucide-react";
 import type { EndUserSettingDetail } from "@shared/schema";
+
+const IMPACT_DESCRIPTIONS: Record<string, string> = {
+  "Critical": "Fundamentally changes how users work. Blocks access to key features or requires major workflow changes.",
+  "High": "Noticeably disrupts daily workflow. Users will need to adapt their habits or learn new processes.",
+  "Medium": "Moderate friction. Users will notice the change but can adapt quickly with minimal disruption.",
+  "Low": "Minor inconvenience. Most users won't notice or will adapt immediately.",
+  "Minimal": "No perceptible impact on daily work. Runs silently in the background.",
+};
+
+function ImpactTooltip({ level }: { level: string }) {
+  const [show, setShow] = useState(false);
+  const desc = IMPACT_DESCRIPTIONS[level];
+  if (!desc) return null;
+  return (
+    <div className="relative inline-flex shrink-0">
+      <button onClick={(e) => { e.stopPropagation(); setShow(!show); }} className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+        <Info className="w-3 h-3" />
+      </button>
+      {show && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-popover border border-border rounded-lg p-2.5 w-[240px] shadow-xl">
+          <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45" />
+          <span className="text-xs text-muted-foreground leading-snug">
+            <strong className="text-foreground">{level}</strong> — {desc}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const IMPACT_COLORS: Record<string, string> = {
   "Critical": "bg-red-700/20 text-red-500 border-red-500/30",
@@ -26,6 +55,7 @@ function EndUserSettingCard({ setting, forceOpen }: { setting: EndUserSettingDet
           <Badge variant="outline" className={`text-[10px] font-semibold border shrink-0 ${impactColor}`}>
             {setting.impactLevel}
           </Badge>
+          <ImpactTooltip level={setting.impactLevel} />
           <span className="text-sm font-medium text-foreground break-all">{setting.settingName}</span>
         </div>
         <button

@@ -603,7 +603,6 @@ export default function AnalysisPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${severityColor}`}>{effectiveSeverity}</Badge>
-                          <SeverityTooltip level={effectiveSeverity} descriptions={ENDUSER_LEVEL_DESCRIPTIONS} />
                           <span className="text-xs text-muted-foreground">impact level{hasSettingsArray ? " (based on highest setting)" : ""}</span>
                         </div>
 
@@ -670,7 +669,6 @@ export default function AnalysisPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-3">
                           <Badge className={`text-xs ${ratingColor}`}>{effectiveRating}</Badge>
-                          <SeverityTooltip level={effectiveRating} descriptions={SECURITY_LEVEL_DESCRIPTIONS} />
                           <span className="text-xs text-muted-foreground">security rating{hasSettingsArray ? " (based on highest setting)" : ""}</span>
                         </div>
 
