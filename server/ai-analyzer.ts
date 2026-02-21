@@ -323,21 +323,22 @@ async function analyzeSingleEndUserImpact(policy: IntunePolicyRaw, detail: any):
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Provide a factual, data-driven end-user impact analysis for this policy.
+    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Write a clear, executive-friendly end-user impact analysis for this policy. Your audience is C-level management and non-technical stakeholders who need to understand what this policy means for their employees' daily work.
 
 CRITICAL RULES:
 - Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
-- If two policies have identical settings, they should produce identical impact analyses. Only note differences where actual setting values differ.
-- Reference each setting by its exact name and value from the data.
+- Write in clear, flowing paragraphs — NOT bullet points or lists. Use plain business English that a non-technical executive can understand.
+- Explain the real-world effect on employees, not the technical setting name. For example, instead of "RequireWorkProfilePassword: Required", write "employees will be required to set a separate password to access their work apps."
+- Be specific about what users will experience, what changes in their daily workflow, and what restrictions they will notice.
 
 Provide these structured fields:
 - severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" - overall impact severity on end users
 - policySettingsAndImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
   SettingName: value — end-user impact description
   Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
-- assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows.
-- riskAnalysis: Based on the actual configured settings and their values, what are the risks? Focus on: user productivity impact, data availability, and any settings that deviate from defaults.
-- overallSummary: Factual closing: policy purpose, scope, number of configured settings, and net end-user impact.
+- assignmentScope: A clear paragraph explaining who is affected. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it has no active impact."
+- riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what real-world risks this policy introduces for end users. Consider: Will employees be locked out of features they use daily? Could they lose access to data? Are there settings that could frustrate users or slow down their workflow? Are there gaps where important protections are missing? Write like a senior IT consultant briefing a CTO — concrete, specific, and referencing actual settings and their values.
+- overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that summarizes the policy's purpose, its scope of impact, the number of configured settings, and the net effect on end users. Mention whether the policy is currently assigned and actively impacting users. End with a clear assessment of whether this policy is well-balanced for user productivity vs. security. Write as a consultant summarizing findings for leadership.
 - description: Brief 1-2 sentence summary of end-user impact.
 
 Do NOT include any conflict analysis - conflicts are handled separately.
@@ -390,21 +391,22 @@ async function analyzeSingleSecurityImpact(policy: IntunePolicyRaw, detail: any)
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune security expert similar to Microsoft Security Copilot. Provide a factual, data-driven security impact analysis for this policy.
+    `You are a Microsoft Intune security expert similar to Microsoft Security Copilot. Write a clear, executive-friendly security impact analysis for this policy. Your audience is C-level management, CISOs, and non-technical stakeholders who need to understand what this policy means for their organization's security posture.
 
 CRITICAL RULES:
 - Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
-- If two policies have identical settings, they should produce identical security analyses. Only note differences where actual setting values differ.
-- Reference each setting by its exact name and value from the data.
+- Write in clear, flowing paragraphs — NOT bullet points or lists. Use plain business English that a CISO or CTO can present to their board.
+- Explain security impact in business terms: "This protects company data by..." rather than "This setting enables DLP policy..."
+- Be specific about what is protected, what gaps remain, and what the real-world consequences are.
 
 Provide these structured fields:
 - rating: "Low"|"Medium"|"High"|"Critical" - overall security impact rating
 - policySettingsAndSecurityImpact: You MUST use EXACTLY this line format for EVERY setting, one setting per line, separated by newlines:
   SettingName: value — security impact description
   Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Each line must start with the setting name, then colon, then the configured value, then " — " (space-dash-space), then the security impact description. This format must be identical regardless of OS platform (Windows, iOS, macOS, Android, Linux).
-- assignmentScope: Which groups are assigned (include/exclude with names and member counts), assignment filters (names, rules, mode). State exactly what the data shows about which users/devices are protected.
-- riskAnalysis: Based on the actual configured settings and their values, what security risks are addressed and what residual risks remain? Focus on: data protection, access control, compliance.
-- overallSummary: Factual closing: policy purpose, scope, number of configured settings, and overall security posture impact. End with: "This summary covers N configured setting(s) for this policy."
+- assignmentScope: A clear paragraph explaining which users and devices are protected by this policy. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it provides no active security protection."
+- riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what security measures this policy enforces and what gaps remain. Consider: Does it adequately protect corporate data? Are there settings that are too permissive (e.g., allowing copy/paste between work and personal)? Are strong authentication mechanisms enforced? What could an attacker exploit if these are the only protections in place? Are there industry best practices not being followed? Write like a senior security consultant briefing a CISO — concrete, referencing actual settings and their configured values.
+- overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that a CISO could read aloud in a board meeting. Summarize the policy's security controls, its assignment scope, the number of configured settings, what it protects well, and where gaps exist. Mention whether the policy is currently active. End with a clear verdict on the overall security posture this policy provides. Reference specific settings to support your assessment.
 - description: Brief 1-2 sentence security impact summary.
 - complianceFrameworks: Array of relevant frameworks (NIST 800-53, CIS Benchmarks, ISO 27001, etc.)
 

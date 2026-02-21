@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import type { IntunePolicy, AnalysisResult } from "@shared/schema";
@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon } from "lucide-react";
+import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLeft, Download, ChevronDown, ChevronRight, Loader2, BookOpen, Target, LogOut, ExternalLink, User, Monitor, Sun, Moon, Square, FileDown } from "lucide-react";
+import PdfBrandingDialog, { type PdfBrandingSettings } from "@/components/pdf-branding-dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -252,12 +253,27 @@ export default function AnalysisPage() {
   const selectedPolicies = getSelectedPolicies(queryClientInstance);
 
   const [analysisRunId] = useState(() => Date.now());
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [wasCancelled, setWasCancelled] = useState(false);
   const policyIdKey = selectedPolicies ? selectedPolicies.map(p => p.id).sort().join(",") : "";
   const { data: analysis, isLoading, error } = useQuery<AnalysisResult>({
     queryKey: ["/api/analyze", policyIdKey, analysisRunId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!selectedPolicies || selectedPolicies.length === 0) throw new Error("No policies selected");
-      const res = await apiRequest("POST", "/api/analyze", { policyIds: selectedPolicies.map(p => p.id) });
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      signal?.addEventListener("abort", () => controller.abort());
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ policyIds: selectedPolicies.map(p => p.id) }),
+        credentials: "include",
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ message: "Analysis failed" }));
+        throw new Error(errBody.message || "Analysis failed");
+      }
       return res.json();
     },
     enabled: !!selectedPolicies && selectedPolicies.length > 0,
@@ -265,6 +281,17 @@ export default function AnalysisPage() {
     staleTime: 0,
     gcTime: 0,
   });
+
+  const handleStopAnalysis = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setWasCancelled(true);
+    queryClientInstance.cancelQueries({ queryKey: ["/api/analyze"] });
+    queryClientInstance.removeQueries({ queryKey: ["/api/analyze"] });
+    setLocation("/policies");
+  }, [queryClientInstance, setLocation]);
 
   useEffect(() => {
     if (!selectedPolicies || selectedPolicies.length === 0) {
@@ -280,20 +307,53 @@ export default function AnalysisPage() {
   const conflictCount = settingConflictCount + aiConflictCount;
   const recCount = analysis?.recommendations?.length || 0;
 
-  const handleExport = async (format: "html" | "text") => {
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
+
+  const handleExport = async (format: "html" | "csv") => {
     try {
-      const res = await apiRequest("POST", `/api/export/${format}`, {
-        policies: selectedPolicies,
-        analysis,
+      const res = await fetch(`/api/export/${format}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ policies: selectedPolicies, analysis }),
       });
+      if (!res.ok) throw new Error(`Export failed: ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `intune-analysis.${format === "html" ? "html" : "txt"}`;
+      a.download = `intune-analysis.${format}`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {}
+    } catch (err) {
+      console.error(`${format} export error:`, err);
+    }
+  };
+
+  const handlePdfExport = async (settings: PdfBrandingSettings) => {
+    setPdfExporting(true);
+    try {
+      const res = await fetch("/api/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ policies: selectedPolicies, analysis, branding: settings }),
+      });
+      if (!res.ok) throw new Error(`PDF export failed: ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${settings.documentTitle || "intune-analysis"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setPdfDialogOpen(false);
+    } catch (err) {
+      console.error("PDF export error:", err);
+    } finally {
+      setPdfExporting(false);
+    }
   };
 
   return (
@@ -315,12 +375,17 @@ export default function AnalysisPage() {
             </Button>
             <Button variant="secondary" size="sm" onClick={() => handleExport("html")} data-testid="button-export-html" disabled={!analysis}>
               <Download className="w-3.5 h-3.5 mr-1.5" />
-              Export HTML
+              HTML
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => handleExport("text")} data-testid="button-export-text" disabled={!analysis}>
+            <Button variant="secondary" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" disabled={!analysis}>
               <Download className="w-3.5 h-3.5 mr-1.5" />
-              Export Text
+              CSV
             </Button>
+            <Button variant="secondary" size="sm" disabled={!analysis} onClick={() => setPdfDialogOpen(true)} data-testid="button-export-pdf">
+              <FileDown className="w-3.5 h-3.5 mr-1.5" />
+              PDF
+            </Button>
+            <PdfBrandingDialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen} onExport={handlePdfExport} exporting={pdfExporting} />
             <Button variant="ghost" size="sm" onClick={() => { queryClientInstance.removeQueries({ predicate: (q) => q.queryKey[0] === "/api/analyze" }); setLocation("/policies"); }} data-testid="button-new-analysis">
               <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
               New Analysis
@@ -342,6 +407,10 @@ export default function AnalysisPage() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Analyzing with IntuneStuff magic...</p>
             <p className="text-xs text-muted-foreground/70">This may take a moment depending on the number of policies</p>
+            <Button variant="destructive" size="sm" onClick={handleStopAnalysis} data-testid="button-stop-analysis" className="mt-4">
+              <Square className="w-3.5 h-3.5 mr-1.5" />
+              Stop Analysis
+            </Button>
           </div>
         ) : error ? (
           <div className="text-center py-16 space-y-3">
@@ -790,6 +859,10 @@ export default function AnalysisPage() {
             </Tabs>
           </div>
         ) : null}
+
+        {analysis && (
+          <p className="text-[11px] text-muted-foreground/50 text-center mt-8 pb-2">AI-generated content may be incorrect. Check it for accuracy.</p>
+        )}
       </main>
     </div>
   );

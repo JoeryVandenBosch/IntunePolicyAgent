@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, LogIn, FileText, ShieldCheck, Users, AlertTriangle, Lightbulb, Sparkles, Lock, ServerOff, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import logoImage from "@assets/Color_logo_with_background_-_Copy_1771682756194.png";
 
 function FeatureCard({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
   return (
@@ -52,32 +53,38 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/20">
-              <Shield className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold text-foreground leading-tight">Intune Policy Intelligence Agent</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Powered by IntuneStuff</p>
-            </div>
+          <a href="https://intunestuff.com/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src={logoImage} alt="IntuneStuff" className="h-8 w-auto rounded" />
+          </a>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">v1.0</span>
+            <span className="text-[10px] text-muted-foreground/40 hidden sm:inline">|</span>
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">Web App</span>
+            <span className="text-[10px] text-muted-foreground/40 hidden sm:inline">|</span>
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">Admin consent required</span>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme-login" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} className="ml-2">
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme-login" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
         </div>
       </header>
 
-      <section className="py-16 sm:py-24">
+      <section className="py-16 sm:py-24" style={{ backgroundColor: '#3e4149' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl sm:text-4xl font-light leading-tight text-foreground">
-                Intune Policy
-                <br />
-                <span className="font-semibold">Intelligence Agent</span>
-              </h2>
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-light leading-tight text-foreground">
+                  Intune Policy
+                  <br />
+                  <span className="font-semibold">Intelligence Agent</span>
+                </h2>
+                <p className="text-sm text-primary font-medium mt-3 tracking-wide">
+                  Not another admin tool. Your Intune policy analyst.
+                </p>
+              </div>
               <p className="text-muted-foreground text-base leading-relaxed max-w-md">
-                AI-powered analysis of your Microsoft Intune policies. Get summaries, end-user impact assessments, security ratings, assignment details, conflict detection, and actionable recommendations.
+                Other tools backup, deploy, and sync. This one thinks about your policies the way a senior consultant would — analyzing impact, detecting conflicts, and delivering recommendations you can present to leadership.
               </p>
               {authError && (
                 <Card className="border-destructive bg-destructive/10">
@@ -106,9 +113,14 @@ export default function LoginPage() {
               </p>
             </div>
             <div className="flex justify-center">
-              <div className="w-56 h-56 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
-                <Shield className="w-24 h-24 text-primary/30" />
-              </div>
+              <a href="https://intunestuff.com/" target="_blank" rel="noopener noreferrer" className="block hover:opacity-90 transition-opacity">
+                <img
+                  src={logoImage}
+                  alt="IntuneStuff - Microsoft Cloud & Enterprise Mobility"
+                  className="w-full max-w-sm rounded-2xl"
+                  data-testid="img-logo-hero"
+                />
+              </a>
             </div>
           </div>
         </div>
@@ -185,9 +197,12 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Required Permissions:</p>
                   <ul className="space-y-1.5 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>DeviceManagementConfiguration.Read.All</strong> — Read policies</span></li>
-                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>Group.Read.All</strong> — Resolve group names</span></li>
+                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>DeviceManagementConfiguration.Read.All</strong> — Read Intune device configuration and policies</span></li>
+                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>DeviceManagementManagedDevices.Read.All</strong> — Read devices Microsoft Intune devices</span></li>
+                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>Group.Read.All</strong> — Read all groups</span></li>
                     <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>Directory.Read.All</strong> — Read directory data</span></li>
+                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>offline_access</strong> — Maintain access to data you have given it access to</span></li>
+                    <li className="flex items-start gap-2"><Lock className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" /><span><strong>profile, openid, email</strong> — View your basic profile</span></li>
                   </ul>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -247,8 +262,13 @@ export default function LoginPage() {
       </section>
 
       <footer className="border-t border-border/30 py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center text-xs text-muted-foreground/60">
-          Intune Policy Intelligence Agent — Powered by IntuneStuff
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <a href="https://intunestuff.com/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+            <img src={logoImage} alt="IntuneStuff" className="h-6 w-auto rounded" />
+          </a>
+          <p className="text-xs text-muted-foreground/60">
+            Intune Policy Intelligence Agent — Powered by IntuneStuff
+          </p>
         </div>
       </footer>
     </div>

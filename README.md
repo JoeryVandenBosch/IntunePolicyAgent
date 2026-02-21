@@ -15,8 +15,8 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 - **Settings & Conflict Detection** - Data-driven setting-level conflict detection with value normalization, cross-tenant comparison (auto-fetches up to 20 related policies), Intune portal deep links, and platform+source scoping to prevent false positives.
 - **Recommendations** - Get actionable recommendations for security hardening, optimization, and compliance improvements.
 - **Multi-Policy Analysis** - Select multiple policies for parallel AI analysis with per-policy dedicated AI calls and resilient fallbacks.
-- **Export** - Export analysis results as HTML or plain text reports.
-- **Analytics Dashboard** - Global admin view with 4 tabs: Overview, Tenants, Users, Activity Log. Per-tenant and per-user breakdowns with daily activity charts.
+- **Export** - Export analysis results as HTML (interactive report with search & collapsible sections), CSV (spreadsheet format), or PDF (full branding customization with cover page, watermark, custom colors, and three detail levels).
+- **Analytics Dashboard** - Admin-protected global view with 4 tabs: Overview, Tenants, Users, Activity Log. Per-tenant and per-user breakdowns with daily activity charts.
 - **Light/Dark Theme** - Toggle between light and dark themes with localStorage persistence (dark by default).
 - **Consistent Setting Names** - Standardized PascalCase setting names across all OS platforms (Windows, macOS, iOS/iPadOS, Android Enterprise, Linux).
 
@@ -68,29 +68,29 @@ This application uses the **OAuth2 Authorization Code Flow** with the Microsoft 
 
 ```
 User clicks "Sign in with Microsoft"
-        │
-        ▼
+        |
+        v
 Browser redirects to Microsoft login
 (login.microsoftonline.com/common/oauth2/v2.0/authorize)
-        │
-        ▼
+        |
+        v
 User authenticates & consents to permissions
-        │
-        ▼
+        |
+        v
 Microsoft redirects to /api/auth/callback with authorization code
-        │
-        ▼
+        |
+        v
 Backend exchanges code for access + refresh tokens
 (POST login.microsoftonline.com/common/oauth2/v2.0/token)
-        │
-        ▼
+        |
+        v
 Tokens stored in PostgreSQL-backed server session
 (never exposed to the browser)
-        │
-        ▼
+        |
+        v
 User profile fetched from Microsoft Graph /me endpoint
-        │
-        ▼
+        |
+        v
 User redirected to /policies (authenticated)
 ```
 
@@ -102,9 +102,9 @@ The application fetches policies from four Microsoft Graph Beta API endpoints:
 
 | Endpoint | Policy Type |
 |----------|------------|
-| `/deviceManagement/deviceConfigurations` | Configuration Profiles |
+| `/deviceManagement/deviceConfigurations` | Configuration Profiles (including Custom OMA-URI) |
 | `/deviceManagement/deviceCompliancePolicies` | Compliance Policies |
-| `/deviceManagement/intents` | Endpoint Security |
+| `/deviceManagement/intents` | Endpoint Security (Antivirus, Firewall, ASR, Disk Encryption, etc.) |
 | `/deviceManagement/configurationPolicies` | Settings Catalog |
 
 For each policy, the application also fetches:
@@ -133,8 +133,16 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 | `GET` | `/api/policies` | Fetches all Intune policies from tenant (requires auth) |
 | `POST` | `/api/analyze` | Runs AI analysis on selected policies (requires auth) |
 | `POST` | `/api/export/html` | Generates downloadable HTML report |
-| `POST` | `/api/export/text` | Generates downloadable plain text report |
-| `GET` | `/api/analytics` | Returns usage analytics summary (requires auth) |
+| `POST` | `/api/export/csv` | Generates downloadable CSV spreadsheet report |
+| `POST` | `/api/export/pdf` | Generates downloadable PDF report with branding options |
+
+### Analytics (Admin Only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/analytics/verify` | Verify admin key for analytics access |
+| `GET` | `/api/analytics/status` | Check analytics authorization status |
+| `GET` | `/api/analytics` | Returns usage analytics summary (requires admin auth) |
 
 ### Request/Response Examples
 
@@ -156,6 +164,24 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 }
 ```
 
+## Export Options
+
+### HTML Report
+Interactive standalone HTML file with dark theme, collapsible policy sections, search functionality, table of contents, statistics overview, and IntuneStuff branding. Works offline in any browser.
+
+### CSV Report
+Spreadsheet-compatible export with one row per policy. Includes policy name, platform, type, settings count, severity ratings, summaries, risk analysis, compliance frameworks, and recommendations.
+
+### PDF Report
+Professional PDF with extensive branding customization via a 4-tab settings dialog:
+
+- **Branding** - Organization name, department, contact email, website, logo upload with placement options (cover page only, every page header, or both)
+- **Appearance** - Three color presets (Corporate, Modern, Minimal) plus custom color pickers for headings, subheadings, accents, and body text. Font family selection and heading/body size controls.
+- **Page Options** - Cover page, page headers/footers, diagonal watermark with custom text and opacity slider (5-50%)
+- **Output** - Report title, author, classification level (Public/Internal/Confidential/Restricted), detail level (Full Report/Condensed/Executive Summary), table of contents and statistics toggles
+
+Settings are saved to localStorage for persistence between sessions.
+
 ## Project Structure
 
 ```
@@ -164,7 +190,9 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 │   └── src/
 │       ├── App.tsx                # Root component with auth-gated routing
 │       ├── main.tsx               # React entry point
-│       ├── index.css              # Global styles (dark theme)
+│       ├── index.css              # Global styles (light/dark theme)
+│       ├── components/
+│       │   └── pdf-branding-dialog.tsx  # PDF export settings dialog
 │       ├── lib/
 │       │   ├── auth-context.tsx   # React context for OAuth2 auth state
 │       │   ├── theme-context.tsx  # Theme provider (light/dark toggle)
@@ -173,11 +201,11 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 │       └── pages/
 │           ├── login.tsx              # Landing page with "Sign in with Microsoft"
 │           ├── policy-list.tsx        # Policy listing (search, filter, select)
-│           ├── analysis.tsx           # Tabbed analysis results (6 tabs)
-│           ├── analytics.dashboard.tsx # Usage analytics dashboard
+│           ├── analysis.tsx           # Tabbed analysis results (6 tabs) + exports
+│           ├── analytics.dashboard.tsx # Usage analytics dashboard (admin-only)
 │           └── not-found.tsx          # 404 page
 ├── server/
-│   ├── index.ts                   # Express server entry point
+│   ├── index.ts                   # Express server entry point (50MB body limit)
 │   ├── auth.ts                    # OAuth2 flow (login, callback, logout, token refresh)
 │   ├── routes.ts                  # API routes (policies, analyze, export, analytics)
 │   ├── graph-client.ts            # Microsoft Graph API client
@@ -206,6 +234,7 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 | `DATABASE_URL` | Yes | PostgreSQL connection string (e.g., `postgresql://user:pass@host:5432/dbname`) |
 | `OPENAI_API_KEY` | Yes | OpenAI API key (or compatible provider) |
 | `OPENAI_BASE_URL` | No | Custom OpenAI-compatible API base URL (defaults to OpenAI) |
+| `ANALYTICS_ADMIN_KEY` | No | Admin key for accessing the analytics dashboard |
 | `APP_DOMAIN` | No | Custom domain for redirect URI (defaults to `policyagent.intunestuff.com`) |
 | `PORT` | No | Server port (defaults to 5000) |
 
@@ -226,6 +255,7 @@ Supported platforms: **Windows**, **macOS**, **iOS/iPadOS**, **Android Enterpris
 - **httpOnly cookies** - Session cookies are httpOnly and secure (HTTPS only in production), preventing JavaScript access.
 - **Read-only permissions** - Only read permissions are requested. The application makes no changes to tenant configuration.
 - **Automatic token refresh** - Access tokens are refreshed automatically before expiry, minimizing re-authentication prompts.
+- **Admin-protected analytics** - Analytics dashboard requires server-side admin key verification.
 
 ## Required Azure AD Permissions
 

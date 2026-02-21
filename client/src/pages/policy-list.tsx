@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Search, Sparkles, LogOut, RefreshCw, BarChart3, ExternalLink, Sun, Moon } from "lucide-react";
+import { Shield, Search, Sparkles, LogOut, RefreshCw, ExternalLink, Sun, Moon, AlertTriangle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useTheme } from "@/lib/theme-context";
 
@@ -79,10 +79,16 @@ export default function PolicyListPage() {
     });
   };
 
+  const [showLargeSelectionWarning, setShowLargeSelectionWarning] = useState(false);
+
   const toggleAll = () => {
     if (selected.size === filtered.length) {
       setSelected(new Set());
+      setShowLargeSelectionWarning(false);
     } else {
+      if (filtered.length >= 50) {
+        setShowLargeSelectionWarning(true);
+      }
       setSelected(new Set(filtered.map(p => p.id)));
     }
   };
@@ -111,10 +117,6 @@ export default function PolicyListPage() {
             {userName && <span className="text-xs text-muted-foreground hidden sm:inline" data-testid="text-user-name">{userName}</span>}
             <Button variant="ghost" size="icon" onClick={toggleTheme} data-testid="button-toggle-theme" title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setLocation("/analytics")} data-testid="button-analytics">
-              <BarChart3 className="w-4 h-4 mr-1.5" />
-              Analytics
             </Button>
             <Button variant="ghost" size="sm" onClick={logout} data-testid="button-logout">
               <LogOut className="w-4 h-4 mr-1.5" />
@@ -192,6 +194,17 @@ export default function PolicyListPage() {
               </span>
             </div>
           </div>
+
+          {showLargeSelectionWarning && selected.size >= 50 && (
+            <div className="flex items-start gap-2.5 rounded-md border border-yellow-500/30 bg-yellow-500/5 px-4 py-3" data-testid="warning-large-selection">
+              <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <span className="text-yellow-500 font-medium">Large selection.</span>{" "}
+                <span className="text-muted-foreground">Analyzing {selected.size} policies at once may take a long time and could result in errors. Consider selecting fewer policies for faster, more reliable results.</span>
+              </div>
+              <button onClick={() => setShowLargeSelectionWarning(false)} className="text-muted-foreground hover:text-foreground text-xs ml-auto shrink-0 mt-0.5" data-testid="button-dismiss-warning">&times;</button>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="space-y-2">

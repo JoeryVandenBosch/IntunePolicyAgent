@@ -5,6 +5,7 @@ import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMemb
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import type { IntunePolicyRaw } from "./graph-client";
+import PDFDocument from "pdfkit";
 
 async function getAccessToken(req: Request): Promise<string> {
   return refreshTokenIfNeeded(req);
@@ -294,118 +295,192 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Missing data" });
       }
 
+      const esc = (s: string) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const nl2br = (s: string) => esc(s).replace(/\n/g, "<br>");
+
       let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Intune Policy Analysis Report</title>
   <style>
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #e6edf3; max-width: 900px; margin: 0 auto; padding: 2rem; }
-    h1 { color: #58a6ff; border-bottom: 1px solid #21262d; padding-bottom: 1rem; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #e6edf3; max-width: 1000px; margin: 0 auto; padding: 2rem; }
+    h1 { color: #c6835a; border-bottom: 1px solid #21262d; padding-bottom: 1rem; }
     h2 { color: #c9d1d9; margin-top: 2rem; }
-    h3 { color: #8b949e; }
+    h3 { color: #e6edf3; margin: 0; }
+    h4 { color: #8b949e; margin: 1rem 0 0.5rem 0; font-size: 0.9rem; }
+    p { line-height: 1.6; }
+    .header-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .search-box { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; color: #e6edf3; width: 300px; font-size: 0.9rem; }
+    .search-box::placeholder { color: #484f58; }
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.5rem 0; }
     .stat { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 1rem; }
     .stat-label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; }
-    .stat-value { font-size: 1.5rem; font-weight: bold; color: #58a6ff; }
-    .section { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: #c6835a; }
+    .toc { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+    .toc-title { font-size: 0.9rem; font-weight: 600; color: #c9d1d9; margin-bottom: 0.75rem; }
+    .toc a { color: #c6835a; text-decoration: none; font-size: 0.85rem; display: block; padding: 3px 0; }
+    .toc a:hover { text-decoration: underline; }
+    .policy-group { background: #161b22; border: 1px solid #21262d; border-radius: 8px; margin: 1rem 0; overflow: hidden; }
+    .policy-group[data-hidden="true"] { display: none; }
+    .policy-header { padding: 1rem 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+    .policy-header:hover { background: #1c2129; }
+    .policy-header h3 { flex: 1; }
+    .policy-chevron { transition: transform 0.2s; color: #8b949e; font-size: 1.2rem; }
+    .policy-chevron.open { transform: rotate(90deg); }
+    .policy-body { display: none; padding: 0 1.5rem 1.5rem; border-top: 1px solid #21262d; }
+    .policy-body.open { display: block; }
+    .section { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 1rem; margin: 0.75rem 0; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: 8px; }
     .badge-minimal { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; }
     .badge-low { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
     .badge-medium { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
     .badge-high { background: rgba(248, 113, 113, 0.2); color: #f87171; }
-    .conflict { border-left: 3px solid #f97316; }
-    .recommendation { border-left: 3px solid #eab308; }
+    .badge-critical { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+    .badge-platform { background: rgba(198, 131, 90, 0.15); color: #c6835a; }
+    .conflict-section { border-left: 3px solid #f97316; }
+    .recommendation-section { border-left: 3px solid #eab308; }
     table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
-    td { padding: 0.5rem; border-bottom: 1px solid #21262d; }
+    th { text-align: left; padding: 6px 8px; color: #8b949e; border-bottom: 1px solid #30363d; font-size: 0.8rem; }
+    td { padding: 6px 8px; border-bottom: 1px solid #21262d; font-size: 0.85rem; }
+    a { color: #c6835a; }
+    .no-results { text-align: center; color: #8b949e; padding: 2rem; display: none; }
     .generated { text-align: center; color: #8b949e; font-size: 0.75rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #21262d; }
+    .disclaimer { text-align: center; color: #484f58; font-size: 0.65rem; margin-top: 0.5rem; }
+    @media print { .search-box { display: none; } .policy-body { display: block !important; } }
   </style>
 </head>
 <body>
   <h1>Intune Policy Analysis Report</h1>
-  <p style="color: #8b949e;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+  <div class="header-bar">
+    <p style="color: #8b949e; margin: 0;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()} &middot; ${policies.length} policies analyzed</p>
+    <input type="text" class="search-box" placeholder="Search policies..." id="policySearch" oninput="filterPolicies()">
+  </div>
 
   <div class="stats">
     <div class="stat"><div class="stat-label">Policies Analyzed</div><div class="stat-value">${policies.length}</div></div>
     <div class="stat"><div class="stat-label">Total Settings</div><div class="stat-value">${policies.reduce((s: number, p: any) => s + (p.settingsCount || 0), 0)}</div></div>
-    <div class="stat"><div class="stat-label">Conflicts Found</div><div class="stat-value">${analysis.conflicts?.length || 0}</div></div>
+    <div class="stat"><div class="stat-label">Conflicts Found</div><div class="stat-value">${(analysis.settingConflicts?.length || 0) + (analysis.conflicts?.length || 0)}</div></div>
     <div class="stat"><div class="stat-label">Recommendations</div><div class="stat-value">${analysis.recommendations?.length || 0}</div></div>
-  </div>`;
+  </div>
 
-      html += `<h2>Policy Summaries</h2>`;
-      for (const p of policies) {
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    ${policies.map((p: any, i: number) => `<a href="#policy-${i}" onclick="openPolicy(${i})">${esc(p.name)} (${esc(p.platform)})</a>`).join("")}
+    ${(analysis.settingConflicts?.length || analysis.conflicts?.length) ? '<a href="#conflicts-section">Setting Conflicts</a>' : ''}
+    ${analysis.recommendations?.length ? '<a href="#recommendations-section">Recommendations</a>' : ''}
+  </div>
+
+  <div id="no-results" class="no-results">No policies match your search.</div>`;
+
+      for (let i = 0; i < policies.length; i++) {
+        const p = policies[i];
         const summary = analysis.summaries?.[p.id];
-        html += `<div class="section"><h3>${p.name} <span class="badge">${p.platform}</span></h3><p>${summary?.overview || "No summary available."}</p></div>`;
-      }
+        const euImpact = analysis.endUserImpact?.[p.id];
+        const secImpact = analysis.securityImpact?.[p.id];
 
-      html += `<h2>End-User Impact</h2>`;
-      for (const p of policies) {
-        const impact = analysis.endUserImpact?.[p.id];
-        if (impact) {
-          html += `<div class="section"><h3>${p.name} (${p.id})</h3><span class="badge badge-${(impact.severity || "minimal").toLowerCase()}">${impact.severity}</span>`;
-          if (impact.policySettingsAndImpact) html += `<h4>Policy Settings and Impact:</h4><p>${impact.policySettingsAndImpact}</p>`;
-          if (impact.assignmentScope) html += `<h4>Assignment Scope:</h4><p>${impact.assignmentScope}</p>`;
-          if (impact.riskAnalysis) html += `<h4>Risk Analysis:</h4><p>${impact.riskAnalysis}</p>`;
-          if (impact.conflictAnalysis) html += `<h4>Conflict Analysis:</h4><p>${impact.conflictAnalysis}</p>`;
-          if (impact.overallSummary) html += `<h4>Overall Summary:</h4><p>${impact.overallSummary}</p>`;
-          if (!impact.policySettingsAndImpact) html += `<p>${impact.description}</p>`;
+        html += `<div class="policy-group" data-policy-name="${esc(p.name).toLowerCase()}" id="policy-${i}">
+  <div class="policy-header" onclick="togglePolicy(this)">
+    <h3>${esc(p.name)} <span class="badge badge-platform">${esc(p.platform)}</span></h3>
+    <span class="policy-chevron">&#9654;</span>
+  </div>
+  <div class="policy-body">`;
+
+        html += `<div class="section"><h4>Summary</h4><p>${nl2br(summary?.overview || "No summary available.")}</p></div>`;
+
+        if (euImpact) {
+          html += `<div class="section"><h4>End-User Impact <span class="badge badge-${(euImpact.severity || "minimal").toLowerCase()}">${esc(euImpact.severity)}</span></h4>`;
+          if (euImpact.policySettingsAndImpact) html += `<p><strong>Settings & Impact:</strong></p><p>${nl2br(euImpact.policySettingsAndImpact)}</p>`;
+          if (euImpact.assignmentScope) html += `<p><strong>Assignment Scope:</strong></p><p>${nl2br(euImpact.assignmentScope)}</p>`;
+          if (euImpact.riskAnalysis) html += `<p><strong>Risk Analysis:</strong></p><p>${nl2br(euImpact.riskAnalysis)}</p>`;
+          if (euImpact.overallSummary) html += `<p><strong>Overall Summary:</strong></p><p>${nl2br(euImpact.overallSummary)}</p>`;
+          if (!euImpact.policySettingsAndImpact && euImpact.description) html += `<p>${nl2br(euImpact.description)}</p>`;
           html += `</div>`;
         }
+
+        if (secImpact) {
+          html += `<div class="section"><h4>Security Impact <span class="badge badge-${(secImpact.rating || "medium").toLowerCase()}">${esc(secImpact.rating)}</span></h4>`;
+          if (secImpact.policySettingsAndSecurityImpact) html += `<p><strong>Settings & Security Impact:</strong></p><p>${nl2br(secImpact.policySettingsAndSecurityImpact)}</p>`;
+          if (secImpact.assignmentScope) html += `<p><strong>Assignment Scope:</strong></p><p>${nl2br(secImpact.assignmentScope)}</p>`;
+          if (secImpact.riskAnalysis) html += `<p><strong>Risk Analysis:</strong></p><p>${nl2br(secImpact.riskAnalysis)}</p>`;
+          if (secImpact.overallSummary) html += `<p><strong>Overall Summary:</strong></p><p>${nl2br(secImpact.overallSummary)}</p>`;
+          if (!secImpact.policySettingsAndSecurityImpact && secImpact.description) html += `<p>${nl2br(secImpact.description)}</p>`;
+          if (secImpact.complianceFrameworks?.length) html += `<p style="color:#8b949e;font-size:0.85rem;">Frameworks: ${esc(secImpact.complianceFrameworks.join(", "))}</p>`;
+          html += `</div>`;
+        }
+
+        html += `</div></div>`;
       }
 
-      html += `<h2>Security Impact</h2>`;
-      for (const p of policies) {
-        const impact = analysis.securityImpact?.[p.id];
-        if (impact) {
-          html += `<div class="section"><h3>${p.name} (${p.id})</h3><span class="badge badge-${(impact.rating || "medium").toLowerCase()}">${impact.rating}</span>`;
-          if (impact.policySettingsAndSecurityImpact) html += `<h4>Policy Settings and Security Impact:</h4><p>${impact.policySettingsAndSecurityImpact}</p>`;
-          if (impact.assignmentScope) html += `<h4>Assignment Scope:</h4><p>${impact.assignmentScope}</p>`;
-          if (impact.riskAnalysis) html += `<h4>Risk Analysis:</h4><p>${impact.riskAnalysis}</p>`;
-          if (impact.conflictAnalysis) html += `<h4>Conflict Analysis:</h4><p>${impact.conflictAnalysis}</p>`;
-          if (impact.overallSummary) html += `<h4>Overall Summary:</h4><p>${impact.overallSummary}</p>`;
-          if (!impact.policySettingsAndSecurityImpact) html += `<p>${impact.description}</p>`;
-          if (impact.complianceFrameworks?.length) {
-            html += `<p style="color: #8b949e; font-size: 0.85rem;">Frameworks: ${impact.complianceFrameworks.join(", ")}</p>`;
+      if (analysis.settingConflicts?.length > 0 || analysis.conflicts?.length > 0) {
+        html += `<div id="conflicts-section"><h2>Conflicts</h2>`;
+        if (analysis.settingConflicts?.length > 0) {
+          for (const sc of analysis.settingConflicts) {
+            html += `<div class="section conflict-section"><h4>${esc(sc.settingName)} <span class="badge badge-medium">Conflict</span></h4>`;
+            html += `<p style="color:#8b949e;font-size:0.8rem;">${esc(sc.settingDefinitionId)}</p>`;
+            html += `<table><tr><th>Policy</th><th>Value</th></tr>`;
+            for (const sp of sc.sourcePolicies) {
+              html += `<tr><td><a href="${esc(sp.intuneUrl)}" target="_blank">${esc(sp.policyName)}</a></td><td>${esc(sp.value)}</td></tr>`;
+            }
+            html += `</table></div>`;
           }
-          html += `</div>`;
         }
-      }
-
-      if (analysis.settingConflicts?.length > 0) {
-        html += `<h2>Setting-Level Conflicts</h2>`;
-        for (const sc of analysis.settingConflicts) {
-          html += `<div class="section conflict"><h3>${sc.settingName} <span class="badge badge-medium">Conflict</span></h3>`;
-          html += `<p style="color: #8b949e; font-size: 0.85rem;">${sc.settingDefinitionId}</p>`;
-          html += `<table style="width:100%;border-collapse:collapse;margin-top:8px;"><tr style="border-bottom:1px solid #333;"><th style="text-align:left;padding:4px 8px;color:#8b949e;">Policy</th><th style="text-align:left;padding:4px 8px;color:#8b949e;">Value</th></tr>`;
-          for (const sp of sc.sourcePolicies) {
-            html += `<tr style="border-bottom:1px solid #222;"><td style="padding:4px 8px;"><a href="${sp.intuneUrl}" target="_blank" style="color:#58a6ff;">${sp.policyName}</a></td><td style="padding:4px 8px;">${sp.value}</td></tr>`;
+        if (analysis.conflicts?.length > 0) {
+          for (const c of analysis.conflicts) {
+            html += `<div class="section conflict-section"><h4>${esc(c.type)} <span class="badge badge-medium">${esc(c.severity)}</span></h4>`;
+            html += `<p>${nl2br(c.detail)}</p><p style="color:#8b949e;">Policies: ${esc(c.policies.join(" / "))}</p>`;
+            if (c.conflictingSettings) html += `<p><strong>Conflicting Settings:</strong></p><p>${nl2br(c.conflictingSettings)}</p>`;
+            if (c.assignmentOverlap) html += `<p><strong>Assignment Overlap:</strong></p><p>${nl2br(c.assignmentOverlap)}</p>`;
+            if (c.impactAssessment) html += `<p><strong>Impact Assessment:</strong></p><p>${nl2br(c.impactAssessment)}</p>`;
+            if (c.resolutionSteps) html += `<p><strong>Resolution Steps:</strong></p><p>${nl2br(c.resolutionSteps)}</p>`;
+            html += `</div>`;
           }
-          html += `</table></div>`;
         }
-      }
-
-      if (analysis.conflicts?.length > 0) {
-        html += `<h2>AI Conflict Analysis</h2>`;
-        for (const c of analysis.conflicts) {
-          html += `<div class="section conflict"><h3>${c.type} <span class="badge badge-medium">${c.severity}</span></h3>`;
-          html += `<p>${c.detail}</p>`;
-          html += `<p style="color: #8b949e;">Policies: ${c.policies.join(" / ")}</p>`;
-          if (c.conflictingSettings) html += `<h4>Conflicting Settings:</h4><p>${c.conflictingSettings}</p>`;
-          if (c.assignmentOverlap) html += `<h4>Assignment Overlap:</h4><p>${c.assignmentOverlap}</p>`;
-          if (c.impactAssessment) html += `<h4>Impact Assessment:</h4><p>${c.impactAssessment}</p>`;
-          if (c.resolutionSteps) html += `<h4>Resolution Steps:</h4><p>${c.resolutionSteps}</p>`;
-          html += `</div>`;
-        }
+        html += `</div>`;
       }
 
       if (analysis.recommendations?.length > 0) {
-        html += `<h2>Recommendations</h2>`;
+        html += `<div id="recommendations-section"><h2>Recommendations</h2>`;
         for (const r of analysis.recommendations) {
-          html += `<div class="section recommendation"><h3>${r.title} <span class="badge">${r.type}</span></h3><p>${r.detail}</p></div>`;
+          html += `<div class="section recommendation-section"><h4>${esc(r.title)} <span class="badge">${esc(r.type)}</span></h4><p>${nl2br(r.detail)}</p></div>`;
         }
+        html += `</div>`;
       }
 
-      html += `<div class="generated">Report generated by Intune Policy Intelligence Agent</div></body></html>`;
+      html += `<div class="generated">Report generated by Intune Policy Intelligence Agent &middot; Powered by IntuneStuff</div>`;
+      html += `<div class="disclaimer">AI-generated content may be incorrect. Check it for accuracy.</div>`;
+
+      html += `
+<script>
+function togglePolicy(header) {
+  var body = header.nextElementSibling;
+  var chevron = header.querySelector('.policy-chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+function openPolicy(idx) {
+  var el = document.getElementById('policy-' + idx);
+  if (el) {
+    var body = el.querySelector('.policy-body');
+    var chevron = el.querySelector('.policy-chevron');
+    if (!body.classList.contains('open')) { body.classList.add('open'); chevron.classList.add('open'); }
+    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  }
+}
+function filterPolicies() {
+  var q = document.getElementById('policySearch').value.toLowerCase();
+  var groups = document.querySelectorAll('.policy-group');
+  var visible = 0;
+  groups.forEach(function(g) {
+    var name = g.getAttribute('data-policy-name') || '';
+    if (!q || name.indexOf(q) !== -1) { g.setAttribute('data-hidden', 'false'); visible++; }
+    else { g.setAttribute('data-hidden', 'true'); }
+  });
+  document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+}
+</script>
+</body></html>`;
 
       res.setHeader("Content-Type", "text/html");
       res.setHeader("Content-Disposition", "attachment; filename=intune-analysis.html");
@@ -415,91 +490,410 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/export/text", async (req, res) => {
+  app.post("/api/export/csv", async (req, res) => {
     try {
       const { policies, analysis } = req.body;
       if (!policies || !analysis) {
         return res.status(400).json({ message: "Missing data" });
       }
 
-      let text = `INTUNE POLICY ANALYSIS REPORT\n${"=".repeat(50)}\nGenerated: ${new Date().toLocaleString()}\n\n`;
-      text += `Policies Analyzed: ${policies.length}\n`;
-      text += `Total Settings: ${policies.reduce((s: number, p: any) => s + (p.settingsCount || 0), 0)}\n`;
-      text += `Conflicts Found: ${analysis.conflicts?.length || 0}\n`;
-      text += `Recommendations: ${analysis.recommendations?.length || 0}\n\n`;
+      const csvEsc = (s: string) => {
+        if (!s) return "";
+        const str = String(s).replace(/"/g, '""');
+        return str.includes(",") || str.includes('"') || str.includes("\n") ? `"${str}"` : str;
+      };
 
-      text += `SUMMARIES\n${"-".repeat(40)}\n`;
+      let csv = "Policy Name,Policy ID,Platform,Type,Settings Count,End-User Impact Severity,Security Impact Rating,Summary,End-User Risk Analysis,Security Risk Analysis,Compliance Frameworks,Recommendations\n";
+
       for (const p of policies) {
         const summary = analysis.summaries?.[p.id];
-        text += `\n${p.name} [${p.platform}]\n${summary?.overview || "No summary available."}\n`;
+        const euImpact = analysis.endUserImpact?.[p.id];
+        const secImpact = analysis.securityImpact?.[p.id];
+        const policyRecs = (analysis.recommendations || [])
+          .filter((r: any) => r.detail?.includes(p.name))
+          .map((r: any) => `[${r.type}] ${r.title}: ${r.detail}`)
+          .join(" | ");
+
+        csv += [
+          csvEsc(p.name),
+          csvEsc(p.id),
+          csvEsc(p.platform),
+          csvEsc(p.type),
+          p.settingsCount || 0,
+          csvEsc(euImpact?.severity || "N/A"),
+          csvEsc(secImpact?.rating || "N/A"),
+          csvEsc(summary?.overview || ""),
+          csvEsc(euImpact?.riskAnalysis || euImpact?.description || ""),
+          csvEsc(secImpact?.riskAnalysis || secImpact?.description || ""),
+          csvEsc(secImpact?.complianceFrameworks?.join("; ") || ""),
+          csvEsc(policyRecs),
+        ].join(",") + "\n";
       }
 
-      text += `\n\nEND-USER IMPACT\n${"-".repeat(40)}\n`;
-      for (const p of policies) {
-        const impact = analysis.endUserImpact?.[p.id];
-        if (impact) {
-          text += `\n${p.name} (${p.id}) - ${impact.severity} Impact\n`;
-          if (impact.policySettingsAndImpact) text += `\nPolicy Settings and Impact:\n${impact.policySettingsAndImpact}\n`;
-          if (impact.assignmentScope) text += `\nAssignment Scope:\n${impact.assignmentScope}\n`;
-          if (impact.riskAnalysis) text += `\nRisk Analysis:\n${impact.riskAnalysis}\n`;
-          if (impact.conflictAnalysis) text += `\nConflict Analysis:\n${impact.conflictAnalysis}\n`;
-          if (impact.overallSummary) text += `\nOverall Summary:\n${impact.overallSummary}\n`;
-          if (!impact.policySettingsAndImpact) text += `${impact.description}\n`;
-        }
-      }
-
-      text += `\n\nSECURITY IMPACT\n${"-".repeat(40)}\n`;
-      for (const p of policies) {
-        const impact = analysis.securityImpact?.[p.id];
-        if (impact) {
-          text += `\n${p.name} (${p.id}) - ${impact.rating} Rating\n`;
-          if (impact.policySettingsAndSecurityImpact) text += `\nPolicy Settings and Security Impact:\n${impact.policySettingsAndSecurityImpact}\n`;
-          if (impact.assignmentScope) text += `\nAssignment Scope:\n${impact.assignmentScope}\n`;
-          if (impact.riskAnalysis) text += `\nRisk Analysis:\n${impact.riskAnalysis}\n`;
-          if (impact.conflictAnalysis) text += `\nConflict Analysis:\n${impact.conflictAnalysis}\n`;
-          if (impact.overallSummary) text += `\nOverall Summary:\n${impact.overallSummary}\n`;
-          if (!impact.policySettingsAndSecurityImpact) text += `${impact.description}\n`;
-          text += `Frameworks: ${impact.complianceFrameworks?.join(", ") || "N/A"}\n`;
-        }
-      }
-
-      if (analysis.settingConflicts?.length > 0) {
-        text += `\n\nSETTING-LEVEL CONFLICTS\n${"-".repeat(40)}\n`;
-        for (const sc of analysis.settingConflicts) {
-          text += `\n${sc.settingName} [CONFLICT]\n${sc.settingDefinitionId}\n`;
-          for (const sp of sc.sourcePolicies) {
-            text += `  - ${sp.policyName}: ${sp.value}\n    Intune: ${sp.intuneUrl}\n`;
-          }
-        }
-      }
-
-      if (analysis.conflicts?.length > 0) {
-        text += `\n\nAI CONFLICT ANALYSIS\n${"-".repeat(40)}\n`;
-        for (const c of analysis.conflicts) {
-          text += `\n[${c.severity}] ${c.type}\n${c.detail}\nPolicies: ${c.policies.join(" / ")}\n`;
-          if (c.conflictingSettings) text += `\nConflicting Settings:\n${c.conflictingSettings}\n`;
-          if (c.assignmentOverlap) text += `\nAssignment Overlap:\n${c.assignmentOverlap}\n`;
-          if (c.impactAssessment) text += `\nImpact Assessment:\n${c.impactAssessment}\n`;
-          if (c.resolutionSteps) text += `\nResolution Steps:\n${c.resolutionSteps}\n`;
-        }
-      }
-
-      if (analysis.recommendations?.length > 0) {
-        text += `\n\nRECOMMENDATIONS\n${"-".repeat(40)}\n`;
-        for (const r of analysis.recommendations) {
-          text += `\n[${r.type}] ${r.title}\n${r.detail}\n`;
-        }
-      }
-
-      res.setHeader("Content-Type", "text/plain");
-      res.setHeader("Content-Disposition", "attachment; filename=intune-analysis.txt");
-      res.send(text);
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=intune-analysis.csv");
+      res.send(csv);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
 
-  app.get("/api/analytics", requireAuth, async (req: any, res) => {
+  app.post("/api/export/pdf", async (req, res) => {
+    try {
+      const { policies, analysis, branding } = req.body;
+      if (!policies || !analysis) {
+        return res.status(400).json({ message: "Missing data" });
+      }
+
+      const b = {
+        companyName: branding?.companyName || "",
+        department: branding?.department || "",
+        contactEmail: branding?.contactEmail || "",
+        website: branding?.website || "",
+        logoDataUrl: branding?.logoDataUrl || "",
+        logoPosition: branding?.logoPosition || "cover",
+        primaryColor: branding?.primaryColor || "#000000",
+        secondaryColor: branding?.secondaryColor || "#666666",
+        accentColor: branding?.accentColor || "#000000",
+        textColor: branding?.textColor || "#000000",
+        fontFamily: branding?.fontFamily || "Helvetica",
+        headerFontSize: branding?.headerFontSize || 13,
+        bodyFontSize: branding?.bodyFontSize || 10,
+        includeCoverPage: branding?.includeCoverPage !== false,
+        includeHeader: branding?.includeHeader !== false,
+        includeFooter: branding?.includeFooter !== false,
+        addWatermark: branding?.addWatermark !== false,
+        watermarkText: branding?.watermarkText || "CONFIDENTIAL",
+        watermarkOpacity: (branding?.watermarkOpacity || 10) / 100,
+        includeToc: branding?.includeToc !== false,
+        includeAnalytics: branding?.includeAnalytics !== false,
+        format: branding?.format || "condensed",
+        documentTitle: branding?.documentTitle || "Intune Intelligence Report",
+        author: branding?.author || "",
+        classification: branding?.classification || "Internal",
+      };
+
+      const hexToRgb = (hex: string): [number, number, number] => {
+        try {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return [r, g, b];
+        } catch { return [0, 0, 0]; }
+      };
+      const primary = hexToRgb(b.primaryColor);
+      const secondary = hexToRgb(b.secondaryColor);
+      const accent = hexToRgb(b.accentColor);
+      const textCol = hexToRgb(b.textColor);
+
+      const doc = new PDFDocument({
+        size: "A4",
+        margins: { top: 60, bottom: 60, left: 50, right: 50 },
+        bufferPages: true,
+        font: b.fontFamily,
+        info: {
+          Title: b.documentTitle,
+          Author: b.author || b.companyName || "IntuneStuff",
+          Subject: `Intune Policy Analysis - ${policies.length} policies`,
+          Creator: "Intune Policy Intelligence Agent",
+        },
+      });
+
+      const buffers: Buffer[] = [];
+      doc.on("data", (chunk: Buffer) => buffers.push(chunk));
+      const writePromise = new Promise<Buffer>((resolve) => {
+        doc.on("end", () => resolve(Buffer.concat(buffers)));
+      });
+
+      const pageWidth = doc.page.width - 100;
+      const totalSettings = policies.reduce((s: number, p: any) => s + (p.settingsCount || 0), 0);
+      const totalConflicts = (analysis.settingConflicts?.length || 0) + (analysis.conflicts?.length || 0);
+      const totalRecs = analysis.recommendations?.length || 0;
+      const isExec = b.format === "executive";
+
+      let logoImage: any = null;
+      if (b.logoDataUrl && b.logoDataUrl.startsWith("data:image")) {
+        try {
+          const base64Data = b.logoDataUrl.split(",")[1];
+          logoImage = Buffer.from(base64Data, "base64");
+        } catch {}
+      }
+
+      const drawLogo = (x: number, y: number, size: number) => {
+        if (logoImage) {
+          try { doc.image(logoImage, x, y, { width: size, height: size }); } catch {}
+        }
+      };
+
+      if (b.includeCoverPage) {
+        const midY = doc.page.height / 2 - 100;
+
+        if (logoImage && (b.logoPosition === "cover" || b.logoPosition === "both")) {
+          drawLogo(doc.page.width / 2 - 40, midY - 100, 80);
+          doc.y = midY;
+        } else {
+          doc.y = midY + 20;
+        }
+
+        doc.fontSize(b.headerFontSize + 13).fillColor(primary).text(b.documentTitle, { align: "center" });
+        doc.moveDown(0.5);
+
+        if (b.companyName) {
+          doc.fontSize(b.headerFontSize + 2).fillColor(secondary).text(b.companyName, { align: "center" });
+          doc.moveDown(0.3);
+        }
+        if (b.department) {
+          doc.fontSize(b.bodyFontSize + 1).fillColor(secondary).text(b.department, { align: "center" });
+          doc.moveDown(0.2);
+        }
+
+        doc.moveDown(1);
+        doc.moveTo(doc.page.width / 2 - 80, doc.y).lineTo(doc.page.width / 2 + 80, doc.y).strokeColor(accent).lineWidth(2).stroke();
+        doc.moveDown(1);
+
+        doc.fontSize(b.bodyFontSize).fillColor(textCol);
+        doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, { align: "center" });
+        doc.moveDown(0.2);
+        doc.text(`Policies Analyzed: ${policies.length} | Total Settings: ${totalSettings}`, { align: "center" });
+        doc.moveDown(0.2);
+        if (b.classification !== "Public") {
+          doc.text(`Classification: ${b.classification}`, { align: "center" });
+          doc.moveDown(0.2);
+        }
+
+        doc.moveDown(2);
+        const infoItems = [];
+        if (b.contactEmail) infoItems.push(`Contact: ${b.contactEmail}`);
+        if (b.website) infoItems.push(`Website: ${b.website}`);
+        if (b.author) infoItems.push(`Author: ${b.author}`);
+        if (infoItems.length) {
+          doc.fontSize(b.bodyFontSize - 1).fillColor(secondary).text(infoItems.join("  |  "), { align: "center" });
+        }
+
+        doc.fontSize(7).fillColor(secondary).text("AI-generated content — verify for accuracy", 50, doc.page.height - 50, { align: "center", width: pageWidth });
+
+        doc.addPage();
+      }
+
+      if (b.includeToc && !isExec) {
+        doc.fontSize(b.headerFontSize + 3).fillColor(primary).text("Table of Contents");
+        doc.moveDown(0.5);
+        doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).strokeColor(accent).stroke();
+        doc.moveDown(0.5);
+
+        let tocNum = 1;
+        for (const p of policies) {
+          doc.fontSize(b.bodyFontSize).fillColor(textCol).text(`${tocNum}. ${p.name} (${p.platform})`, { indent: 10 });
+          doc.moveDown(0.15);
+          tocNum++;
+        }
+        if (totalConflicts > 0) { doc.fontSize(b.bodyFontSize).fillColor(textCol).text(`${tocNum}. Conflicts (${totalConflicts})`, { indent: 10 }); tocNum++; doc.moveDown(0.15); }
+        if (totalRecs > 0) { doc.fontSize(b.bodyFontSize).fillColor(textCol).text(`${tocNum}. Recommendations (${totalRecs})`, { indent: 10 }); doc.moveDown(0.15); }
+
+        doc.addPage();
+      }
+
+      if (b.includeAnalytics && !isExec) {
+        doc.fontSize(b.headerFontSize + 1).fillColor(primary).text("Analysis Overview");
+        doc.moveDown(0.5);
+
+        const statsY = doc.y;
+        const statWidth = pageWidth / 4;
+        const statLabels = ["Policies", "Settings", "Conflicts", "Recommendations"];
+        const statValues = [policies.length, totalSettings, totalConflicts, totalRecs];
+        for (let i = 0; i < 4; i++) {
+          const x = 50 + i * statWidth;
+          doc.fontSize(20).fillColor(accent).text(String(statValues[i]), x, statsY, { width: statWidth, align: "center" });
+          doc.fontSize(7).fillColor(secondary).text(statLabels[i].toUpperCase(), x, statsY + 24, { width: statWidth, align: "center" });
+        }
+        doc.y = statsY + 50;
+        doc.moveDown(1);
+      }
+
+      const sectionTitle = (title: string) => {
+        if (doc.y > doc.page.height - 100) doc.addPage();
+        doc.moveDown(0.5);
+        doc.fontSize(b.headerFontSize).fillColor(primary).text(title);
+        doc.moveDown(0.3);
+      };
+
+      const subTitle = (title: string) => {
+        if (doc.y > doc.page.height - 80) doc.addPage();
+        doc.fontSize(b.bodyFontSize + 1).fillColor(secondary).text(title, { underline: true });
+        doc.moveDown(0.2);
+      };
+
+      const bodyText = (text: string) => {
+        if (!text) return;
+        const cleaned = text.replace(/\*\*/g, "").replace(/- /g, "• ");
+        doc.fontSize(b.bodyFontSize).fillColor(textCol).text(cleaned, { lineGap: 2 });
+        doc.moveDown(0.3);
+      };
+
+      const labelText = (label: string) => {
+        doc.fontSize(b.bodyFontSize).fillColor(secondary).text(label, { continued: false });
+      };
+
+      for (const p of policies) {
+        sectionTitle(p.name);
+        doc.fontSize(b.bodyFontSize - 2).fillColor(secondary).text(`Platform: ${p.platform} | Type: ${p.type || "N/A"} | Settings: ${p.settingsCount || 0} | ID: ${p.id}`);
+        doc.moveDown(0.4);
+
+        const summary = analysis.summaries?.[p.id];
+        if (summary?.overview) {
+          subTitle("Summary");
+          bodyText(summary.overview);
+        }
+
+        if (!isExec) {
+          const euImpact = analysis.endUserImpact?.[p.id];
+          if (euImpact) {
+            subTitle(`End-User Impact - ${euImpact.severity || "N/A"}`);
+            if (euImpact.policySettingsAndImpact) bodyText(euImpact.policySettingsAndImpact);
+            if (euImpact.assignmentScope) { labelText("Assignment Scope:"); bodyText(euImpact.assignmentScope); }
+            if (euImpact.riskAnalysis) { labelText("Risk Analysis:"); bodyText(euImpact.riskAnalysis); }
+            if (euImpact.overallSummary) { labelText("Overall:"); bodyText(euImpact.overallSummary); }
+            if (!euImpact.policySettingsAndImpact && euImpact.description) bodyText(euImpact.description);
+          }
+
+          const secImpact = analysis.securityImpact?.[p.id];
+          if (secImpact) {
+            subTitle(`Security Impact - ${secImpact.rating || "N/A"}`);
+            if (secImpact.policySettingsAndSecurityImpact) bodyText(secImpact.policySettingsAndSecurityImpact);
+            if (secImpact.assignmentScope) { labelText("Assignment Scope:"); bodyText(secImpact.assignmentScope); }
+            if (secImpact.riskAnalysis) { labelText("Risk Analysis:"); bodyText(secImpact.riskAnalysis); }
+            if (secImpact.overallSummary) { labelText("Overall:"); bodyText(secImpact.overallSummary); }
+            if (!secImpact.policySettingsAndSecurityImpact && secImpact.description) bodyText(secImpact.description);
+            if (secImpact.complianceFrameworks?.length) {
+              doc.fontSize(b.bodyFontSize - 1).fillColor(secondary).text(`Frameworks: ${secImpact.complianceFrameworks.join(", ")}`);
+              doc.moveDown(0.2);
+            }
+          }
+        }
+
+        doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).strokeColor("#dddddd").stroke();
+        doc.moveDown(0.3);
+      }
+
+      if (!isExec && analysis.settingConflicts?.length > 0) {
+        sectionTitle("Setting-Level Conflicts");
+        for (const sc of analysis.settingConflicts) {
+          doc.fontSize(b.bodyFontSize + 1).fillColor(accent).text(sc.settingName);
+          doc.fontSize(b.bodyFontSize - 2).fillColor(secondary).text(sc.settingDefinitionId);
+          doc.moveDown(0.2);
+          for (const sp of sc.sourcePolicies) {
+            doc.fontSize(b.bodyFontSize).fillColor(textCol).text(`  ${sp.policyName}: ${sp.value}`);
+          }
+          doc.moveDown(0.4);
+        }
+      }
+
+      if (!isExec && analysis.conflicts?.length > 0) {
+        sectionTitle("AI Conflict Analysis");
+        for (const c of analysis.conflicts) {
+          doc.fontSize(b.bodyFontSize + 1).fillColor(accent).text(`[${c.severity}] ${c.type}`);
+          bodyText(c.detail);
+          if (c.conflictingSettings) bodyText(`Conflicting Settings: ${c.conflictingSettings}`);
+          if (c.resolutionSteps) bodyText(`Resolution: ${c.resolutionSteps}`);
+          doc.moveDown(0.2);
+        }
+      }
+
+      if (analysis.recommendations?.length > 0) {
+        sectionTitle("Recommendations");
+        for (const r of analysis.recommendations) {
+          doc.fontSize(b.bodyFontSize + 1).fillColor(primary).text(`[${r.type}] ${r.title}`);
+          bodyText(r.detail);
+          doc.moveDown(0.2);
+        }
+      }
+
+      const pages = doc.bufferedPageRange();
+      const coverOffset = b.includeCoverPage ? 1 : 0;
+
+      if (b.addWatermark && b.watermarkText) {
+        for (let i = pages.start; i < pages.start + pages.count; i++) {
+          doc.switchToPage(i);
+          doc.save();
+          doc.fontSize(52).fillColor("#cccccc").opacity(b.watermarkOpacity);
+          doc.translate(doc.page.width / 2, doc.page.height / 2);
+          doc.rotate(-45, { origin: [0, 0] });
+          doc.text(b.watermarkText, -150, -20, { lineBreak: false });
+          doc.restore();
+        }
+      }
+
+      if (b.includeHeader) {
+        for (let i = pages.start + coverOffset; i < pages.start + pages.count; i++) {
+          doc.switchToPage(i);
+          doc.save();
+          doc.fontSize(7).fillColor(secondary);
+          const headerLeft = b.companyName || b.documentTitle;
+          const headerRight = b.classification !== "Public" ? b.classification : "";
+          doc.text(headerLeft, 50, 25, { width: pageWidth / 2, align: "left", lineBreak: false });
+          if (headerRight) doc.text(headerRight, 50 + pageWidth / 2, 25, { width: pageWidth / 2, align: "right", lineBreak: false });
+          doc.moveTo(50, 40).lineTo(50 + pageWidth, 40).strokeColor("#eeeeee").lineWidth(0.5).stroke();
+          doc.restore();
+
+          if (logoImage && (b.logoPosition === "header" || b.logoPosition === "both")) {
+            try { doc.image(logoImage, doc.page.width - 70, 15, { width: 20, height: 20 }); } catch {}
+          }
+        }
+      }
+
+      if (b.includeFooter) {
+        for (let i = pages.start; i < pages.start + pages.count; i++) {
+          doc.switchToPage(i);
+          doc.save();
+          doc.moveTo(50, doc.page.height - 45).lineTo(50 + pageWidth, doc.page.height - 45).strokeColor("#eeeeee").lineWidth(0.5).stroke();
+          doc.fontSize(7).fillColor(secondary).text(
+            `${b.documentTitle}${b.companyName ? " | " + b.companyName : ""} | Page ${i - pages.start + 1} of ${pages.count}`,
+            50, doc.page.height - 38, { width: pageWidth, align: "center", lineBreak: false }
+          );
+          doc.restore();
+        }
+      }
+
+      doc.end();
+      const pdfBuffer = await writePromise;
+
+      const filename = (b.documentTitle || "intune-analysis").replace(/[^a-zA-Z0-9-_ ]/g, "").replace(/\s+/g, "-");
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error: any) {
+      console.error("PDF export error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/analytics/verify", async (req: any, res) => {
+    try {
+      const { adminKey } = req.body;
+      const validKey = process.env.ANALYTICS_ADMIN_KEY;
+      if (!validKey) {
+        return res.status(500).json({ message: "Admin key not configured" });
+      }
+      if (adminKey === validKey) {
+        if (req.session) {
+          req.session.analyticsAuthorized = true;
+        }
+        return res.json({ authorized: true });
+      }
+      return res.status(401).json({ message: "Invalid admin key" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/analytics/status", async (req: any, res) => {
+    res.json({ authorized: !!req.session?.analyticsAuthorized });
+  });
+
+  app.get("/api/analytics", async (req: any, res) => {
+    if (!req.session?.analyticsAuthorized) {
+      return res.status(401).json({ message: "Unauthorized. Please provide admin key." });
+    }
     try {
       const summary = await getAnalyticsSummary();
       res.json(summary);

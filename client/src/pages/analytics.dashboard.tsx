@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, Legend } from "recharts";
-import { ArrowLeft, BarChart3, Users, Building2, FileText, Clock, Shield, TrendingUp, LogIn, Sun, Moon } from "lucide-react";
+import { ArrowLeft, BarChart3, Users, Building2, FileText, Clock, Shield, TrendingUp, LogIn, Sun, Moon, Lock } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 
 const CHART_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#84cc16"];
@@ -52,11 +53,81 @@ export default function AnalyticsDashboard() {
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"overview" | "tenants" | "users" | "activity">("overview");
+  const [adminKey, setAdminKey] = useState("");
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/analytics/status", { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { setIsAuthorized(d.authorized); setAuthChecking(false); })
+      .catch(() => setAuthChecking(false));
+  }, []);
+
+  const handleVerifyKey = async () => {
+    setVerifying(true);
+    setAuthError("");
+    try {
+      const res = await fetch("/api/analytics/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminKey }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        setIsAuthorized(true);
+      } else {
+        const err = await res.json().catch(() => ({ message: "Verification failed" }));
+        setAuthError(err.message || "Invalid admin key");
+      }
+    } catch {
+      setAuthError("Failed to verify key");
+    }
+    setVerifying(false);
+  };
 
   const { data, isLoading, error } = useQuery<any>({
     queryKey: ["/api/analytics"],
     refetchInterval: 30000,
+    enabled: isAuthorized,
   });
+
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Skeleton className="h-40 w-80" />
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-sm border-border/40">
+          <CardContent className="pt-6 space-y-4">
+            <div className="text-center space-y-2">
+              <Lock className="w-10 h-10 text-primary mx-auto" />
+              <h2 className="text-lg font-semibold">Admin Access</h2>
+            </div>
+            <Input
+              type="password"
+              placeholder="Enter admin key"
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleVerifyKey()}
+              data-testid="input-admin-key"
+            />
+            {authError && <p className="text-xs text-destructive text-center">{authError}</p>}
+            <Button className="w-full" onClick={handleVerifyKey} disabled={verifying || !adminKey} data-testid="button-access-dashboard">
+              {verifying ? "Verifying..." : "Access Dashboard"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
