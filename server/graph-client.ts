@@ -297,17 +297,24 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
       const skipKeys = new Set(["id", "displayName", "description", "createdDateTime", "lastModifiedDateTime", "version", "roleScopeTagIds", "@odata.type", "_source", "_policyMeta", "assignments", "settings", "settingsCount", "isAssigned", "supportsScopeTags", "deviceManagementApplicabilityRuleOsEdition", "deviceManagementApplicabilityRuleOsVersion", "deviceManagementApplicabilityRuleDeviceMode", "omaSettings"]);
       const extractedSettings: any[] = [];
 
+      // Always re-fetch the individual policy to get the full property set.
+      // The list endpoint often returns only basic properties, especially for
+      // Android/iOS configuration profiles which need the individual fetch.
       let omaSettings = details.omaSettings;
-      if (!omaSettings && source === "deviceConfigurations") {
-        const odataType = (details["@odata.type"] || "").toLowerCase();
-        if (odataType.includes("custom")) {
-          try {
-            const fullPolicy = await graphGet(token, `${baseUrl}/deviceConfigurations('${policyId}')`);
-            omaSettings = fullPolicy.omaSettings;
-            console.log(`  Re-fetched individual policy for OMA-URI settings: found ${omaSettings?.length || 0} OMA settings`);
-          } catch (fetchErr: any) {
-            console.warn(`  Failed to re-fetch individual policy for OMA-URI: ${fetchErr?.message}`);
+      if (source === "deviceConfigurations") {
+        try {
+          const fullPolicy = await graphGet(token, `${baseUrl}/deviceConfigurations('${policyId}')`);
+          omaSettings = fullPolicy.omaSettings || omaSettings;
+          // Merge full policy properties into details so flattenSettings has complete data
+          for (const [key, value] of Object.entries(fullPolicy)) {
+            if (key === "omaSettings" || key === "assignments") continue;
+            if (value !== null && value !== undefined) {
+              details[key] = value;
+            }
           }
+          console.log(`  Re-fetched full policy for "${policy.name}" (${details["@odata.type"] || "unknown type"})`);
+        } catch (fetchErr: any) {
+          console.warn(`  Failed to re-fetch individual policy for "${policy.name}": ${fetchErr?.message}`);
         }
       }
 

@@ -32,6 +32,8 @@ export async function registerRoutes(
         settingsCount: p.settingsCount,
         description: p.description,
         source: p.rawData?._source || "",
+        odataType: p.rawData?.["@odata.type"] || "",
+        templateId: p.rawData?.templateReference?.templateId || p.rawData?.templateId || "",
       })));
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch policies" });

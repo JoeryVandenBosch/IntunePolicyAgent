@@ -13,32 +13,17 @@ import { Shield, Search, Sparkles, LogOut, RefreshCw, ExternalLink, Sun, Moon, A
 import { queryClient } from "@/lib/queryClient";
 import { useTheme } from "@/lib/theme-context";
 
-function getIntuneUrl(policy: IntunePolicy): string {
-  const source = policy.source || "";
-  const id = policy.id;
-  const encodedName = encodeURIComponent(policy.name);
-  if (source === "configurationPolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/2/isAssigned~/true`;
-  } else if (source === "deviceConfigurations") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/74/isAssigned~/true`;
-  } else if (source === "deviceCompliancePolicies") {
-    const platformNum = getPlatformNumber(policy.platform);
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/CompliancePolicyOverview.ReactView/policyId/${id}/policyName/${encodedName}/platform~/${platformNum}/policyType~/33/policyJourneyState~/1`;
-  } else if (source === "intents") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/1/isAssigned~/true`;
-  }
-  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configuration`;
-}
+import { getIntunePortalUrl } from "@shared/intune-urls";
 
-function getPlatformNumber(platform: string): number {
-  switch (platform) {
-    case "Windows": return 6;
-    case "iOS/iPadOS": return 3;
-    case "macOS": return 4;
-    case "Android Enterprise": return 2;
-    case "Linux": return 10;
-    default: return 6;
-  }
+function getIntuneUrl(policy: IntunePolicy): string {
+  return getIntunePortalUrl({
+    id: policy.id,
+    name: policy.name,
+    source: policy.source || "",
+    platform: policy.platform,
+    odataType: policy.odataType,
+    templateId: policy.templateId,
+  });
 }
 
 const PLATFORM_COLORS: Record<string, string> = {

@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type { IntunePolicyRaw } from "./graph-client";
 import type { SettingConflict, SettingComparison } from "@shared/schema";
+import { getIntunePortalUrl as generateIntuneUrl } from "../shared/intune-urls";
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -604,19 +605,14 @@ Return ONLY valid JSON array:
 }
 
 function getIntunePortalUrl(policy: IntunePolicyRaw): string {
-  const source = policy.rawData?._source || "";
-  const id = policy.id;
-  const encodedName = encodeURIComponent(policy.name || "");
-  if (source === "configurationPolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/2/isAssigned~/true`;
-  } else if (source === "deviceConfigurations") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/74/isAssigned~/true`;
-  } else if (source === "deviceCompliancePolicies") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/6/isAssigned~/true`;
-  } else if (source === "intents") {
-    return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/PolicySummaryReportBlade/policyId/${id}/policyName/${encodedName}/policyJourneyState~/0/policyType~/1/isAssigned~/true`;
-  }
-  return `https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configuration`;
+  return generateIntuneUrl({
+    id: policy.id,
+    name: policy.name,
+    source: policy.rawData?._source || "",
+    platform: policy.platform || "Unknown",
+    odataType: policy.rawData?.["@odata.type"] || "",
+    templateId: policy.rawData?.templateReference?.templateId || policy.rawData?.templateId || "",
+  });
 }
 
 function getSettingValue(setting: any): string {

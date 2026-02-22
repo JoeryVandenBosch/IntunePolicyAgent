@@ -27,6 +27,8 @@ export interface IntunePolicy {
   settingsCount: number;
   description?: string;
   source?: string;
+  odataType?: string;
+  templateId?: string;
 }
 
 export interface PolicySummary {
