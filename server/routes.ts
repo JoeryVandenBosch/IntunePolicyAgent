@@ -178,7 +178,7 @@ export async function registerRoutes(
       let conflictDetails = enrichedDetails;
 
       const selectedIds = new Set(selectedPolicies.map(p => p.id));
-      const relatedPolicies = allPolicies.filter(p => {
+      const relatedPolicies = selectedPolicies.length >= 2 ? allPolicies.filter(p => {
         if (selectedIds.has(p.id)) return false;
         return selectedPolicies.some(sp => {
           const spSource = sp.rawData?._source;
@@ -187,8 +187,8 @@ export async function registerRoutes(
           if (sp.platform !== p.platform) return false;
           return true;
         });
-      });
-      console.log(`Found ${relatedPolicies.length} related policies in tenant for conflict comparison`);
+      }) : [];
+      console.log(`Found ${relatedPolicies.length} related policies in tenant for conflict comparison (${selectedPolicies.length} selected)`);
 
       if (relatedPolicies.length > 0) {
         const maxRelated = 20;
