@@ -10,7 +10,7 @@
   "recommendations": [
     {
       "id": "2.1.1.1",
-      "title": "Ensure \"Disable Guest Account\" is set to \"True\" (Manual) ........................................... 20 Page 2 Internal Only - General 2.2 App Store ......................................................................................................................................... 23",
+      "title": "Ensure \"Disable Guest Account\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -23,7 +23,7 @@
     },
     {
       "id": "2.2.1",
-      "title": "Ensure \"Restrict Store Software Update Only\" is set to \"True\" (Manual) ........................ 24 2.3 Full Disk Encryption ....................................................................................................................... 26 2.3.1 FIleVault ..................................................................................................................................... 27",
+      "title": "Ensure \"Restrict Store Software Update Only\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -36,7 +36,7 @@
     },
     {
       "id": "2.3.1.1",
-      "title": "Ensure \"User Enters Missing Info\" is set to \"True\" (Manual) ........................................ 28",
+      "title": "Ensure \"User Enters Missing Info\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "2.3.1.2",
-      "title": "Ensure \"Enable\" is set to \"On\" (Manual) ....................................................................... 30",
+      "title": "Ensure \"Enable\" is set to \"On\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -62,7 +62,7 @@
     },
     {
       "id": "2.3.1.3",
-      "title": "Ensure \"Defer Force At User Login Max Bypass Attempts\" is set to \"0\" (Manual) ....... 32",
+      "title": "Ensure \"Defer Force At User Login Max Bypass Attempts\" is set to \"0\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -75,7 +75,7 @@
     },
     {
       "id": "2.3.1.4",
-      "title": "Ensure \"Show Recovery Key\" is set to \"Disabled\" (Manual) ........................................ 35",
+      "title": "Ensure \"Show Recovery Key\" is set to \"Disabled\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -88,7 +88,7 @@
     },
     {
       "id": "2.3.1.5",
-      "title": "Ensure \"Force Enable In Setup Assistant\" is set to \"True\" (Manual) ............................ 37 2.3.2 FileVault Options....................................................................................................................... 39",
+      "title": "Ensure \"Force Enable In Setup Assistant\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -101,7 +101,7 @@
     },
     {
       "id": "2.3.2.1",
-      "title": "Ensure \"Prevent FileVault From Being Disabled\" is set to \"True\" (Manual) ................. 40 2.3.3 Endpoint Disk Encryption ........................................................................................................ 42 2.3.3.1 Ensure There is a Disk Encryption FileVault Policy (Manual) ....................................... 43 2.4 Login ................................................................................................................................................ 46 2.4.1 Login Window Behavior ........................................................................................................... 47",
+      "title": "Ensure \"Prevent FileVault From Being Disabled\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -114,7 +114,7 @@
     },
     {
       "id": "2.4.1.1",
-      "title": "Ensure \"Show Full Name\" is set to \"True\" (Manual) ..................................................... 48 2.4.2 Login Window Login Items ...................................................................................................... 50",
+      "title": "Ensure \"Show Full Name\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -127,7 +127,7 @@
     },
     {
       "id": "2.4.2.1",
-      "title": "Ensure \"Disable Login Items Suppression\" is set to \"True\" (Manual) ........................... 51 2.5 Managed Settings ........................................................................................................................... 54 2.5.1 MDM Options ............................................................................................................................. 55",
+      "title": "Ensure \"Disable Login Items Suppression\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -140,7 +140,7 @@
     },
     {
       "id": "2.6.1.1",
-      "title": "Ensure \"Auto Activation\" is set to \"False\" (Manual) ...................................................... 60 2.6.2 Firewall ....................................................................................................................................... 63",
+      "title": "Ensure \"Auto Activation\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -153,7 +153,7 @@
     },
     {
       "id": "2.6.2.1",
-      "title": "Ensure \"Enable Stealth Mode\" is set to \"True\" (Manual) .............................................. 64",
+      "title": "Ensure \"Enable Stealth Mode\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -166,7 +166,7 @@
     },
     {
       "id": "2.6.2.2",
-      "title": "Ensure \"Enable Firewall\" is set to \"True\" (Manual) ....................................................... 67 2.7 Profile Removal Password ............................................................................................................ 70",
+      "title": "Ensure \"Enable Firewall\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -179,7 +179,7 @@
     },
     {
       "id": "2.8.1",
-      "title": "Ensure \"Allow Bluetooth Sharing Modification\" is set to \"False\" (Manual) ...................... 74",
+      "title": "Ensure \"Allow Bluetooth Sharing Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -192,7 +192,7 @@
     },
     {
       "id": "2.8.2",
-      "title": "Ensure \"Allow Password Sharing\" is set to \"False\" (Manual) .......................................... 77",
+      "title": "Ensure \"Allow Password Sharing\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -205,7 +205,7 @@
     },
     {
       "id": "2.8.3",
-      "title": "Ensure \"Allow File Sharing Modification\" is set to \"False\" (Manual) ................................ 79",
+      "title": "Ensure \"Allow File Sharing Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -218,7 +218,7 @@
     },
     {
       "id": "2.8.4",
-      "title": "Ensure \"Allow Erase Content And Settings\" is set to \"False\" (Manual) ........................... 82",
+      "title": "Ensure \"Allow Erase Content And Settings\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -231,7 +231,7 @@
     },
     {
       "id": "2.8.5",
-      "title": "Ensure \"Allow Air Play Incoming Requests\" is set to \"False\" (Manual) ........................... 84",
+      "title": "Ensure \"Allow Air Play Incoming Requests\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -244,7 +244,7 @@
     },
     {
       "id": "2.8.6",
-      "title": "Ensure \"Allow Media Sharing Modification\" is set to \"False\" (Manual) ............................ 86",
+      "title": "Ensure \"Allow Media Sharing Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -257,7 +257,7 @@
     },
     {
       "id": "2.8.7",
-      "title": "Ensure \"Allow Cloud Photo Library\" is set to \"False\" (Manual)........................................ 88",
+      "title": "Ensure \"Allow Cloud Photo Library\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -270,7 +270,7 @@
     },
     {
       "id": "2.8.8",
-      "title": "Ensure \"Allow Cloud Document Sync\" is set to \"False\" (Manual).................................... 91",
+      "title": "Ensure \"Allow Cloud Document Sync\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -283,7 +283,7 @@
     },
     {
       "id": "2.8.10",
-      "title": "Ensure \"Allow Activity Continuation\" is set to \"False\" (Manual) ..................................... 96",
+      "title": "Ensure \"Allow Activity Continuation\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -296,7 +296,7 @@
     },
     {
       "id": "2.8.11",
-      "title": "Ensure \"Allow Cloud Bookmarks\" is set to \"False\" (Manual) ......................................... 98",
+      "title": "Ensure \"Allow Cloud Bookmarks\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -309,7 +309,7 @@
     },
     {
       "id": "2.8.12",
-      "title": "Ensure \"Allow Cloud Freeform\" is set to \"False\" (Manual) .......................................... 100",
+      "title": "Ensure \"Allow Cloud Freeform\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -322,7 +322,7 @@
     },
     {
       "id": "2.8.13",
-      "title": "Ensure \"Allow Cloud Calendar\" is set to \"False\" (Manual) .......................................... 102",
+      "title": "Ensure \"Allow Cloud Calendar\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -335,7 +335,7 @@
     },
     {
       "id": "2.8.14",
-      "title": "Ensure \"Allow ARD Remote Management Modification\" is set to \"False\" (Manual) .... 104",
+      "title": "Ensure \"Allow ARD Remote Management Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -348,7 +348,7 @@
     },
     {
       "id": "2.8.15",
-      "title": "Ensure \"Allow Assistant\" is set to \"False\" (Manual) ..................................................... 107",
+      "title": "Ensure \"Allow Assistant\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -361,7 +361,7 @@
     },
     {
       "id": "2.8.16",
-      "title": "Ensure \"Allow Game Center\" is set to \"False\" (Manual) .............................................. 109",
+      "title": "Ensure \"Allow Game Center\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -374,7 +374,7 @@
     },
     {
       "id": "2.8.17",
-      "title": "Ensure \"Allow Auto Unlock\" is set to \"False\" (Manual) ................................................ 111",
+      "title": "Ensure \"Allow Auto Unlock\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -387,7 +387,7 @@
     },
     {
       "id": "2.8.18",
-      "title": "Ensure \"Allow Startup Disk Modification\" is set to \"False\" (Manual) ........................... 113",
+      "title": "Ensure \"Allow Startup Disk Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -400,7 +400,7 @@
     },
     {
       "id": "2.8.19",
-      "title": "Ensure \"Allow UI Configuration Profile Installation\" is set to \"False\" (Manual) ............ 115",
+      "title": "Ensure \"Allow UI Configuration Profile Installation\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -413,7 +413,7 @@
     },
     {
       "id": "2.8.20",
-      "title": "Ensure \"Allow Device Name Modification\" is set to \"False\" (Manual) ......................... 118",
+      "title": "Ensure \"Allow Device Name Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -426,7 +426,7 @@
     },
     {
       "id": "2.8.21",
-      "title": "Ensure \"Allow Internet Sharing Modification\" is set to \"False\" (Manual) ..................... 120",
+      "title": "Ensure \"Allow Internet Sharing Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -439,7 +439,7 @@
     },
     {
       "id": "2.8.22",
-      "title": "Ensure \"Allow Content Caching\" is set to \"False\" (Manual)......................................... 122",
+      "title": "Ensure \"Allow Content Caching\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -452,7 +452,7 @@
     },
     {
       "id": "2.8.23",
-      "title": "Ensure \"Allow Find My Friends\" is set to \"False\" (Manual).......................................... 124",
+      "title": "Ensure \"Allow Find My Friends\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -465,7 +465,7 @@
     },
     {
       "id": "2.8.24",
-      "title": "Ensure \"Allow AirDrop\" is set to \"False\" (Manual) ....................................................... 126 Page 3 Internal Only - General",
+      "title": "Ensure \"Allow AirDrop\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -478,7 +478,7 @@
     },
     {
       "id": "2.8.25",
-      "title": "Ensure \"Allow Password Auto Fill\" is set to \"False\" (Manual)...................................... 128",
+      "title": "Ensure \"Allow Password Auto Fill\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -491,7 +491,7 @@
     },
     {
       "id": "2.8.26",
-      "title": "Ensure \"Allow Cloud Notes\" is set to \"False\" (Manual) ................................................ 130",
+      "title": "Ensure \"Allow Cloud Notes\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -504,7 +504,7 @@
     },
     {
       "id": "2.8.27",
-      "title": "Ensure \"Allow Multiplayer Gaming\" is set to \"False\" (Manual) .................................... 132",
+      "title": "Ensure \"Allow Multiplayer Gaming\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -517,7 +517,7 @@
     },
     {
       "id": "2.8.28",
-      "title": "Ensure \"Allow Local User Creation\" is set to \"False\" (Manual).................................... 134",
+      "title": "Ensure \"Allow Local User Creation\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -530,7 +530,7 @@
     },
     {
       "id": "2.8.29",
-      "title": "Ensure \"Allow Apple Personalized Advertising\" is set to \"False\" (Manual) ................. 136",
+      "title": "Ensure \"Allow Apple Personalized Advertising\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -543,7 +543,7 @@
     },
     {
       "id": "2.8.30",
-      "title": "Ensure \"Allow Printer Sharing Modification\" is set to \"False\" (Manual) ....................... 138",
+      "title": "Ensure \"Allow Printer Sharing Modification\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -556,7 +556,7 @@
     },
     {
       "id": "2.8.32",
-      "title": "Ensure \"Allow Diagnostic Submission\" is set to \"False\" (Manual) ............................... 143",
+      "title": "Ensure \"Allow Diagnostic Submission\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -569,7 +569,7 @@
     },
     {
       "id": "2.8.33",
-      "title": "Ensure \"Allow Cloud Reminders\" is set to \"False\" (Manual)........................................ 145",
+      "title": "Ensure \"Allow Cloud Reminders\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -582,7 +582,7 @@
     },
     {
       "id": "2.8.34",
-      "title": "Ensure \"Allow Password Proximity Requests\" is set to \"False\" (Manual) ................... 147",
+      "title": "Ensure \"Allow Password Proximity Requests\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -595,7 +595,7 @@
     },
     {
       "id": "2.8.35",
-      "title": "Ensure \"Force On Device Only Dictation\" is set to \"True\" (Manual) ............................ 149",
+      "title": "Ensure \"Force On Device Only Dictation\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -608,7 +608,7 @@
     },
     {
       "id": "2.8.36",
-      "title": "Ensure \"Allow iPhone Mirroring\" is set to \"False\" (Manual) ......................................... 151",
+      "title": "Ensure \"Allow iPhone Mirroring\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -621,7 +621,7 @@
     },
     {
       "id": "2.8.37",
-      "title": "Ensure \"Allow Cloud Mail\" is set to \"False\" (Manual)................................................... 153",
+      "title": "Ensure \"Allow Cloud Mail\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -634,7 +634,7 @@
     },
     {
       "id": "2.8.38",
-      "title": "Ensure \"Allow Universal Control\" is set to \"False\" (Manual) ........................................ 155",
+      "title": "Ensure \"Allow Universal Control\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -647,7 +647,7 @@
     },
     {
       "id": "2.8.39",
-      "title": "Ensure \"Allow Cloud Address Book\" is set to \"False\" (Manual)................................... 157",
+      "title": "Ensure \"Allow Cloud Address Book\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -660,7 +660,7 @@
     },
     {
       "id": "2.8.40",
-      "title": "Ensure \"Allow Cloud Desktop And Documents\" is set to \"False\" (Manual) ................. 159",
+      "title": "Ensure \"Allow Cloud Desktop And Documents\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -673,7 +673,7 @@
     },
     {
       "id": "2.8.41",
-      "title": "Ensure \"Allow iTunes File Sharing\" is set to \"False\" (Manual) .................................... 161",
+      "title": "Ensure \"Allow iTunes File Sharing\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -686,7 +686,7 @@
     },
     {
       "id": "2.8.42",
-      "title": "Ensure \"Allow Cloud Keychain Sync\" is set to \"False\" (Manual) ................................. 163 2.9 Security .......................................................................................................................................... 166 2.9.1 Passcode ................................................................................................................................. 167",
+      "title": "Ensure \"Allow Cloud Keychain Sync\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -699,7 +699,7 @@
     },
     {
       "id": "2.9.1.2",
-      "title": "Ensure \"Max Grace Period\" is set to \"0\" (Manual) ...................................................... 170",
+      "title": "Ensure \"Max Grace Period\" is set to \"0\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -712,7 +712,7 @@
     },
     {
       "id": "2.9.1.6",
-      "title": "Ensure \"Force PIN\" is set to \"True\" (Manual) ............................................................. 179",
+      "title": "Ensure \"Force PIN\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -725,7 +725,7 @@
     },
     {
       "id": "2.9.1.9",
-      "title": "Ensure \"Allow Simple Passcode\" is set to \"False\" (Manual)....................................... 186",
+      "title": "Ensure \"Allow Simple Passcode\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -738,7 +738,7 @@
     },
     {
       "id": "2.9.1.11",
-      "title": "Ensure \"Require Alphanumeric Passcode\" is set to \"True\" (Manual) ....................... 192",
+      "title": "Ensure \"Require Alphanumeric Passcode\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -751,7 +751,7 @@
     },
     {
       "id": "2.10.1",
-      "title": "Ensure \"Automatically Install App Updates\" is set to \"True\" (Manual) ......................... 198",
+      "title": "Ensure \"Automatically Install App Updates\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -764,7 +764,7 @@
     },
     {
       "id": "2.10.2",
-      "title": "Ensure \"Automatically Install Mac OS Updates\" is set to \"True\" (Manual) .................. 200",
+      "title": "Ensure \"Automatically Install Mac OS Updates\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -777,7 +777,7 @@
     },
     {
       "id": "2.10.3",
-      "title": "Ensure \"Automatic Check Enabled\" is set to \"True\" (Manual) ..................................... 202",
+      "title": "Ensure \"Automatic Check Enabled\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -790,7 +790,7 @@
     },
     {
       "id": "2.10.4",
-      "title": "Ensure \"Critical Update Install\" is set to \"True\" (Manual) ............................................ 204",
+      "title": "Ensure \"Critical Update Install\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -803,7 +803,7 @@
     },
     {
       "id": "2.10.5",
-      "title": "Ensure \"Automatic Download\" is set to \"True\" (Manual) ............................................. 206 2.11 System Configuration ................................................................................................................ 209 2.11.1 Energy Saver ......................................................................................................................... 210",
+      "title": "Ensure \"Automatic Download\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -816,7 +816,7 @@
     },
     {
       "id": "2.11.1.3",
-      "title": "Ensure \"Wake on LAN\" is set to \"False\" (Manual) .................................................... 217",
+      "title": "Ensure \"Wake on LAN\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -829,7 +829,7 @@
     },
     {
       "id": "2.11.1.4",
-      "title": "Ensure \"Wake On Modem Ring\" is set to \"False\" (Manual)...................................... 220",
+      "title": "Ensure \"Wake On Modem Ring\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -842,7 +842,7 @@
     },
     {
       "id": "2.11.1.5",
-      "title": "Ensure \"Destroy FV Key On Standby\" is set to \"True\" (Manual) .............................. 223 2.11.2 Screensaver ........................................................................................................................... 225",
+      "title": "Ensure \"Destroy FV Key On Standby\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -855,7 +855,7 @@
     },
     {
       "id": "2.11.2.1",
-      "title": "Ensure \"Ask For Password\" is set to \"True\" and \"Ask For Password Delay\" is absent or set to \"0\" (Manual) ............................................................................................................... 226 2.11.3 System Extensions ............................................................................................................... 228",
+      "title": "Ensure \"Ask For Password\" is set to \"True\" and \"Ask For Password Delay\" is absent or set to \"0\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -868,7 +868,7 @@
     },
     {
       "id": "2.11.3.1",
-      "title": "Ensure \"Allow User Overrides\" is set to \"False\" (Manual) ........................................ 229 2.12 System Policy Control ............................................................................................................... 232 2.12.1 System Policy Control .......................................................................................................... 233",
+      "title": "Ensure \"Allow User Overrides\" is set to \"False\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -881,7 +881,7 @@
     },
     {
       "id": "2.12.1.1",
-      "title": "Ensure \"Enable XProtect Malware Upload\" is set to \"Disabled\" (Manual) ............... 234 2.12.1.2 Ensure Gatekeeper is configured for application installs from Identified Developers only (Manual) ........................................................................................................................... 236 2.12.1.3 Ensure Gatekeeper is configured to block all user application installs (Manual)...... 239 Page 4 Internal Only - General",
+      "title": "Ensure \"Enable XProtect Malware Upload\" is set to \"Disabled\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -894,7 +894,7 @@
     },
     {
       "id": "2.12.2.1",
-      "title": "Ensure \"Disable Override\" is set to \"True\" (Manual) ................................................. 243 2.13 Profile Implementation ............................................................................................................... 245 2.13.1 Ensure Configuration Profile Can Not be Removed by an End User (Manual) ........... 246 Appendix: Summary Table .......................................................................................... 249 Appendix: CIS Controls v7 IG 1 Mapped Recommendations ................................. 257 Appendix: CIS Controls v7 IG 2 Mapped Recommendations ................................. 260",
+      "title": "Ensure \"Disable Override\" is set to \"True\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -914,7 +914,7 @@
         "Level 1 - Supervised Devices"
       ],
       "description": "The Guest account allows users to log in to the computer without requiring user authentication. When enabled, the Guest account provides access to the system with a restricted set of privileges but does not require a password. The account is recreated every time a guest logs out.",
-      "rationale": "Disabling the Guest account prevents unauthorized access to the system and its resources. A Guest account, even with limited privileges, could be exploited to: • Access shared network resources • View non-protected files and folders • Launch attacks against the system or network • Gather information about the organization's computing environment • Create a persistent presence on the device",
+      "rationale": "Disabling the Guest account prevents unauthorized access to the system and its resources. A Guest account, even with limited privileges, could be exploited to: \u2022 Access shared network resources \u2022 View non-protected files and folders \u2022 Launch attacks against the system or network \u2022 Gather information about the organization's computing environment \u2022 Create a persistent presence on the device",
       "impact": "Disabling the Guest account will prevent users from logging in without authentication credentials. Users who previously relied on Guest access will need valid credentials to access the system. This may affect shared workstations where Guest access was intentionally enabled for temporary use. Page 20 Internal Only - General",
       "remediationPath": "",
       "references": [],
@@ -4455,7 +4455,7 @@
         },
         {
           "control": "10.5",
-          "title": "Enable Anti-Exploitation Features Gatekeeper™.",
+          "title": "Enable Anti-Exploitation Features Gatekeeper\u2122.",
           "version": "v8",
           "ig1": true,
           "ig2": true,
@@ -4495,7 +4495,7 @@
         },
         {
           "control": "10.5",
-          "title": "Enable Anti-Exploitation Features Gatekeeper™.",
+          "title": "Enable Anti-Exploitation Features Gatekeeper\u2122.",
           "version": "v8",
           "ig1": true,
           "ig2": true,
@@ -4535,7 +4535,7 @@
         },
         {
           "control": "10.5",
-          "title": "Enable Anti-Exploitation Features Gatekeeper™.",
+          "title": "Enable Anti-Exploitation Features Gatekeeper\u2122.",
           "version": "v8",
           "ig1": true,
           "ig2": true,
@@ -4591,7 +4591,7 @@
         },
         {
           "control": "2.13",
-          "title": "Profile Implementation End User (Manual) Profile Applicability: • Level 1 - Supervised Devices Description: removed, even by users with administrative privileges.",
+          "title": "Profile Implementation End User (Manual) Profile Applicability: \u2022 Level 1 - Supervised Devices Description: removed, even by users with administrative privileges.",
           "version": "v7",
           "ig1": false,
           "ig2": false,
@@ -4625,7 +4625,7 @@
     },
     {
       "id": "2.2.1",
-      "title": "Ensure \"Restrict Store Software Update Only\" is set to   \"True\" (Manual) 2.3 Full Disk Encryption 2.3.1 FIleVault",
+      "title": "Ensure \"Restrict Store Software Update Only\" is set to \uf06f \uf06f \"True\" (Manual) 2.3 Full Disk Encryption 2.3.1 FIleVault",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4638,7 +4638,7 @@
     },
     {
       "id": "2.3.1.1",
-      "title": "Ensure \"User Enters Missing Info\" is set to \"True\"  ",
+      "title": "Ensure \"User Enters Missing Info\" is set to \"True\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4651,7 +4651,7 @@
     },
     {
       "id": "2.3.1.2",
-      "title": "Ensure \"Enable\" is set to \"On\" (Manual)  ",
+      "title": "Ensure \"Enable\" is set to \"On\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4664,7 +4664,7 @@
     },
     {
       "id": "2.3.1.3",
-      "title": "Ensure \"Defer Force At User Login Max Bypass   Attempts\" is set to \"0\"",
+      "title": "Ensure \"Defer Force At User Login Max Bypass \uf06f \uf06f Attempts\" is set to \"0\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4677,7 +4677,7 @@
     },
     {
       "id": "2.3.1.4",
-      "title": "Ensure \"Show Recovery Key\" is set to \"Disabled\"  ",
+      "title": "Ensure \"Show Recovery Key\" is set to \"Disabled\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4690,7 +4690,7 @@
     },
     {
       "id": "2.3.2.1",
-      "title": "Ensure \"Prevent FileVault From Being Disabled\" is set to   \"True\" (Manual) Page 249 Internal Only - General CIS Benchmark Recommendation Set",
+      "title": "Ensure \"Prevent FileVault From Being Disabled\" is set to \uf06f \uf06f \"True\" (Manual) Page 249 Internal Only - General CIS Benchmark Recommendation Set",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4703,7 +4703,7 @@
     },
     {
       "id": "2.4.1.1",
-      "title": "Ensure \"Show Full Name\" is set to \"True\" (Manual)   2.4.2 Login Window Login Items",
+      "title": "Ensure \"Show Full Name\" is set to \"True\" (Manual) \uf06f \uf06f 2.4.2 Login Window Login Items",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4716,7 +4716,7 @@
     },
     {
       "id": "2.4.2.1",
-      "title": "Ensure \"Disable Login Items Suppression\" is set to   \"True\" (Manual) 2.5 Managed Settings 2.5.1 MDM Options",
+      "title": "Ensure \"Disable Login Items Suppression\" is set to \uf06f \uf06f \"True\" (Manual) 2.5 Managed Settings 2.5.1 MDM Options",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4729,7 +4729,7 @@
     },
     {
       "id": "2.6.1.1",
-      "title": "Ensure \"Auto Activation\" is set to \"False\" (Manual)   2.6.2 Firewall",
+      "title": "Ensure \"Auto Activation\" is set to \"False\" (Manual) \uf06f \uf06f 2.6.2 Firewall",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4742,7 +4742,7 @@
     },
     {
       "id": "2.6.2.1",
-      "title": "Ensure \"Enable Stealth Mode\" is set to \"True\" (Manual)  ",
+      "title": "Ensure \"Enable Stealth Mode\" is set to \"True\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4755,7 +4755,7 @@
     },
     {
       "id": "2.6.2.2",
-      "title": "Ensure \"Enable Firewall\" is set to \"True\" (Manual)   2.7 Profile Removal Password",
+      "title": "Ensure \"Enable Firewall\" is set to \"True\" (Manual) \uf06f \uf06f 2.7 Profile Removal Password",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4768,7 +4768,7 @@
     },
     {
       "id": "2.8.1",
-      "title": "Ensure \"Allow Bluetooth Sharing Modification\" is set to   \"False\"",
+      "title": "Ensure \"Allow Bluetooth Sharing Modification\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4781,7 +4781,7 @@
     },
     {
       "id": "2.8.2",
-      "title": "Ensure \"Allow Password Sharing\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Password Sharing\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4794,7 +4794,7 @@
     },
     {
       "id": "2.8.3",
-      "title": "Ensure \"Allow File Sharing Modification\" is set to \"False\"  ",
+      "title": "Ensure \"Allow File Sharing Modification\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4807,7 +4807,7 @@
     },
     {
       "id": "2.8.4",
-      "title": "Ensure \"Allow Erase Content And Settings\" is set to   \"False\"",
+      "title": "Ensure \"Allow Erase Content And Settings\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4820,7 +4820,7 @@
     },
     {
       "id": "2.8.5",
-      "title": "Ensure \"Allow Air Play Incoming Requests\" is set to   \"False\"",
+      "title": "Ensure \"Allow Air Play Incoming Requests\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4833,7 +4833,7 @@
     },
     {
       "id": "2.8.6",
-      "title": "Ensure \"Allow Media Sharing Modification\" is set to   \"False\"",
+      "title": "Ensure \"Allow Media Sharing Modification\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4846,7 +4846,7 @@
     },
     {
       "id": "2.8.7",
-      "title": "Ensure \"Allow Cloud Photo Library\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Cloud Photo Library\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4859,7 +4859,7 @@
     },
     {
       "id": "2.8.8",
-      "title": "Ensure \"Allow Cloud Document Sync\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Cloud Document Sync\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4872,7 +4872,7 @@
     },
     {
       "id": "2.8.9",
-      "title": "Ensure \"Enforced Software Update Delay\" is absent or   less than or equal to 30 days",
+      "title": "Ensure \"Enforced Software Update Delay\" is absent or \uf06f \uf06f less than or equal to 30 days",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4885,7 +4885,7 @@
     },
     {
       "id": "2.8.10",
-      "title": "Ensure \"Allow Activity Continuation\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Activity Continuation\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4898,7 +4898,7 @@
     },
     {
       "id": "2.8.11",
-      "title": "Ensure \"Allow Cloud Bookmarks\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Cloud Bookmarks\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4911,7 +4911,7 @@
     },
     {
       "id": "2.8.12",
-      "title": "Ensure \"Allow Cloud Freeform\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Cloud Freeform\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4924,7 +4924,7 @@
     },
     {
       "id": "2.8.13",
-      "title": "Ensure \"Allow Cloud Calendar\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Cloud Calendar\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4937,7 +4937,7 @@
     },
     {
       "id": "2.8.14",
-      "title": "Ensure \"Allow ARD Remote Management Modification\"   is set to \"False\"",
+      "title": "Ensure \"Allow ARD Remote Management Modification\" \uf06f \uf06f is set to \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4950,7 +4950,7 @@
     },
     {
       "id": "2.8.15",
-      "title": "Ensure \"Allow Assistant\" is set to \"False\" (Manual)   Page 251 Internal Only - General CIS Benchmark Recommendation Set Correctly",
+      "title": "Ensure \"Allow Assistant\" is set to \"False\" (Manual) \uf06f \uf06f Page 251 Internal Only - General CIS Benchmark Recommendation Set Correctly",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4963,7 +4963,7 @@
     },
     {
       "id": "2.8.16",
-      "title": "Ensure \"Allow Game Center\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Game Center\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4976,7 +4976,7 @@
     },
     {
       "id": "2.8.17",
-      "title": "Ensure \"Allow Auto Unlock\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Auto Unlock\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4989,7 +4989,7 @@
     },
     {
       "id": "2.8.18",
-      "title": "Ensure \"Allow Startup Disk Modification\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Startup Disk Modification\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5002,7 +5002,7 @@
     },
     {
       "id": "2.8.19",
-      "title": "Ensure \"Allow UI Configuration Profile Installation\" is set   to \"False\"",
+      "title": "Ensure \"Allow UI Configuration Profile Installation\" is set \uf06f \uf06f to \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5015,7 +5015,7 @@
     },
     {
       "id": "2.8.20",
-      "title": "Ensure \"Allow Device Name Modification\" is set to   \"False\"",
+      "title": "Ensure \"Allow Device Name Modification\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5028,7 +5028,7 @@
     },
     {
       "id": "2.8.21",
-      "title": "Ensure \"Allow Internet Sharing Modification\" is set to   \"False\"",
+      "title": "Ensure \"Allow Internet Sharing Modification\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5041,7 +5041,7 @@
     },
     {
       "id": "2.8.22",
-      "title": "Ensure \"Allow Content Caching\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Content Caching\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5054,7 +5054,7 @@
     },
     {
       "id": "2.8.23",
-      "title": "Ensure \"Allow Find My Friends\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Find My Friends\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5067,7 +5067,7 @@
     },
     {
       "id": "2.8.24",
-      "title": "Ensure \"Allow AirDrop\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow AirDrop\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5080,7 +5080,7 @@
     },
     {
       "id": "2.8.25",
-      "title": "Ensure \"Allow Password Auto Fill\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Password Auto Fill\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5093,7 +5093,7 @@
     },
     {
       "id": "2.8.26",
-      "title": "Ensure \"Allow Cloud Notes\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Cloud Notes\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5106,7 +5106,7 @@
     },
     {
       "id": "2.8.27",
-      "title": "Ensure \"Allow Multiplayer Gaming\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Multiplayer Gaming\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5119,7 +5119,7 @@
     },
     {
       "id": "2.8.28",
-      "title": "Ensure \"Allow Local User Creation\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Local User Creation\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5132,7 +5132,7 @@
     },
     {
       "id": "2.8.29",
-      "title": "Ensure \"Allow Apple Personalized Advertising\" is set to   \"False\"",
+      "title": "Ensure \"Allow Apple Personalized Advertising\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5145,7 +5145,7 @@
     },
     {
       "id": "2.8.30",
-      "title": "Ensure \"Allow Printer Sharing Modification\" is set to   \"False\" (Manual) Page 252 Internal Only - General CIS Benchmark Recommendation Set",
+      "title": "Ensure \"Allow Printer Sharing Modification\" is set to \uf06f \uf06f \"False\" (Manual) Page 252 Internal Only - General CIS Benchmark Recommendation Set",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5158,7 +5158,7 @@
     },
     {
       "id": "2.8.31",
-      "title": "Ensure \"Allow Fingerprint For Unlock\" is set   appropriately",
+      "title": "Ensure \"Allow Fingerprint For Unlock\" is set \uf06f \uf06f appropriately",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5171,7 +5171,7 @@
     },
     {
       "id": "2.8.32",
-      "title": "Ensure \"Allow Diagnostic Submission\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Diagnostic Submission\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5184,7 +5184,7 @@
     },
     {
       "id": "2.8.33",
-      "title": "Ensure \"Allow Cloud Reminders\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Cloud Reminders\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5197,7 +5197,7 @@
     },
     {
       "id": "2.8.34",
-      "title": "Ensure \"Allow Password Proximity Requests\" is set to   \"False\"",
+      "title": "Ensure \"Allow Password Proximity Requests\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5210,7 +5210,7 @@
     },
     {
       "id": "2.8.35",
-      "title": "Ensure \"Force On Device Only Dictation\" is set to \"True\"  ",
+      "title": "Ensure \"Force On Device Only Dictation\" is set to \"True\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5223,7 +5223,7 @@
     },
     {
       "id": "2.8.36",
-      "title": "Ensure \"Allow iPhone Mirroring\" is set to \"False\"  ",
+      "title": "Ensure \"Allow iPhone Mirroring\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5236,7 +5236,7 @@
     },
     {
       "id": "2.8.37",
-      "title": "Ensure \"Allow Cloud Mail\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Allow Cloud Mail\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5249,7 +5249,7 @@
     },
     {
       "id": "2.8.38",
-      "title": "Ensure \"Allow Universal Control\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Universal Control\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5262,7 +5262,7 @@
     },
     {
       "id": "2.8.39",
-      "title": "Ensure \"Allow Cloud Address Book\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Cloud Address Book\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5275,7 +5275,7 @@
     },
     {
       "id": "2.8.40",
-      "title": "Ensure \"Allow Cloud Desktop And Documents\" is set to   \"False\"",
+      "title": "Ensure \"Allow Cloud Desktop And Documents\" is set to \uf06f \uf06f \"False\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5288,7 +5288,7 @@
     },
     {
       "id": "2.8.41",
-      "title": "Ensure \"Allow iTunes File Sharing\" is set to \"False\"  ",
+      "title": "Ensure \"Allow iTunes File Sharing\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5301,7 +5301,7 @@
     },
     {
       "id": "2.9.1.2",
-      "title": "Ensure \"Max Grace Period\" is set to \"0\" (Manual)  ",
+      "title": "Ensure \"Max Grace Period\" is set to \"0\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5314,7 +5314,7 @@
     },
     {
       "id": "2.9.1.4",
-      "title": "Ensure \"Min Complex Characters\" is set to \"1\" or more  ",
+      "title": "Ensure \"Min Complex Characters\" is set to \"1\" or more \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5327,7 +5327,7 @@
     },
     {
       "id": "2.9.1.6",
-      "title": "Ensure \"Force PIN\" is set to \"True\" (Manual)  ",
+      "title": "Ensure \"Force PIN\" is set to \"True\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5340,7 +5340,7 @@
     },
     {
       "id": "2.9.1.8",
-      "title": "Ensure \"Max Failed Attempts\" is set to \"5\" or less  ",
+      "title": "Ensure \"Max Failed Attempts\" is set to \"5\" or less \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5353,7 +5353,7 @@
     },
     {
       "id": "2.9.1.9",
-      "title": "Ensure \"Allow Simple Passcode\" is set to \"False\"  ",
+      "title": "Ensure \"Allow Simple Passcode\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5366,7 +5366,7 @@
     },
     {
       "id": "2.9.1.10",
-      "title": "Ensure \"Minutes Until Failed Login Reset\" is set to \"15\"   or more",
+      "title": "Ensure \"Minutes Until Failed Login Reset\" is set to \"15\" \uf06f \uf06f or more",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5379,7 +5379,7 @@
     },
     {
       "id": "2.9.1.11",
-      "title": "Ensure \"Require Alphanumeric Passcode\" is set to   \"True\"",
+      "title": "Ensure \"Require Alphanumeric Passcode\" is set to \uf06f \uf06f \"True\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5392,7 +5392,7 @@
     },
     {
       "id": "2.10.1",
-      "title": "Ensure \"Automatically Install App Updates\" is set to   \"True\"",
+      "title": "Ensure \"Automatically Install App Updates\" is set to \uf06f \uf06f \"True\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5405,7 +5405,7 @@
     },
     {
       "id": "2.10.2",
-      "title": "Ensure \"Automatically Install Mac OS Updates\" is set to   \"True\"",
+      "title": "Ensure \"Automatically Install Mac OS Updates\" is set to \uf06f \uf06f \"True\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5418,7 +5418,7 @@
     },
     {
       "id": "2.10.3",
-      "title": "Ensure \"Automatic Check Enabled\" is set to \"True\"  ",
+      "title": "Ensure \"Automatic Check Enabled\" is set to \"True\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5431,7 +5431,7 @@
     },
     {
       "id": "2.10.4",
-      "title": "Ensure \"Critical Update Install\" is set to \"True\" (Manual)  ",
+      "title": "Ensure \"Critical Update Install\" is set to \"True\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5444,7 +5444,7 @@
     },
     {
       "id": "2.10.5",
-      "title": "Ensure \"Automatic Download\" is set to \"True\" (Manual)   Page 254 Internal Only - General CIS Benchmark Recommendation Set Correctly",
+      "title": "Ensure \"Automatic Download\" is set to \"True\" (Manual) \uf06f \uf06f Page 254 Internal Only - General CIS Benchmark Recommendation Set Correctly",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5457,7 +5457,7 @@
     },
     {
       "id": "2.11.1.1",
-      "title": "Ensure \"Display Sleep Timer\" is set to \"10\" or less, but   not 0",
+      "title": "Ensure \"Display Sleep Timer\" is set to \"10\" or less, but \uf06f \uf06f not 0",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5470,7 +5470,7 @@
     },
     {
       "id": "2.11.1.2",
-      "title": "Ensure \"System Sleep Timer\" is set to \"15\" or less, but   not 0",
+      "title": "Ensure \"System Sleep Timer\" is set to \"15\" or less, but \uf06f \uf06f not 0",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5483,7 +5483,7 @@
     },
     {
       "id": "2.11.1.3",
-      "title": "Ensure \"Wake on LAN\" is set to \"False\" (Manual)  ",
+      "title": "Ensure \"Wake on LAN\" is set to \"False\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5496,7 +5496,7 @@
     },
     {
       "id": "2.11.1.4",
-      "title": "Ensure \"Wake On Modem Ring\" is set to \"False\"  ",
+      "title": "Ensure \"Wake On Modem Ring\" is set to \"False\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5509,7 +5509,7 @@
     },
     {
       "id": "2.11.2.1",
-      "title": "Ensure \"Ask For Password\" is set to \"True\" and \"Ask For   Password Delay\" is absent or set to \"0\" (Manual) 2.11.3 System Extensions",
+      "title": "Ensure \"Ask For Password\" is set to \"True\" and \"Ask For \uf06f \uf06f Password Delay\" is absent or set to \"0\" (Manual) 2.11.3 System Extensions",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5522,7 +5522,7 @@
     },
     {
       "id": "2.11.3.1",
-      "title": "Ensure \"Allow User Overrides\" is set to \"False\" (Manual)   2.12 System Policy Control 2.12.1 System Policy Control",
+      "title": "Ensure \"Allow User Overrides\" is set to \"False\" (Manual) \uf06f \uf06f 2.12 System Policy Control 2.12.1 System Policy Control",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5535,7 +5535,7 @@
     },
     {
       "id": "2.12.1.1",
-      "title": "Ensure \"Enable XProtect Malware Upload\" is set to   \"Disabled\" (Manual) 2.12.1.2 Ensure Gatekeeper is configured for application installs   from Identified Developers only (Manual) 2.12.1.3 Ensure Gatekeeper is configured to block all user   application installs",
+      "title": "Ensure \"Enable XProtect Malware Upload\" is set to \uf06f \uf06f \"Disabled\" (Manual) 2.12.1.2 Ensure Gatekeeper is configured for application installs \uf06f \uf06f from Identified Developers only (Manual) 2.12.1.3 Ensure Gatekeeper is configured to block all user \uf06f \uf06f application installs",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5548,7 +5548,7 @@
     },
     {
       "id": "2.12.2.1",
-      "title": "Ensure \"Disable Override\" is set to \"True\" (Manual)   2.13 Profile Implementation 2.13.1 Ensure Configuration Profile Can Not be Removed by an   End User (Manual) Page 256 Internal Only - General",
+      "title": "Ensure \"Disable Override\" is set to \"True\" (Manual) \uf06f \uf06f 2.13 Profile Implementation 2.13.1 Ensure Configuration Profile Can Not be Removed by an \uf06f \uf06f End User (Manual) Page 256 Internal Only - General",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],

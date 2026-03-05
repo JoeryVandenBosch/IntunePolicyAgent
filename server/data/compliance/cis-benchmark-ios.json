@@ -10,7 +10,7 @@
   "recommendations": [
     {
       "id": "2.1.1",
-      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual) ..................................................................................................................................... 19 Page 2 Internal Only - General",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -23,7 +23,7 @@
     },
     {
       "id": "2.1.2",
-      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual) ............. 21",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -36,7 +36,7 @@
     },
     {
       "id": "2.1.3",
-      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual) 23 2.2 Built-in Apps ................................................................................................................................... 25",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual) 23 2.2 Built-in Apps",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "2.2.1",
-      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual) ................................. 26",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -62,7 +62,7 @@
     },
     {
       "id": "2.2.2",
-      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual) .................................... 28 2.3 Cloud and Storage .......................................................................................................................... 30",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -75,7 +75,7 @@
     },
     {
       "id": "2.3.1",
-      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual) ............................................. 31",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -88,7 +88,7 @@
     },
     {
       "id": "2.3.2",
-      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual) ....... 33",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -101,7 +101,7 @@
     },
     {
       "id": "2.3.3",
-      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual) .............................. 35",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -127,7 +127,7 @@
     },
     {
       "id": "2.3.5",
-      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual) ........................................... 39",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -140,7 +140,7 @@
     },
     {
       "id": "2.3.6",
-      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual) ......................................... 41",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -153,7 +153,7 @@
     },
     {
       "id": "2.3.7",
-      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual) .............................................. 43",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -166,7 +166,7 @@
     },
     {
       "id": "2.3.8",
-      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) ............................................................. 45 2.4 Connected Devices ........................................................................................................................ 47",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -179,7 +179,7 @@
     },
     {
       "id": "2.4.1",
-      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual) ............................. 48",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -205,7 +205,7 @@
     },
     {
       "id": "2.4.3",
-      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual) .................................. 52 2.5 General ............................................................................................................................................ 54",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -218,7 +218,7 @@
     },
     {
       "id": "2.5.1",
-      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual).... 55",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -231,7 +231,7 @@
     },
     {
       "id": "2.5.2",
-      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual) ................... 57",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -244,7 +244,7 @@
     },
     {
       "id": "2.5.3",
-      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual) ................................. 59",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -257,7 +257,7 @@
     },
     {
       "id": "2.5.4",
-      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual) ............................................ 61",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -270,7 +270,7 @@
     },
     {
       "id": "2.5.5",
-      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual) ................. 63",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -283,7 +283,7 @@
     },
     {
       "id": "2.5.6",
-      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual) .......................... 65 2.6 Locked Screen Experience ............................................................................................................ 67",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -296,7 +296,7 @@
     },
     {
       "id": "2.6.1",
-      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual) ............... 68",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -309,7 +309,7 @@
     },
     {
       "id": "2.6.2",
-      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual) ....... 70",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -322,7 +322,7 @@
     },
     {
       "id": "2.6.3",
-      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)................................. 72",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -335,7 +335,7 @@
     },
     {
       "id": "2.6.4",
-      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)..................... 74 2.7 Password ......................................................................................................................................... 76",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -348,7 +348,7 @@
     },
     {
       "id": "2.7.1",
-      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) ....................................................... 77",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -361,7 +361,7 @@
     },
     {
       "id": "2.7.2",
-      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual) ............................................. 79",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -374,7 +374,7 @@
     },
     {
       "id": "2.7.3",
-      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual) ............................. 81",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -387,7 +387,7 @@
     },
     {
       "id": "2.7.5",
-      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual) ............................................................................................................. 85",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -400,7 +400,7 @@
     },
     {
       "id": "2.7.7",
-      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual) ........................... 89 2.8 Wireless ........................................................................................................................................... 91",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -413,7 +413,7 @@
     },
     {
       "id": "2.8.1",
-      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual) .................. 92 3 Recommendations for Supervised (Organization) Devices ............................................. 94 3.1 App Store, Doc Viewing, Gaming ................................................................................................. 95",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -426,7 +426,7 @@
     },
     {
       "id": "3.1.1",
-      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual) ..................................................................................................................................... 96",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -439,7 +439,7 @@
     },
     {
       "id": "3.1.2",
-      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual) ............. 98",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -452,7 +452,7 @@
     },
     {
       "id": "3.1.3",
-      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual) ................................................................................................................................................. 100",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -465,7 +465,7 @@
     },
     {
       "id": "3.1.4",
-      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual) ........................................................ 102",
+      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -478,7 +478,7 @@
     },
     {
       "id": "3.1.5",
-      "title": "Ensure \"Block access to network drive in Files app\" is set to \"Yes\" (Manual)............... 104 3.2 Built-in Apps ................................................................................................................................. 106",
+      "title": "Ensure \"Block access to network drive in Files app\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -491,7 +491,7 @@
     },
     {
       "id": "3.2.1",
-      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual) ............................... 107",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -504,7 +504,7 @@
     },
     {
       "id": "3.2.2",
-      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual) .................................. 109 3.3 Cloud and Storage ........................................................................................................................ 111 Page 3 Internal Only - General",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -517,7 +517,7 @@
     },
     {
       "id": "3.3.1",
-      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual) ........................................... 112",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -530,7 +530,7 @@
     },
     {
       "id": "3.3.2",
-      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual) ..... 114",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -543,7 +543,7 @@
     },
     {
       "id": "3.3.3",
-      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual) ............................ 116",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -556,7 +556,7 @@
     },
     {
       "id": "3.3.4",
-      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\" (Manual) ................................................................................................................................................. 118",
+      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -569,7 +569,7 @@
     },
     {
       "id": "3.3.5",
-      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual) ......................................... 120",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -582,7 +582,7 @@
     },
     {
       "id": "3.3.6",
-      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual) ....................................... 122",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -595,7 +595,7 @@
     },
     {
       "id": "3.3.7",
-      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual) ............................................ 124",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -608,7 +608,7 @@
     },
     {
       "id": "3.3.8",
-      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) ........................................................... 126",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -621,7 +621,7 @@
     },
     {
       "id": "3.3.9",
-      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual) ................................................. 128",
+      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -634,7 +634,7 @@
     },
     {
       "id": "3.3.10",
-      "title": "Ensure \"Block iCloud document and data sync\" is set to \"Yes\" (Manual) ................... 130",
+      "title": "Ensure \"Block iCloud document and data sync\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -647,7 +647,7 @@
     },
     {
       "id": "3.3.11",
-      "title": "Ensure \"Block iCloud Keychain sync\" is set to \"Yes\" (Manual) ................................... 132 3.4 Connected Devices ...................................................................................................................... 134",
+      "title": "Ensure \"Block iCloud Keychain sync\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -660,7 +660,7 @@
     },
     {
       "id": "3.4.1",
-      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual) ........................... 135",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -673,7 +673,7 @@
     },
     {
       "id": "3.4.2",
-      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\" (Manual) ................................................................................................................................................. 137",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -686,7 +686,7 @@
     },
     {
       "id": "3.4.3",
-      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual) ................................ 139",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -699,7 +699,7 @@
     },
     {
       "id": "3.4.4",
-      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is set to \"Yes\" (Manual) ............ 141",
+      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -712,7 +712,7 @@
     },
     {
       "id": "3.4.5",
-      "title": "Ensure \"Block access to USB drive in Files app\" is set to \"Yes\" (Manual) .................... 143 3.5 General .......................................................................................................................................... 145",
+      "title": "Ensure \"Block access to USB drive in Files app\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -725,7 +725,7 @@
     },
     {
       "id": "3.5.1",
-      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual).. 146",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -738,7 +738,7 @@
     },
     {
       "id": "3.5.2",
-      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual) ................. 148",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -751,7 +751,7 @@
     },
     {
       "id": "3.5.3",
-      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual) ............................... 150",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -764,7 +764,7 @@
     },
     {
       "id": "3.5.4",
-      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual) .......................................... 152",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -777,7 +777,7 @@
     },
     {
       "id": "3.5.5",
-      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual) ............... 154",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -790,7 +790,7 @@
     },
     {
       "id": "3.5.6",
-      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual) ........................ 156",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -803,7 +803,7 @@
     },
     {
       "id": "3.5.7",
-      "title": "Ensure \"Block users from erasing all content and settings on device\" is set to \"Yes\" (Manual) ................................................................................................................................... 158",
+      "title": "Ensure \"Block users from erasing all content and settings on device\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -816,7 +816,7 @@
     },
     {
       "id": "3.5.8",
-      "title": "Ensure \"Block modification of device name\" is set to \"Yes\" (Manual) ........................... 160",
+      "title": "Ensure \"Block modification of device name\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -829,7 +829,7 @@
     },
     {
       "id": "3.5.9",
-      "title": "Ensure \"Block configuration profile changes\" is set to \"Yes\" (Manual) .......................... 162",
+      "title": "Ensure \"Block configuration profile changes\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -842,7 +842,7 @@
     },
     {
       "id": "3.5.10",
-      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual) ............................................... 164",
+      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -855,7 +855,7 @@
     },
     {
       "id": "3.5.11",
-      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\" (Manual) ............................... 166",
+      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -868,7 +868,7 @@
     },
     {
       "id": "3.5.12",
-      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual) ................................................. 168 3.6 Locked Screen Experience .......................................................................................................... 170",
+      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -881,7 +881,7 @@
     },
     {
       "id": "3.6.1",
-      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual) ............. 171",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -894,7 +894,7 @@
     },
     {
       "id": "3.6.2",
-      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual) ..... 173",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -907,7 +907,7 @@
     },
     {
       "id": "3.6.3",
-      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)............................... 175",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -920,7 +920,7 @@
     },
     {
       "id": "3.6.4",
-      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)................... 177 3.7 Password ....................................................................................................................................... 179",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -933,7 +933,7 @@
     },
     {
       "id": "3.7.1",
-      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) ..................................................... 180",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -946,7 +946,7 @@
     },
     {
       "id": "3.7.2",
-      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual) ........................................... 182",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -959,7 +959,7 @@
     },
     {
       "id": "3.7.3",
-      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual) ........................... 184",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -972,7 +972,7 @@
     },
     {
       "id": "3.7.5",
-      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual) ........................................................................................................... 188",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -985,7 +985,7 @@
     },
     {
       "id": "3.7.7",
-      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual) ......................... 192",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -998,7 +998,7 @@
     },
     {
       "id": "3.7.8",
-      "title": "Ensure \"Block password proximity requests\" is set to \"Yes\" (Manual) .......................... 194",
+      "title": "Ensure \"Block password proximity requests\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1011,7 +1011,7 @@
     },
     {
       "id": "3.7.9",
-      "title": "Ensure \"Block password sharing\" is set to \"Yes\" (Manual) ............................................ 196",
+      "title": "Ensure \"Block password sharing\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1024,7 +1024,7 @@
     },
     {
       "id": "3.7.10",
-      "title": "Ensure \"Require Touch ID or Face ID authentication for AutoFill of password or credit card information\" is set to \"Yes\" (Manual) ............................................................................... 198 3.8 Wireless ......................................................................................................................................... 200",
+      "title": "Ensure \"Require Touch ID or Face ID authentication for AutoFill of password or credit card information\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1037,7 +1037,7 @@
     },
     {
       "id": "3.8.1",
-      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual) ................ 201 3.9 Lock Screen Message .................................................................................................................. 203 3.9.1 Ensure a \"Lock Screen Message\" has been set (Manual)............................................. 204 Page 4 Internal Only - General",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1050,7 +1050,7 @@
     },
     {
       "id": "4.1",
-      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual)..................................................... 212",
+      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1063,7 +1063,7 @@
     },
     {
       "id": "4.3",
-      "title": "Ensure \"Mark device noncompliant\" is set to \"Immediately\" (Manual) ............................. 216",
+      "title": "Ensure \"Mark device noncompliant\" is set to \"Immediately\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1076,7 +1076,7 @@
     },
     {
       "id": "4.4",
-      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or less (Manual)................................ 218 4.5 Ensure all devices are marked as \"compliant\" (Manual) ................................................... 220",
+      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or less (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -1089,7 +1089,7 @@
     },
     {
       "id": "4.6",
-      "title": "Ensure \"Mark devices with no compliance policy assigned as\" is set to \"Not compliant\" (Manual) ................................................................................................................................... 222",
+      "title": "Ensure \"Mark devices with no compliance policy assigned as\" is set to \"Not compliant\" (Manual)",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -3950,7 +3950,7 @@
         },
         {
           "control": "3.9",
-          "title": "Lock Screen Message Profile Applicability: • Level 1 - Supervised Devices Description: Rationale: organization). Audit: 1. Select Devices",
+          "title": "Lock Screen Message Profile Applicability: \u2022 Level 1 - Supervised Devices Description: Rationale: organization). Audit: 1. Select Devices",
           "version": "v8",
           "ig1": false,
           "ig2": false,
@@ -3974,7 +3974,7 @@
         },
         {
           "control": "3.10",
-          "title": "Additional Recommendations not exist (Manual) Profile Applicability: • Level 1 - Supervised Devices Description: Rationale:",
+          "title": "Additional Recommendations not exist (Manual) Profile Applicability: \u2022 Level 1 - Supervised Devices Description: Rationale:",
           "version": "v8",
           "ig1": false,
           "ig2": false,
@@ -3990,7 +3990,7 @@
         },
         {
           "control": "5.1",
-          "title": "Establish Secure Configurations authorized operating systems and software. blocked (Manual) Profile Applicability: • Level 1 - Supervised Devices",
+          "title": "Establish Secure Configurations authorized operating systems and software. blocked (Manual) Profile Applicability: \u2022 Level 1 - Supervised Devices",
           "version": "v8",
           "ig1": true,
           "ig2": true,
@@ -4158,7 +4158,7 @@
         },
         {
           "control": "4.5",
-          "title": "Ensure all devices are marked as \"compliant\" (Manual) Profile Applicability: • Level 1 - Supervised Devices Description:",
+          "title": "Ensure all devices are marked as \"compliant\" (Manual) Profile Applicability: \u2022 Level 1 - Supervised Devices Description:",
           "version": "v7",
           "ig1": false,
           "ig2": false,
@@ -4256,7 +4256,7 @@
     },
     {
       "id": "2.1.1",
-      "title": "Ensure \"Block viewing corporate documents in   unmanaged apps\" is set to \"Yes\"",
+      "title": "Ensure \"Block viewing corporate documents in \uf06f \uf06f unmanaged apps\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4269,7 +4269,7 @@
     },
     {
       "id": "2.1.2",
-      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is   set to \"Yes\"",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is \uf06f \uf06f set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4282,7 +4282,7 @@
     },
     {
       "id": "2.1.3",
-      "title": "Ensure \"Allow copy/paste to be affected by managed   open-in\" is set to \"Yes\" (Manual) 2.2 Built-in Apps",
+      "title": "Ensure \"Allow copy/paste to be affected by managed \uf06f \uf06f open-in\" is set to \"Yes\" (Manual) 2.2 Built-in Apps",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4295,7 +4295,7 @@
     },
     {
       "id": "2.2.1",
-      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4308,7 +4308,7 @@
     },
     {
       "id": "2.3.1",
-      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"  ",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4321,7 +4321,7 @@
     },
     {
       "id": "2.3.2",
-      "title": "Ensure \"Block managed apps from storing data in   iCloud\" is set to \"Yes\"",
+      "title": "Ensure \"Block managed apps from storing data in \uf06f \uf06f iCloud\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4334,7 +4334,7 @@
     },
     {
       "id": "2.3.3",
-      "title": "Ensure \"Block backup of enterprise books\" is set to   \"Yes\"",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4347,7 +4347,7 @@
     },
     {
       "id": "2.3.4",
-      "title": "Ensure \"Block notes and highlights sync for enterprise   books\" is set to \"Yes\"",
+      "title": "Ensure \"Block notes and highlights sync for enterprise \uf06f \uf06f books\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4360,7 +4360,7 @@
     },
     {
       "id": "2.3.6",
-      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4373,7 +4373,7 @@
     },
     {
       "id": "2.3.7",
-      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4386,7 +4386,7 @@
     },
     {
       "id": "2.3.8",
-      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)   2.4 Connected Devices",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) \uf06f \uf06f 2.4 Connected Devices",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4399,7 +4399,7 @@
     },
     {
       "id": "2.4.1",
-      "title": "Ensure \"Force Apple Watch wrist detection\" is set to   \"Yes\"",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4412,7 +4412,7 @@
     },
     {
       "id": "2.4.2",
-      "title": "Ensure \"Require AirPlay outgoing requests pairing   password\" is set to \"Yes\"",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing \uf06f \uf06f password\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4425,7 +4425,7 @@
     },
     {
       "id": "2.5.1",
-      "title": "Ensure \"Block sending diagnostic and usage data to   Apple\" is set to \"Yes\"",
+      "title": "Ensure \"Block sending diagnostic and usage data to \uf06f \uf06f Apple\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4438,7 +4438,7 @@
     },
     {
       "id": "2.5.2",
-      "title": "Ensure \"Block screenshots and screen recording\" is set   to \"Yes\"",
+      "title": "Ensure \"Block screenshots and screen recording\" is set \uf06f \uf06f to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4451,7 +4451,7 @@
     },
     {
       "id": "2.5.3",
-      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4464,7 +4464,7 @@
     },
     {
       "id": "2.5.4",
-      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"  ",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4477,7 +4477,7 @@
     },
     {
       "id": "2.5.5",
-      "title": "Ensure \"Block trusting new enterprise app authors\" is set   to \"Yes\"",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set \uf06f \uf06f to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4490,7 +4490,7 @@
     },
     {
       "id": "2.5.6",
-      "title": "Ensure \"Limit Apple personalized advertising\" is set to   \"Yes\" (Manual) 2.6 Locked Screen Experience Page 227 Internal Only - General",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \uf06f \uf06f \"Yes\" (Manual) 2.6 Locked Screen Experience Page 227 Internal Only - General",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4503,7 +4503,7 @@
     },
     {
       "id": "2.6.1",
-      "title": "Ensure \"Block Control Center access in lock screen\" is   set to \"Yes\"",
+      "title": "Ensure \"Block Control Center access in lock screen\" is \uf06f \uf06f set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4516,7 +4516,7 @@
     },
     {
       "id": "2.6.2",
-      "title": "Ensure \"Block Notifications Center access in lock   screen\" is set to \"Yes\"",
+      "title": "Ensure \"Block Notifications Center access in lock \uf06f \uf06f screen\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4529,7 +4529,7 @@
     },
     {
       "id": "2.6.3",
-      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4542,7 +4542,7 @@
     },
     {
       "id": "2.6.4",
-      "title": "Ensure \"Block Wallet notifications in lock screen\" is set   to \"Yes\" (Manual) 2.7 Password",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set \uf06f \uf06f to \"Yes\" (Manual) 2.7 Password",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4555,7 +4555,7 @@
     },
     {
       "id": "2.7.1",
-      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)  ",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4568,7 +4568,7 @@
     },
     {
       "id": "2.7.2",
-      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4581,7 +4581,7 @@
     },
     {
       "id": "2.7.3",
-      "title": "Ensure \"Required password type\" is set to   \"Alphanumeric\"",
+      "title": "Ensure \"Required password type\" is set to \uf06f \uf06f \"Alphanumeric\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4594,7 +4594,7 @@
     },
     {
       "id": "2.7.4",
-      "title": "Ensure \"Minimum password length\" is set to \"6\" or   greater",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or \uf06f \uf06f greater",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4607,7 +4607,7 @@
     },
     {
       "id": "2.7.5",
-      "title": "Ensure \"Maximum minutes after screen lock before   password is required\" is set to \"Immediately\"",
+      "title": "Ensure \"Maximum minutes after screen lock before \uf06f \uf06f password is required\" is set to \"Immediately\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4620,7 +4620,7 @@
     },
     {
       "id": "2.7.6",
-      "title": "Ensure \"Maximum minutes of inactivity until screen   locks\" is set to \"2\" or less",
+      "title": "Ensure \"Maximum minutes of inactivity until screen \uf06f \uf06f locks\" is set to \"2\" or less",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4633,7 +4633,7 @@
     },
     {
       "id": "2.7.7",
-      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to   \"Yes\" (Manual) 2.8 Wireless",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \uf06f \uf06f \"Yes\" (Manual) 2.8 Wireless",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4646,7 +4646,7 @@
     },
     {
       "id": "2.8.1",
-      "title": "Ensure \"Block voice dialing while device is locked\" is set   to \"Yes\" (Manual) 3 Recommendations for Supervised (Organization) Devices 3.1 App Store, Doc Viewing, Gaming Page 228 Internal Only - General",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set \uf06f \uf06f to \"Yes\" (Manual) 3 Recommendations for Supervised (Organization) Devices 3.1 App Store, Doc Viewing, Gaming Page 228 Internal Only - General",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4659,7 +4659,7 @@
     },
     {
       "id": "3.1.1",
-      "title": "Ensure \"Block viewing corporate documents in   unmanaged apps\" is set to \"Yes\"",
+      "title": "Ensure \"Block viewing corporate documents in \uf06f \uf06f unmanaged apps\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4672,7 +4672,7 @@
     },
     {
       "id": "3.1.2",
-      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is   set to \"Yes\"",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is \uf06f \uf06f set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4685,7 +4685,7 @@
     },
     {
       "id": "3.1.3",
-      "title": "Ensure \"Allow copy/paste to be affected by managed   open-in\" is set to \"Yes\"",
+      "title": "Ensure \"Allow copy/paste to be affected by managed \uf06f \uf06f open-in\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4698,7 +4698,7 @@
     },
     {
       "id": "3.1.4",
-      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual)  ",
+      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4711,7 +4711,7 @@
     },
     {
       "id": "3.1.5",
-      "title": "Ensure \"Block access to network drive in Files app\" is   set to \"Yes\" (Manual) 3.2 Built-in Apps",
+      "title": "Ensure \"Block access to network drive in Files app\" is \uf06f \uf06f set to \"Yes\" (Manual) 3.2 Built-in Apps",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4724,7 +4724,7 @@
     },
     {
       "id": "3.2.1",
-      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4737,7 +4737,7 @@
     },
     {
       "id": "3.3.1",
-      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"  ",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4750,7 +4750,7 @@
     },
     {
       "id": "3.3.2",
-      "title": "Ensure \"Block managed apps from storing data in   iCloud\" is set to \"Yes\"",
+      "title": "Ensure \"Block managed apps from storing data in \uf06f \uf06f iCloud\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4763,7 +4763,7 @@
     },
     {
       "id": "3.3.3",
-      "title": "Ensure \"Block backup of enterprise books\" is set to   \"Yes\"",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4776,7 +4776,7 @@
     },
     {
       "id": "3.3.4",
-      "title": "Ensure \"Block notes and highlights sync for enterprise   books\" is set to \"Yes\"",
+      "title": "Ensure \"Block notes and highlights sync for enterprise \uf06f \uf06f books\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4789,7 +4789,7 @@
     },
     {
       "id": "3.3.5",
-      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4802,7 +4802,7 @@
     },
     {
       "id": "3.3.7",
-      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4815,7 +4815,7 @@
     },
     {
       "id": "3.3.8",
-      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)  ",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4828,7 +4828,7 @@
     },
     {
       "id": "3.3.9",
-      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual)  ",
+      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4841,7 +4841,7 @@
     },
     {
       "id": "3.3.10",
-      "title": "Ensure \"Block iCloud document and data sync\" is set to   \"Yes\"",
+      "title": "Ensure \"Block iCloud document and data sync\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4854,7 +4854,7 @@
     },
     {
       "id": "3.4.1",
-      "title": "Ensure \"Force Apple Watch wrist detection\" is set to   \"Yes\"",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4867,7 +4867,7 @@
     },
     {
       "id": "3.4.2",
-      "title": "Ensure \"Require AirPlay outgoing requests pairing   password\" is set to \"Yes\"",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing \uf06f \uf06f password\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4880,7 +4880,7 @@
     },
     {
       "id": "3.4.3",
-      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4893,7 +4893,7 @@
     },
     {
       "id": "3.4.4",
-      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is   set to \"Yes\"",
+      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is \uf06f \uf06f set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4906,7 +4906,7 @@
     },
     {
       "id": "3.4.5",
-      "title": "Ensure \"Block access to USB drive in Files app\" is set to   \"Yes\" (Manual) 3.5 General",
+      "title": "Ensure \"Block access to USB drive in Files app\" is set to \uf06f \uf06f \"Yes\" (Manual) 3.5 General",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4919,7 +4919,7 @@
     },
     {
       "id": "3.5.1",
-      "title": "Ensure \"Block sending diagnostic and usage data to   Apple\" is set to \"Yes\"",
+      "title": "Ensure \"Block sending diagnostic and usage data to \uf06f \uf06f Apple\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4932,7 +4932,7 @@
     },
     {
       "id": "3.5.2",
-      "title": "Ensure \"Block screenshots and screen recording\" is set   to \"Yes\"",
+      "title": "Ensure \"Block screenshots and screen recording\" is set \uf06f \uf06f to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4945,7 +4945,7 @@
     },
     {
       "id": "3.5.4",
-      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"  ",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4958,7 +4958,7 @@
     },
     {
       "id": "3.5.5",
-      "title": "Ensure \"Block trusting new enterprise app authors\" is set   to \"Yes\"",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set \uf06f \uf06f to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4971,7 +4971,7 @@
     },
     {
       "id": "3.5.6",
-      "title": "Ensure \"Limit Apple personalized advertising\" is set to   \"Yes\"",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4984,7 +4984,7 @@
     },
     {
       "id": "3.5.7",
-      "title": "Ensure \"Block users from erasing all content and   settings on device\" is set to \"Yes\"",
+      "title": "Ensure \"Block users from erasing all content and \uf06f \uf06f settings on device\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -4997,7 +4997,7 @@
     },
     {
       "id": "3.5.8",
-      "title": "Ensure \"Block modification of device name\" is set to   \"Yes\"",
+      "title": "Ensure \"Block modification of device name\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5010,7 +5010,7 @@
     },
     {
       "id": "3.5.9",
-      "title": "Ensure \"Block configuration profile changes\" is set to   \"Yes\"",
+      "title": "Ensure \"Block configuration profile changes\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5023,7 +5023,7 @@
     },
     {
       "id": "3.5.10",
-      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual)  ",
+      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5036,7 +5036,7 @@
     },
     {
       "id": "3.5.11",
-      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\"  ",
+      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5049,7 +5049,7 @@
     },
     {
       "id": "3.5.12",
-      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual)   3.6 Locked Screen Experience",
+      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual) \uf06f \uf06f 3.6 Locked Screen Experience",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5062,7 +5062,7 @@
     },
     {
       "id": "3.6.1",
-      "title": "Ensure \"Block Control Center access in lock screen\" is   set to \"Yes\"",
+      "title": "Ensure \"Block Control Center access in lock screen\" is \uf06f \uf06f set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5075,7 +5075,7 @@
     },
     {
       "id": "3.6.2",
-      "title": "Ensure \"Block Notifications Center access in lock   screen\" is set to \"Yes\"",
+      "title": "Ensure \"Block Notifications Center access in lock \uf06f \uf06f screen\" is set to \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5088,7 +5088,7 @@
     },
     {
       "id": "3.6.3",
-      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5101,7 +5101,7 @@
     },
     {
       "id": "3.6.4",
-      "title": "Ensure \"Block Wallet notifications in lock screen\" is set   to \"Yes\" (Manual) 3.7 Password",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set \uf06f \uf06f to \"Yes\" (Manual) 3.7 Password",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5114,7 +5114,7 @@
     },
     {
       "id": "3.7.1",
-      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)   Page 231 Internal Only - General CIS Benchmark Recommendation Set Correctly",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) \uf06f \uf06f Page 231 Internal Only - General CIS Benchmark Recommendation Set Correctly",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5127,7 +5127,7 @@
     },
     {
       "id": "3.7.2",
-      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5140,7 +5140,7 @@
     },
     {
       "id": "3.7.3",
-      "title": "Ensure \"Required password type\" is set to   \"Alphanumeric\"",
+      "title": "Ensure \"Required password type\" is set to \uf06f \uf06f \"Alphanumeric\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5153,7 +5153,7 @@
     },
     {
       "id": "3.7.4",
-      "title": "Ensure \"Minimum password length\" is set to \"6\" or   greater",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or \uf06f \uf06f greater",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5166,7 +5166,7 @@
     },
     {
       "id": "3.7.5",
-      "title": "Ensure \"Maximum minutes after screen lock before   password is required\" is set to \"Immediately\"",
+      "title": "Ensure \"Maximum minutes after screen lock before \uf06f \uf06f password is required\" is set to \"Immediately\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5179,7 +5179,7 @@
     },
     {
       "id": "3.7.6",
-      "title": "Ensure \"Maximum minutes of inactivity until screen   locks\" is set to \"2\" or less",
+      "title": "Ensure \"Maximum minutes of inactivity until screen \uf06f \uf06f locks\" is set to \"2\" or less",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5192,7 +5192,7 @@
     },
     {
       "id": "3.7.7",
-      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to   \"Yes\"",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5205,7 +5205,7 @@
     },
     {
       "id": "3.7.8",
-      "title": "Ensure \"Block password proximity requests\" is set to   \"Yes\"",
+      "title": "Ensure \"Block password proximity requests\" is set to \uf06f \uf06f \"Yes\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5218,7 +5218,7 @@
     },
     {
       "id": "3.7.9",
-      "title": "Ensure \"Block password sharing\" is set to \"Yes\"  ",
+      "title": "Ensure \"Block password sharing\" is set to \"Yes\" \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5231,7 +5231,7 @@
     },
     {
       "id": "3.7.10",
-      "title": "Ensure \"Require Touch ID or Face ID authentication for   AutoFill of password or credit card information\" is set to \"Yes\" (Manual) 3.8 Wireless",
+      "title": "Ensure \"Require Touch ID or Face ID authentication for \uf06f \uf06f AutoFill of password or credit card information\" is set to \"Yes\" (Manual) 3.8 Wireless",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5244,7 +5244,7 @@
     },
     {
       "id": "3.8.1",
-      "title": "Ensure \"Block voice dialing while device is locked\" is set   to \"Yes\" (Manual) 3.9 Lock Screen Message 3.9.1 Ensure a \"Lock Screen Message\" has been set (Manual)   3.10 Additional Recommendations 3.10.1 Ensure the ability to remove the management profile  ",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set \uf06f \uf06f to \"Yes\" (Manual) 3.9 Lock Screen Message 3.9.1 Ensure a \"Lock Screen Message\" has been set (Manual) \uf06f \uf06f 3.10 Additional Recommendations 3.10.1 Ensure the ability to remove the management profile \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5257,7 +5257,7 @@
     },
     {
       "id": "4.1",
-      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual)  ",
+      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5270,7 +5270,7 @@
     },
     {
       "id": "4.2",
-      "title": "Ensure \"Minimum OS version\" or \"Minimum OS build   version\" has been defined",
+      "title": "Ensure \"Minimum OS version\" or \"Minimum OS build \uf06f \uf06f version\" has been defined",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5283,7 +5283,7 @@
     },
     {
       "id": "4.3",
-      "title": "Ensure \"Mark device noncompliant\" is set to   \"Immediately\"",
+      "title": "Ensure \"Mark device noncompliant\" is set to \uf06f \uf06f \"Immediately\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5296,7 +5296,7 @@
     },
     {
       "id": "4.4",
-      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or   less (Manual) 4.5 Ensure all devices are marked as \"compliant\" (Manual)  ",
+      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or \uf06f \uf06f less (Manual) 4.5 Ensure all devices are marked as \"compliant\" (Manual) \uf06f \uf06f",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],
@@ -5309,7 +5309,7 @@
     },
     {
       "id": "4.6",
-      "title": "Ensure \"Mark devices with no compliance policy   assigned as\" is set to \"Not compliant\"",
+      "title": "Ensure \"Mark devices with no compliance policy \uf06f \uf06f assigned as\" is set to \"Not compliant\"",
       "level": "L1",
       "type": "Manual",
       "profileApplicability": [],

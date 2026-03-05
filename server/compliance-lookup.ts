@@ -194,13 +194,17 @@ function jaccard(a: Set<string>, b: Set<string>): number {
 }
 
 /**
- * Substring containment boost:
- * If the query string (normalised) appears in the target, or shares a
- * run of 2+ consecutive words, return a strong score boost.
+ * Substring containment boost.
+ * IMPORTANT: both q and t must be non-empty before calling this.
+ * JavaScript's String.includes("") is always true, so we guard at the call site.
  */
 function substringScore(query: string, target: string): number {
   const q = query.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").trim();
   const t = target.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").trim();
+
+  // Guard: empty target would make q.includes(t) trivially true
+  if (!t || t.length < 4) return 0;
+
   if (t.includes(q)) return 0.9;
   if (q.includes(t)) return 0.8;
 
@@ -276,9 +280,9 @@ export function lookupComplianceForSetting(
         score = Math.max(score, descScore);
       }
 
-      // Lower threshold — previously 0.08, now 0.06
-      // Substring matches (≥0.6) are always kept; Jaccard just needs some overlap
-      if (score > 0.06) {
+      // Minimum threshold: 0.35 means at least a solid Jaccard overlap or
+      // a partial bigram match. This filters out noise entirely.
+      if (score >= 0.35) {
         candidates.push({ rec, platformKey: pKey, score: Math.min(score, 1) });
       }
     }
@@ -286,7 +290,9 @@ export function lookupComplianceForSetting(
 
   // Sort by confidence desc, take top K
   candidates.sort((a, b) => b.score - a.score);
-  const top = candidates.slice(0, topK);
+  // Only keep truly confident matches (≥0.45) — low scores are noise
+  const confident = candidates.filter(c => c.score >= 0.45);
+  const top = confident.slice(0, topK);
 
   // Build enriched matches with CIS controls + ISO mappings
   const matches: BenchmarkMatch[] = top.map(({ rec, platformKey, score }) => {
