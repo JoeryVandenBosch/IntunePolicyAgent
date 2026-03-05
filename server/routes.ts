@@ -52,6 +52,31 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/secure-score", requireAuth, async (req: any, res) => {
+    try {
+      const token = await getAccessToken(req);
+      const response = await fetch(
+        "https://graph.microsoft.com/v1.0/security/secureScores?$top=1&$orderby=createdDateTime desc",
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+      );
+      if (!response.ok) {
+        const err = await response.text();
+        return res.status(response.status).json({ message: `Secure Score API error: ${err}` });
+      }
+      const data = await response.json();
+      const latest = data.value?.[0];
+      if (!latest) return res.json({ score: null });
+      res.json({
+        score: Math.round(latest.currentScore),
+        maxScore: Math.round(latest.maxScore),
+        percentage: Math.round((latest.currentScore / latest.maxScore) * 100),
+        updatedAt: latest.createdDateTime,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch Secure Score" });
+    }
+  });
+
   app.post("/api/analyze", requireAuth, async (req: any, res) => {
     try {
       const { policyIds } = req.body;
