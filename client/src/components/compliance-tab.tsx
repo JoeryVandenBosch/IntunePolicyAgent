@@ -93,18 +93,62 @@ function normaliseVal(v: string) {
   return translateSids(v).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Canonicalise a setting value to one of three intents:
+ *   "on"  — the setting is enabled / restrictive / active
+ *   "off" — the setting is disabled / permissive / inactive
+ *   null  — cannot determine intent, fall back to string comparison
+ *
+ * This handles the fact that Intune, CIS, and Microsoft docs all use
+ * different words for the same concept, e.g.:
+ *   ON:  Enabled / Yes / True / 1 / Block / Required / Allowed / Allow /
+ *        Configured / Audit / Warn / Send / On / Require / Enforce
+ *   OFF: Disabled / No / False / 0 / Not allowed / Not configured /
+ *        None / Off / NotConfigured / Unrestricted / Never / Allow (context-dep.)
+ */
+function canonicalIntent(v: string): "on" | "off" | null {
+  const s = v.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+
+  // Explicit OFF signals
+  const offPatterns = [
+    /^(disabled?|not? ?(allowed?|configured?|enabled?|required?|set)|no|false|0|off|none|never|unrestricted|notconfigured|notallowed)$/,
+  ];
+  if (offPatterns.some(p => p.test(s))) return "off";
+
+  // Explicit ON signals
+  const onPatterns = [
+    /^(enabled?|yes|true|[1-9]\d*|on|block(ed)?|required?|allow(ed)?|configured?|enforce[d]?|warn(ing)?|audit|send|restrict(ed)?|mandatory|active|set)$/,
+  ];
+  if (onPatterns.some(p => p.test(s))) return "on";
+
+  // Multi-word ON phrases
+  if (/\b(block|require|enforce|enable|restrict|audit|warn)\b/.test(s) &&
+      !/\bnot?\b/.test(s)) return "on";
+
+  // Multi-word OFF phrases  
+  if (/\b(disable|not? allow|not? require|not? configure|not? enable)\b/.test(s)) return "off";
+
+  return null;
+}
+
 function isCompliant(settingValue: string, match: ComplianceBenchmarkMatch): boolean {
   const recommended = normaliseVal(extractRecommended(match.title));
   const actual = normaliseVal(settingValue);
   if (!recommended || recommended === "see benchmark") return true;
+
+  // Exact match first
   if (actual === recommended) return true;
-  const positives = new Set(["enabled", "yes", "true", "1", "block", "required", "allowed", "allow"]);
-  const negatives = new Set(["disabled", "no", "false", "0", "not configured", "not allowed", "notallowed", "none", "block"]);
-  if (positives.has(actual) && positives.has(recommended)) return true;
-  if (negatives.has(actual) && negatives.has(recommended)) return true;
+
+  // Canonical intent comparison — handles all Intune/CIS terminology variations
+  const intentActual = canonicalIntent(actual);
+  const intentRec    = canonicalIntent(recommended);
+  if (intentActual !== null && intentRec !== null && intentActual === intentRec) return true;
+
+  // Numeric match — e.g. "7" vs "7 days" or "7 or fewer"
   const numActual = parseFloat(actual);
-  const numRec = parseFloat(recommended);
+  const numRec    = parseFloat(recommended);
   if (!isNaN(numActual) && !isNaN(numRec) && numActual === numRec) return true;
+
   return false;
 }
 
