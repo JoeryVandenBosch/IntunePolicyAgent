@@ -67,7 +67,30 @@ export interface ComplianceLookupResult {
 
 // ── Data loading (singleton, loaded once at startup) ───────────────────────
 
-const DATA_DIR = path.join(__dirname, "data/compliance");
+// Resolve the data directory robustly regardless of whether we're running
+// as raw TypeScript (tsx), compiled CJS (dist/index.cjs), or in tests.
+// Strategy: try several candidate paths, pick the first that exists.
+function resolveDataDir(): string {
+  const candidates = [
+    path.join(__dirname, "data/compliance"),                    // dev: server/ → server/data/compliance
+    path.join(__dirname, "../server/data/compliance"),          // prod: dist/ → server/data/compliance
+    path.join(process.cwd(), "server/data/compliance"),         // always works from project root
+    path.join(process.cwd(), "data/compliance"),
+  ];
+  for (const dir of candidates) {
+    try {
+      if (fs.existsSync(path.join(dir, "cis-iso-mapping.json"))) {
+        console.log(`[compliance-lookup] Data dir resolved: ${dir}`);
+        return dir;
+      }
+    } catch { /* keep trying */ }
+  }
+  // Last resort — will produce a clear error message in loadData()
+  console.warn("[compliance-lookup] Could not resolve data dir, falling back to cwd");
+  return path.join(process.cwd(), "server/data/compliance");
+}
+
+const DATA_DIR = resolveDataDir();
 
 interface BenchmarkRec {
   id: string;
@@ -151,12 +174,15 @@ function tokenize(s: string): Set<string> {
   );
 }
 
+// Deliberately kept small — we only strip structural/connector words,
+// NOT platform names ("windows") or action words ("enable", "disable")
+// because those are meaningful for matching.
 const STOPWORDS = new Set([
-  "the", "and", "for", "that", "this", "with", "from", "are", "set",
-  "ensure", "not", "yes", "true", "false", "enabled", "disabled",
-  "block", "allow", "require", "use", "value", "configure", "settings",
-  "setting", "policy", "device", "user", "microsoft", "intune", "windows",
-  "apple", "ios", "macos",
+  "the", "and", "for", "that", "this", "with", "from", "are",
+  "ensure", "not", "yes", "true", "false",
+  "value", "settings", "setting", "policy",
+  "microsoft", "intune", "apple",
+  "configured", "recommended", "default",
 ]);
 
 /** Jaccard similarity between two token sets */
@@ -165,6 +191,28 @@ function jaccard(a: Set<string>, b: Set<string>): number {
   const intersection = [...a].filter(t => b.has(t)).length;
   const union = new Set([...a, ...b]).size;
   return intersection / union;
+}
+
+/**
+ * Substring containment boost:
+ * If the query string (normalised) appears in the target, or shares a
+ * run of 2+ consecutive words, return a strong score boost.
+ */
+function substringScore(query: string, target: string): number {
+  const q = query.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").trim();
+  const t = target.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").trim();
+  if (t.includes(q)) return 0.9;
+  if (q.includes(t)) return 0.8;
+
+  // bigram overlap bonus
+  const qWords = q.split(/\s+/).filter(w => w.length >= 3);
+  const tWords = t.split(/\s+/).filter(w => w.length >= 3);
+  if (qWords.length < 2 || tWords.length < 2) return 0;
+
+  const qBigrams = new Set(qWords.slice(0, -1).map((w, i) => `${w} ${qWords[i+1]}`));
+  const tBigrams = new Set(tWords.slice(0, -1).map((w, i) => `${w} ${tWords[i+1]}`));
+  const bigramOverlap = [...qBigrams].filter(b => tBigrams.has(b)).length;
+  return bigramOverlap > 0 ? Math.min(0.6, bigramOverlap * 0.25) : 0;
 }
 
 /** Map platform string from Intune to benchmark platform key */
@@ -204,19 +252,33 @@ export function lookupComplianceForSetting(
     if (targetPlatforms.length > 0 && !targetPlatforms.includes(pKey)) continue;
 
     for (const rec of benchmark.recommendations) {
-      // Title similarity
+      // 1. Jaccard on title tokens
       const titleTokens = tokenize(rec.title);
       let score = jaccard(queryTokens, titleTokens);
 
-      // Boost for path match (remediation path often has exact setting name)
+      // 2. Substring / bigram containment check on raw title (strong signal)
+      const sub = substringScore(settingName, rec.title);
+      score = Math.max(score, sub);
+
+      // 3. Remediation path — Settings Catalog path often has the exact
+      //    setting name, so weight it higher
       if (rec.remediationPath) {
         const pathTokens = tokenize(rec.remediationPath);
-        const pathScore = jaccard(queryTokens, pathTokens);
-        score = Math.max(score, pathScore * 1.2);  // path match weighted higher
+        const pathJaccard = jaccard(queryTokens, pathTokens);
+        const pathSub = substringScore(settingName, rec.remediationPath);
+        score = Math.max(score, pathJaccard * 1.3, pathSub * 1.1);
       }
 
-      // Minimum threshold to keep
-      if (score > 0.08) {
+      // 4. Description match as a weaker signal
+      if (score < 0.15 && rec.description) {
+        const descTokens = tokenize(rec.description.slice(0, 200));
+        const descScore = jaccard(queryTokens, descTokens) * 0.7;
+        score = Math.max(score, descScore);
+      }
+
+      // Lower threshold — previously 0.08, now 0.06
+      // Substring matches (≥0.6) are always kept; Jaccard just needs some overlap
+      if (score > 0.06) {
         candidates.push({ rec, platformKey: pKey, score: Math.min(score, 1) });
       }
     }
