@@ -1,0 +1,5324 @@
+{
+  "metadata": {
+    "platform": "ios",
+    "platformLabel": "iOS 18 / iPadOS 18",
+    "source": "CIS iOS 18 / iPadOS 18 Intune Benchmark v1.0.0",
+    "version": "v1.0.0",
+    "date": "2025-09-30",
+    "description": "CIS security recommendations for iOS 18 / iPadOS 18 via Microsoft Intune, mapped to CIS Controls and ISO 27001:2022"
+  },
+  "recommendations": [
+    {
+      "id": "2.1.1",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual) ..................................................................................................................................... 19 Page 2 Internal Only - General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual) ............. 21",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual) 23 2.2 Built-in Apps ................................................................................................................................... 25",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual) ................................. 26",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.2.2",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual) .................................... 28 2.3 Cloud and Storage .......................................................................................................................... 30",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual) ............................................. 31",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.2",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual) ....... 33",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual) .............................. 35",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\" (Manual) 37",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.5",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual) ........................................... 39",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.6",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual) ......................................... 41",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual) .............................................. 43",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) ............................................................. 45 2.4 Connected Devices ........................................................................................................................ 47",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual) ............................. 48",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\" (Manual) 50",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.4.3",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual) .................................. 52 2.5 General ............................................................................................................................................ 54",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual).... 55",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual) ................... 57",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.3",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual) ................................. 59",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual) ............................................ 61",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual) ................. 63",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual) .......................... 65 2.6 Locked Screen Experience ............................................................................................................ 67",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual) ............... 68",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual) ....... 70",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)................................. 72",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)..................... 74 2.7 Password ......................................................................................................................................... 76",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) ....................................................... 77",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual) ............................................. 79",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.3",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual) ............................. 81",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual) ............................................................................................................. 85",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual) ........................... 89 2.8 Wireless ........................................................................................................................................... 91",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual) .................. 92 3 Recommendations for Supervised (Organization) Devices ............................................. 94 3.1 App Store, Doc Viewing, Gaming ................................................................................................. 95",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.1",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\" (Manual) ..................................................................................................................................... 96",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\" (Manual) ............. 98",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open-in\" is set to \"Yes\" (Manual) ................................................................................................................................................. 100",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.4",
+      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual) ........................................................ 102",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.5",
+      "title": "Ensure \"Block access to network drive in Files app\" is set to \"Yes\" (Manual)............... 104 3.2 Built-in Apps ................................................................................................................................. 106",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\" (Manual) ............................... 107",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.2.2",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\" (Manual) .................................. 109 3.3 Cloud and Storage ........................................................................................................................ 111 Page 3 Internal Only - General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\" (Manual) ........................................... 112",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.2",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\" (Manual) ..... 114",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\" (Manual) ............................ 116",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\" (Manual) ................................................................................................................................................. 118",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.5",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\" (Manual) ......................................... 120",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.6",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\" (Manual) ....................................... 122",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\" (Manual) ............................................ 124",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual) ........................................................... 126",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.9",
+      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual) ................................................. 128",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.10",
+      "title": "Ensure \"Block iCloud document and data sync\" is set to \"Yes\" (Manual) ................... 130",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.11",
+      "title": "Ensure \"Block iCloud Keychain sync\" is set to \"Yes\" (Manual) ................................... 132 3.4 Connected Devices ...................................................................................................................... 134",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\" (Manual) ........................... 135",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\" (Manual) ................................................................................................................................................. 137",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.3",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\" (Manual) ................................ 139",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.4",
+      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is set to \"Yes\" (Manual) ............ 141",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.5",
+      "title": "Ensure \"Block access to USB drive in Files app\" is set to \"Yes\" (Manual) .................... 143 3.5 General .......................................................................................................................................... 145",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\" (Manual).. 146",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\" (Manual) ................. 148",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.3",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\" (Manual) ............................... 150",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\" (Manual) .......................................... 152",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\" (Manual) ............... 154",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\" (Manual) ........................ 156",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.7",
+      "title": "Ensure \"Block users from erasing all content and settings on device\" is set to \"Yes\" (Manual) ................................................................................................................................... 158",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.8",
+      "title": "Ensure \"Block modification of device name\" is set to \"Yes\" (Manual) ........................... 160",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.9",
+      "title": "Ensure \"Block configuration profile changes\" is set to \"Yes\" (Manual) .......................... 162",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.10",
+      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual) ............................................... 164",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.11",
+      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\" (Manual) ............................... 166",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.12",
+      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual) ................................................. 168 3.6 Locked Screen Experience .......................................................................................................... 170",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\" (Manual) ............. 171",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\" (Manual) ..... 173",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\" (Manual)............................... 175",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\" (Manual)................... 177 3.7 Password ....................................................................................................................................... 179",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual) ..................................................... 180",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\" (Manual) ........................................... 182",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.3",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\" (Manual) ........................... 184",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\" (Manual) ........................................................................................................... 188",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\" (Manual) ......................... 192",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.8",
+      "title": "Ensure \"Block password proximity requests\" is set to \"Yes\" (Manual) .......................... 194",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.9",
+      "title": "Ensure \"Block password sharing\" is set to \"Yes\" (Manual) ............................................ 196",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.10",
+      "title": "Ensure \"Require Touch ID or Face ID authentication for AutoFill of password or credit card information\" is set to \"Yes\" (Manual) ............................................................................... 198 3.8 Wireless ......................................................................................................................................... 200",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\" (Manual) ................ 201 3.9 Lock Screen Message .................................................................................................................. 203 3.9.1 Ensure a \"Lock Screen Message\" has been set (Manual)............................................. 204 Page 4 Internal Only - General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.1",
+      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual)..................................................... 212",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.3",
+      "title": "Ensure \"Mark device noncompliant\" is set to \"Immediately\" (Manual) ............................. 216",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.4",
+      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or less (Manual)................................ 218 4.5 Ensure all devices are marked as \"compliant\" (Manual) ................................................... 220",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.6",
+      "title": "Ensure \"Mark devices with no compliance policy assigned as\" is set to \"Not compliant\" (Manual) ................................................................................................................................... 222",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.1.1",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents viewing corporate documents in unmanaged apps.",
+      "rationale": "By default, depending on per-app policies, the OS might allow corporate documents to be viewed in any app.",
+      "impact": "Third-party keyboards may not function correctly with this restriction set.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This forces AirDrop to be considered an unmanaged drop target.",
+      "rationale": "This stops managed apps data from being sent via Airdrop.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open- in\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This enforces copy/paste restrictions based on configured Block viewing corporate documents in unmanaged apps and Block viewing non-corporate documents in corporate apps.",
+      "rationale": "This can ensure that copy/paste restrictions set by managed apps are enforced.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.2",
+          "title": "Built-in Apps",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents access to Siri when the device is locked.",
+      "rationale": "Accessing Siri on a locked device may allow unauthorized users to access information otherwise not available to them, such as messaging, contacts, and a variety of other data.",
+      "impact": "The end user must unlock the device before interacting with Siri.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.2.2",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This enforces the feature to display fraud warnings within the Safari web browser.",
+      "rationale": "Fraudulent websites masquerade as legitimate instances of financial, business, or other sensitive sites. They are designed to capture user credentials, often through phishing campaigns. Safari's fraudulent website warning feature helps protect end users from such sites. For increased security, the Safari web browser should be used to enforce fraud warnings.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "9.4",
+          "title": "Restrict Unnecessary or Unauthorized Browser and Email Client Extensions applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "7.2",
+          "title": "Disable Unnecessary or Unauthorized Browser or on applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "2.3",
+          "title": "Cloud and Storage",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This requires device backups to be stored in an encrypted state.",
+      "rationale": "Data that are stored securely on an iOS or iPadOS device may be trivially accessed from a local computer backup. Forcing the encryption of backups protects data from being compromised if the local host computer is compromised.",
+      "impact": "End users must configure a password for the encrypted backup, the complexity of which is not managed.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "11.3",
+          "title": "Protect Recovery Data",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "10.4",
+          "title": "Ensure Protection of Backups includes remote backups and cloud services.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.3.2",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents managed apps from storing and syncing data to the user's iCloud account.",
+      "rationale": "This recommendation addresses intentional or unintentional data leakage. It prevents a user from installing an application that is managed by the organization on a personal device and allowing iCloud to sync the managed application's data to the personal, non- managed application.",
+      "impact": "Data created within apps on the device may be lost if the end user has not transferred it to another device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents backing up of enterprise books.",
+      "rationale": "This recommendation addresses intentional or unintentional data leakage. It prevents a user from backing up enterprise books (documents handled by the Books application).",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents syncing notes and highlights in enterprise books.",
+      "rationale": "Notes and highlights of text created within enterprise books may contain sensitive information that should not be backed up.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.5",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents photo stream syncing to iCloud.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.6",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents photo Library syncing to iCloud.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This disables iCloud Photo Sharing.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This prevents Apple's Handoff data-sharing mechanism, allowing users to carry on tasks on another iOS/iPadOS or macOS device.",
+      "rationale": "",
+      "impact": "Handoff does not enforce managed application boundaries. This allows managed application data to be moved to the unmanaged application space on another device, which may allow for intentional or unintentional data leakage.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.4",
+          "title": "Connected Devices",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction forces wrist detection to be enabled to paired Apple Watches. When enforced, the Apple Watch won't display notifications when it's not being worn. The Apple Watch will also lock itself when it has been removed from a user's wrist.",
+      "rationale": "Wrist detection prevents a removed Apple Watch from providing access to information not otherwise available. It will also automatically lock if the watch was removed.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction enforces the requirement of a pairing password when using AirPlay to stream content to a new Apple device.",
+      "rationale": "This will mitigate the risk of accidental casting of content to an incorrect screen. It will also reduce the effectiveness of a spoofing style attack.",
+      "impact": "Users will have to authenticate to new Airplay devices via a password before first use.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.4.3",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This will restrict users from being able to automatically unlock their Apple Watch when they unlock their iOS/iPadOS device.",
+      "rationale": "If an Apple Watch is connected to the user's iOS/iPadOS device, but is not on their person, this could result in the user unintentionally unlocking their Apple Watch, allowing access to sensitive information on the device.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.5",
+          "title": "General",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "Apple provides a mechanism to send diagnostic and analytics data back to them in order to help improve the platform. This information sent to Apple may contain internal organizational information that should not be disclosed to third parties.",
+      "rationale": "Organizations should have knowledge of what is shared with vendors and other third parties, and should also be in full control of what is disclosed.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This recommendation limits screen recording and the ability to screenshot from the device.",
+      "rationale": "Sensitive information displayed on the device may be captured by screenshot or screen recording into an unmanaged storage location intentionally or unintentionally by a user.",
+      "impact": "Screenshots and screen recordings will be disabled entirely.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.5.3",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Unsupervised Devices"
+      ],
+      "description": "This recommendation blocks untrusted Transport Layer Security (TLS) certificates.",
+      "rationale": "iOS devices maintain a list of trusted TLS certificate roots. An organization may choose to add their own certificates to the list by using a configuration profile. Allowing users to bypass that list and accept self-signed or otherwise unverified/invalid certificates may increase the likelihood of an incident.",
+      "impact": "The device automatically rejects untrusted HTTPS certificates without prompting the user. Services using self-signed certificates will not function.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This recommendation disables the ad identifier that is used to link advertisement information to a device.",
+      "rationale": "Having this enabled allows ad companies to better track and harvest information from a device.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This recommendation disables application installation by end users from outside the Apple App Store or Mobile Device Management (MDM) deployment.",
+      "rationale": "Allowing application installation by end users from outside of the Apple App Store or Mobile Device Management (MDM) may permit a user to intentionally or unintentionally install a malicious application.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.6",
+          "title": "Address unapproved software updated in a timely manner",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "Apple provides a framework that allows advertisers to target Apple users with advertisements relevant to them and their interests by means of a unique identifier. For such personalized advertisements to be delivered, however, detailed information is collected, correlated, and made available to advertisers. This information is valuable to both advertisers and attackers and has been used with other metadata to reveal users' identities.",
+      "rationale": "Disabling the use of a unique identifier helps hinder the tracking of users, which in turn supports protection of user data.",
+      "impact": "Users will see generic advertising rather than targeted advertising. Apple has warned that this will reduce the number of relevant ads.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "2.6",
+          "title": "Locked Screen Experience",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction prevents access to the Control Center on the lock screen. Passcode/Face ID must be set for this to apply.",
+      "rationale": "When a device is lost or stolen, the Control Center may be used to enable airplane mode, thus preventing locating or erasing the device. Disabling Control Center forces a malicious actor to power down the device, which then discards the encryption key in memory. This makes some attacks based on physical possession more difficult. Further information such as media recently played, alarm information, and latest calculator history can also be seen.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Unsupervised Devices"
+      ],
+      "description": "This restriction prevents access to the Notifications Center on the lock screen. This does not restrict or limit information displayed from notifications, only older notifications that are stored in the notification center. This is usually visible by swiping up on the lock screen.",
+      "rationale": "This will block older notifications from being displayed on the lock screen. The introduction of the notification center is a location where unaddressed notifications often reside.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction prevents access to the Today View and search on the lock screen. This can be seen by swiping left on the lock screen. A Passcode/Face ID must be set for this to apply.",
+      "rationale": "This will block sensitive information from being displayed on the lock screen. Today View allows widgets and reminders to be displayed, as well as the option to list installed applications and other Siri suggestions.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction prevents access to the Apple Wallet while the screen is locked. Passcode/Face ID must be set for this to apply.",
+      "rationale": "This will block the option for the Apple Wallet to be used while the screen is locked.",
+      "impact": "The device will need to be unlocked to access the Wallet.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.7",
+          "title": "Password",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction enforces a password to be set on the device.",
+      "rationale": "This will block the option for the device to be used without a password.",
+      "impact": "A user will need to set a password to use the device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction enforces a block on simple passwords on the device. Passwords such as 1234 and 0000 would be blocked.",
+      "rationale": "This will block the option for a simple password to be used on the device.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.7.3",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Unsupervised Devices"
+      ],
+      "description": "This restriction enforces an alphanumeric password on the device. Numeric-only passcode pins would not be allowed.",
+      "rationale": "Alphanumeric passwords provide a greater security posture by increasing the number of possible combinations, as well as not providing an indicator of password length.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.7.4",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or greater",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction requires the password length set on the device to be 6 or greater.",
+      "rationale": "Longer passwords provide a greater security posture by increasing the number of possible combinations.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction disables any grace period where a password is not required to be entered after the screen has locked.",
+      "rationale": "This would make it impossible for the device to be picked up and used after the screen has locked.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.7.6",
+      "title": "Ensure \"Maximum minutes of inactivity until screen locks\" is set to \"2\" or less",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction sets the maximum time of inactivity before the device will be automatically locked.",
+      "rationale": "This would mitigate the concern of an unattended device being picked up and used, as the window of inactivity has been set.",
+      "impact": "This is not enforced during certain activities, such as watching video content.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "2.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Unsupervised Devices"
+      ],
+      "description": "This restriction blocks Touch ID and Face ID being used to unlock the device. A standard passcode/password will be the only form of authentication to unlock the device. If this is not set, passcode/password will still be required after a device power-cycles or the device has been reported as lost.",
+      "rationale": "This would address the concern of a malicious individual using the face/touch identification of the device owner as a means of authentication for the device.",
+      "impact": "A passcode/password will be required to unlock the device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.8",
+          "title": "Wireless",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Unsupervised Devices"
+      ],
+      "description": "This restriction blocks initiating phone calls from a locked device. Voice dialing is handled separately from Siri.",
+      "rationale": "Allowing calls from a locked device may allow for the impersonation of the device owner, or other malicious actions.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity 3 Recommendations for Supervised (Organization) Devices on supervised and unsupervised states.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.1",
+          "title": "App Store, Doc Viewing, Gaming",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.1.1",
+      "title": "Ensure \"Block viewing corporate documents in unmanaged apps\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents viewing corporate documents in unmanaged apps.",
+      "rationale": "By default, depending on per app policies, the OS might allow corporate documents to be viewed in any app.",
+      "impact": "Third party keyboards may not function correctly with this restriction set.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This forces AirDrop to be considered an unmanaged drop target.",
+      "rationale": "This stops managed apps data from being sent via Airdrop.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed open- in\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This enforces copy/paste restrictions based on configured Block viewing corporate documents in unmanaged apps and Block viewing non-corporate documents in corporate apps.",
+      "rationale": "This can ensure that copy/paste restrictions set by managed apps are enforced.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.1.4",
+      "title": "Ensure \"Block App Store\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents access to the App Store on supervised devices.",
+      "rationale": "Blocking the App Store will deny users the ability to install apps that have not been explicitly approved by the organization. Allowing users to install apps could introduce malicious applications designed to exfiltrate information intentionally or unintentionally by a user.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.6",
+          "title": "Address unapproved software updated in a timely manner",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.1.5",
+      "title": "Ensure \"Block access to network drive in Files app\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents access to networked file shares, such as SMB network drives.",
+      "rationale": "Network drives can be used as an unmanaged storage location for transferring data to and from iOS/iPadOS devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "1.2",
+          "title": "Address Unauthorized Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.3",
+          "title": "Monitor and Block Unauthorized Network Traffic alerting information security professionals.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "3.2",
+          "title": "Built-in Apps",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents access to Siri when the device is locked.",
+      "rationale": "Accessing Siri on a locked device may allow unauthorized users to access information otherwise not available to them, such as messaging, contacts, and a variety of other data.",
+      "impact": "The end user must unlock the device before interacting with Siri.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.2.2",
+      "title": "Ensure \"Require Safari fraud warnings\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This enforces the feature to display fraud warnings within the Safari web browser.",
+      "rationale": "Fraudulent websites masquerade as legitimate instances of financial, business, or other sensitive sites. They are designed to capture user credentials, often through phishing campaigns. Safari's fraudulent website warning feature helps protect end users from such sites. For increased security, the Safari web browser should be used to enforce fraud warnings.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "9.4",
+          "title": "Restrict Unnecessary or Unauthorized Browser and Email Client Extensions applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "7.2",
+          "title": "Disable Unnecessary or Unauthorized Browser or on applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "3.3",
+          "title": "Cloud and Storage",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This requires device backups to be stored in an encrypted state.",
+      "rationale": "Data that are stored securely on an iOS or iPadOS device may be trivially accessed from a local computer backup. Forcing the encryption of backups protects data from being compromised if the local host computer is compromised.",
+      "impact": "End users must configure a password for the encrypted backup, the complexity of which is not managed.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "11.3",
+          "title": "Protect Recovery Data",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "10.4",
+          "title": "Ensure Protection of Backups includes remote backups and cloud services.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.3.2",
+      "title": "Ensure \"Block managed apps from storing data in iCloud\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents managed apps from storing and syncing data to the user's iCloud account.",
+      "rationale": "This recommendation addresses intentional or unintentional data leakage. It prevents a user from installing an application that is managed by the organization on a personal device and allowing iCloud to sync the managed application's data to the personal, non- managed application.",
+      "impact": "Data created within apps on the device may be lost if the end user has not transferred it to another device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents backing up of enterprise books.",
+      "rationale": "This recommendation addresses intentional or unintentional data leakage. It prevents a user from backing up enterprise books (documents handled by the Books application).",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents syncing notes and highlights in enterprise books.",
+      "rationale": "Notes and highlights of text created within enterprise books may contain sensitive information that should not be backed up.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.5",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents photo stream syncing to iCloud.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.6",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents photo Library syncing to iCloud.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This disables iCloud Photo Sharing.",
+      "rationale": "This stops the ability to share pictures and screenshots to cloud storage that can be accessed outside your organization's network or devices.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents Apple's Handoff data-sharing mechanism, allowing users to carry on tasks on another iOS/iPadOS or macOS device.",
+      "rationale": "",
+      "impact": "Handoff does not enforce managed application boundaries. This allows managed application data to be moved to the unmanaged application space on another device, which may allow for intentional or unintentional data leakage",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.3.9",
+      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents the function of iCloud on the device being backed up to iCloud.",
+      "rationale": "iCloud backups are encrypted in transit and at rest within Apple's infrastructure, but there is no protection against restoring a backup to an unmanaged device. This potentially allows for intentional or unintentional data leakage.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.10",
+      "title": "Ensure \"Block iCloud document and data sync\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents syncing of documents and data to iCloud.",
+      "rationale": "Managed devices are often connected to personal iCloud accounts. This is expected and normal. The data from managed devices, however, should not co-mingle with the end-user's personal data. This creates a potential avenue for intentional or unintentional data leakage.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.4",
+          "title": "Only Allow Access to Authorized Cloud Storage or",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.3.11",
+      "title": "Ensure \"Block iCloud Keychain sync\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This prevents syncing of credentials with the iCloud Keychain. Keychain allows passwords associated with an Apple ID to be saved and available for use to the authenticated user for the Apple account.",
+      "rationale": "Enterprise credentials may be stored within Keychain, resulting in these credentials being stored within a user's Apple ID. Managed devices are often connected to personal iCloud accounts. This is expected and normal. The credentials from managed devices, however, should not co-mingle with the end-user's personal data. This creates a potential avenue for intentional or unintentional data leakage.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "15.3",
+          "title": "Classify Service Providers impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "3.4",
+          "title": "Connected Devices",
+          "version": "v7",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction forces wrist detection to be enabled to paired Apple Watches. When enforced, the Apple Watch won't display notifications when it's not being worn. The Apple Watch will also lock itself when it has been removed from a user's wrist.",
+      "rationale": "Wrist detection prevents a removed Apple Watch from providing access to information not otherwise available. It will also automatically lock if the watch was removed.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction enforces the requirement of a pairing password when using AirPlay to stream content to a new Apple device.",
+      "rationale": "This will mitigate the risk of accidental casting of content to an incorrect screen. It will also reduce the effectiveness of a spoofing style attack.",
+      "impact": "Users will have to authenticate to new Airplay devices via a password before first use.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.4.3",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This will restrict users from being able to automatically unlock their Apple Watch when they unlock their iOS/iPadOS device.",
+      "rationale": "If an Apple Watch is connected to the user's iOS/iPadOS device, but is not on their person, this could result in the user unintentionally unlocking their Apple Watch, allowing access to sensitive information on the device.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.4.4",
+      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This blocks the iBeacon function that allows users to discover nearby AirPrint Printers.",
+      "rationale": "This will aim to prevent malicious network traffic phishing attacks using AirPrint beacons.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.4.5",
+      "title": "Ensure \"Block access to USB drive in Files app\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This will prevent the Files app from accessing USB media to view and/or transfer files.",
+      "rationale": "The Files app provides a local file system and interface to USB media for iOS and iPadOS devices. In environments with sensitive data and strict data loss prevention policies, disabling the use of USB media with such devices may reduce the risk of intentional or unintentional data leakage.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "1.2",
+          "title": "Address Unauthorized Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.7",
+          "title": "Manage USB Devices devices should be maintained.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "3.5",
+          "title": "General",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to Apple\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "Apple provides a mechanism to send diagnostic and analytics data back to them in order help improve the platform. This information sent to Apple may contain internal organizational information that should not be disclosed to third parties.",
+      "rationale": "Organizations should have knowledge of what is shared with vendors and other third parties, and should also be in full control of what is disclosed.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation limits screen recording and the ability to screenshot from the device.",
+      "rationale": "Sensitive information displayed on the device may be captured by screenshot or screen recording into an unmanaged storage location intentionally or unintentionally by a user.",
+      "impact": "Screenshots and screen recordings will be disabled entirely.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.5.3",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Supervised Devices"
+      ],
+      "description": "This recommendation blocks untrusted Transport Layer Security (TLS) certificates.",
+      "rationale": "iOS devices maintain a list of trusted TLS certificate roots. An organization may choose to add their own certificates to the list by using a configuration profile. Allowing users to bypass that list and accept self-signed or otherwise unverified/invalid certificates may increase the likelihood of an incident.",
+      "impact": "The device automatically rejects untrusted HTTPS certificates without prompting the user. Services using self-signed certificates will not function.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation disables the ad identifier that is used to link advertisement information to a device.",
+      "rationale": "Having this enabled allows ad companies to better track and harvest information from a device.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation disables application installation by end users from outside the Apple App Store or Mobile Device Management (MDM) deployment.",
+      "rationale": "Allowing application installation by end users from outside of the Apple App Store or Mobile Device Management (MDM) may permit a user to intentionally or unintentionally install a malicious application.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.3",
+          "title": "Address Unauthorized Software frequently.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.6",
+          "title": "Address unapproved software updated in a timely manner",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "Apple provides a framework that allows advertisers to target Apple users with advertisements relevant to them and their interests by means of a unique identifier. For such personalized advertisements to be delivered, however, detailed information is collected, correlated, and made available to advertisers. This information is valuable to both advertisers and attackers and has been used with other metadata to reveal users' identities.",
+      "rationale": "Disabling the use of a unique identifier helps hinder the tracking of users, which in turn supports protection of user data.",
+      "impact": "Users will see generic advertising rather than targeted advertising. Apple has warned that this will reduce the number of relevant ads.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.8",
+          "title": "Uninstall or Disable Unnecessary Services on Enterprise Assets and Software function.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "9.2",
+          "title": "Ensure Only Approved Ports, Protocols and Services with validated business needs, are running on each system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.7",
+      "title": "Ensure \"Block users from erasing all content and settings on device\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents the \"erase all content and settings\" option on devices.",
+      "rationale": "An organization-owned device should not allow an end user to destroy data and/or repurpose the device.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.5.8",
+      "title": "Ensure \"Block modification of device name\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents a user from having the ability to change the name of the device. The device name is visible and can be changed from this location: Settings > General > About",
+      "rationale": "Giving users the ability to change their device name at any point may hinder the functionality of device identification and asset tracking.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "1.1",
+          "title": "Establish and Maintain Detailed Enterprise Asset Inventory",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "9.1",
+          "title": "Associate Active Ports, Services and Protocols to Asset asset inventory.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.9",
+      "title": "Ensure \"Block configuration profile changes\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents a user from intentionally or unintentionally installing additional configuration profiles.",
+      "rationale": "This adds an additional security control, so third-party and potentially malicious configuration profiles can not be installed.",
+      "impact": "Some services, such as WiFi access points that have been configured requiring a user to install a configuration profile, may be prevented from working by blocking their configuration profiles.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.5.10",
+      "title": "Ensure \"Allow activation lock\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction enables Activation Lock on devices. This feature is commonly seen when a device is marked as lost in the Apple Find My app.",
+      "rationale": "The Activation Lock feature increases the security of the device, and restricts functionality if the device has been marked as lost or stolen.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.13",
+          "title": "Deploy a Data Loss Prevention Solution",
+          "version": "v8",
+          "ig1": true,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "14.5",
+          "title": "Utilize an Active Discovery Tool to Identify Sensitive Data sensitive information inventory.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.11",
+      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction forces automatic date and time to be used on the device. The time zone updates only when the device can determine its location, such as when a device has a cellular connection or a Wi-Fi connection with location services enabled.",
+      "rationale": "Correct date and time settings are required for authentication protocols, file creation, modification dates, and log entries. Having this information accurate is important in incident response and forensic investigations.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "8.4",
+          "title": "Standardize Time Synchronization sources across enterprise assets, where supported.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "6.1",
+          "title": "Utilize Three Synchronized Time Sources in logs are consistent.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.5.12",
+      "title": "Ensure \"Block VPN creation\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents a user from intentionally or unintentionally creating VPN configuration.",
+      "rationale": "A VPN configuration can route traffic via unsecure systems if this has not been configured safely.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.10",
+          "title": "Encrypt Sensitive Data in Transit",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "14.4",
+          "title": "Encrypt All Sensitive Information in Transit Encrypt all sensitive information in transit.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "3.6",
+          "title": "Locked Screen Experience",
+          "version": "v7",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents access to the Control Center on the lock screen. Passcode/Face ID must be set for this to apply.",
+      "rationale": "When a device is lost or stolen, the Control Center may be used to enable airplane mode, thus preventing locating or erasing the device. Disabling Control Center forces a malicious actor to power down the device, which then discards the encryption key in memory. This makes some attacks based on physical possession more difficult. Further information such as media recently played, alarm information, and latest calculator history can also be seen.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock screen\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Supervised Devices"
+      ],
+      "description": "This restriction prevents access to the Notifications Center on the lock screen. This does not restrict or limit information displayed from notifications, only older notifications that are stored in the notification center. This is usually visible by swiping up on the lock screen.",
+      "rationale": "This will block older notifications from being displayed on the lock screen. The introduction of the notification center is a location where unaddressed notifications often reside.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents access to the Today View and search on the lock screen. This can be seen by swiping left on the lock screen. A Passcode/Face ID must be set for this to apply.",
+      "rationale": "This will block sensitive information from being displayed on the lock screen. Today View allows widgets and reminders to be displayed, as well as the option to list installed applications and other Siri suggestions.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents access to the Apple Wallet while the screen is locked. Passcode/Face ID must be set for this to apply.",
+      "rationale": "This will block the option for the Apple Wallet to be used while the screen is locked.",
+      "impact": "The device will need to be unlocked to access the Wallet.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.7",
+          "title": "Password",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction enforces a password to be set on the device.",
+      "rationale": "This will block the option for the device to be used without a password.",
+      "impact": "A user will need to set a password to use the device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction enforces a block on simple passwords on the device. Passwords such as 1234 and 0000 would be blocked.",
+      "rationale": "This will block the option for a simple password to be used on the device.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.3",
+      "title": "Ensure \"Required password type\" is set to \"Alphanumeric\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Supervised Devices"
+      ],
+      "description": "This restriction enforces an alphanumeric password on the device. Numeric-only passcode pins would not be allowed.",
+      "rationale": "Alphanumeric passwords provide a greater security posture by increasing the number of possible combinations, as well as not providing an indicator of password length.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.4",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or greater",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction requires the password length set on the device to be 6 or greater.",
+      "rationale": "Longer passwords provide a greater security posture by increasing the number of possible combinations.",
+      "impact": "Those with passwords that do not meet this requirement will be prompted to set a new device password.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "5.2",
+          "title": "Use Unique Passwords 14-character password for accounts not using MFA.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.4",
+          "title": "Use Unique Passwords system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before password is required\" is set to \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction disables any grace period where a password is not required to be entered after the screen has locked.",
+      "rationale": "This would make it impossible for the device to be picked up and used after the screen has locked.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.7.6",
+      "title": "Ensure \"Maximum minutes of inactivity until screen locks\" is set to \"2\" or less",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction sets the maximum time of inactivity before the device will be automatically locked.",
+      "rationale": "This would mitigate the concern of a unattended device being picked up and used, as the window of inactivity has been set.",
+      "impact": "This is not enforced during certain activities, such as watching video content.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to \"Yes\"",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Supervised Devices"
+      ],
+      "description": "This restriction blocks Touch ID and Face ID being used to unlock the device. A standard passcode/password will be the only form of authentication to unlock the device. If this is not set, passcode/password will still be required after a device power-cycle or the device has been reported as lost.",
+      "rationale": "This would address the concern of a malicious individual using the face/touch identification of the device owner as a means of authentication to the device.",
+      "impact": "A passcode/password will be required to unlock the device.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.7.8",
+      "title": "Ensure \"Block password proximity requests\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents proximity-based password sharing for nearby devices.",
+      "rationale": "Access to systems and applications should be provisioned by role, with credentials only being transferred through supported credential management systems. Additionally, credential sharing requests may be exploited through social engineering.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "13.5",
+          "title": "Manage Access Control for Remote Assets to-date.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "12.12",
+          "title": "Manage All Devices Remotely Logging into Internal Network",
+          "version": "v8",
+          "ig1": true,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.7.9",
+      "title": "Ensure \"Block password sharing\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction prevents sharing credentials between devices, such as via AirDrop.",
+      "rationale": "Access to systems and applications should be provisioned by role, with credentials only being transferred through supported credential management systems. Additionally, credential sharing requests may be exploited through social engineering.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "13.5",
+          "title": "Manage Access Control for Remote Assets to-date.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        },
+        {
+          "control": "14.3",
+          "title": "Train Workforce Members on Authentication Best",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "12.12",
+          "title": "Manage All Devices Remotely Logging into Internal Network",
+          "version": "v8",
+          "ig1": true,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "17.5",
+          "title": "Train Workforce on Secure Authentication authentication.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "3.7.10",
+      "title": "Ensure \"Require Touch ID or Face ID authentication for AutoFill of password or credit card information\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction forces an authentication prompt before each AutoFill operation.",
+      "rationale": "A device may be accessed by an unauthorized user while unlocked. This recommendation provides defense-in-depth by forcing re-authentication before credentials will be populated by AutoFill.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "3.3",
+          "title": "Configure Data Access Control Lists systems, databases, and applications.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "14.6",
+          "title": "Protect Information through Access Control Lists responsibilities.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.8",
+          "title": "Wireless",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "3.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This restriction blocks initiating phone calls from a locked device. Voice dialing is handled separately from Siri.",
+      "rationale": "Allowing calls from a locked device may allow for the impersonation of the device owner, or other malicious actions.",
+      "impact": "This could potentially impact the use of recovery or forensic tools on locked or unlocked devices.",
+      "remediationPath": "",
+      "references": [
+        "https://learn.microsoft.com/en-us/mem/intune/enrollment/device-enrollment-"
+      ],
+      "cisControls": [
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.9",
+          "title": "Lock Screen Message Profile Applicability: • Level 1 - Supervised Devices Description: Rationale: organization). Audit: 1. Select Devices",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "4.3",
+          "title": "Configure Automatic Session Locking on Enterprise Assets",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "16.11",
+          "title": "Lock Workstation Sessions After Inactivity",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.10",
+          "title": "Additional Recommendations not exist (Manual) Profile Applicability: • Level 1 - Supervised Devices Description: Rationale:",
+          "version": "v8",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software. blocked (Manual) Profile Applicability: • Level 1 - Supervised Devices",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "1.2",
+          "title": "Address Unauthorized Assets",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "13.7",
+          "title": "Manage USB Devices devices should be maintained. 4 Recommendations for Compliance Policies unsupervised state.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "4.1",
+      "title": "Ensure \"Jailbroken devices\" is set to \"Block\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that jailbroken devices have been blocked by the organization via the compliance policy.",
+      "rationale": "A jailbroken device may execute arbitrary code, compromise configuration profile requirements, or open the device to exploits that are otherwise not possible.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "2.2",
+          "title": "Ensure Authorized Software is Currently Supported",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.2",
+          "title": "Ensure Software is Supported by Vendor system.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "4.2",
+      "title": "Ensure \"Minimum OS version\" or \"Minimum OS build version\" has been defined",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that outdated devices that do not adhere to the defined minimum OS version or minimum OS build version are blocked by the organization via the compliance policy.",
+      "rationale": "An up-to-date operating system helps provides the best possible protection against cyber threats.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "7.3",
+          "title": "Perform Automated Operating System Patch patch management on a monthly, or more frequent, basis.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "7.4",
+          "title": "Perform Automated Application Patch Management management on a monthly, or more frequent, basis.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.4",
+          "title": "Deploy Automated Operating System Patch Management Tools vendor.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "3.5",
+          "title": "Deploy Automated Software Patch Management Tools the software vendor.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "4.3",
+      "title": "Ensure \"Mark device noncompliant\" is set to \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that devices which aren't compliant with the applied compliance policy are marked as not compliant immediately. Although this is the default, there is an option for this to be set between immediately and 365 days.",
+      "rationale": "As soon as a device is found to be non-compliant, it should be flagged immediately so that attention can be raised to this device via manual or scheduled automatic actioning.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "4.4",
+      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or less",
+      "level": "L2",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 2 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that devices that have been marked as \"not compliant\" will have an email sent to the assigned primary user of the device. An additional recipient (e.g. SOC or Intune administrator) should also be set. A message template must be created and selected.",
+      "rationale": "Action on non-compliant devices should be taken as soon as feasibly possible to reduce the impact of a device that is not compliant with the organization's compliance policy.",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "4.5",
+          "title": "Ensure all devices are marked as \"compliant\" (Manual) Profile Applicability: • Level 1 - Supervised Devices Description:",
+          "version": "v7",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        },
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v7",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "4.6",
+      "title": "Ensure \"Mark devices with no compliance policy assigned as\" is set to \"Not compliant\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that devices that do not have a compliance policy assigned to them are marked as not compliant.",
+      "rationale": "This recommendation helps to ensure that devices that don't have a configuration policy applied are marked as \"Not Compliant\" so they are able to be addressed by Intune administrators.",
+      "impact": "This applies to all compliance policies within the directory, regardless of device type.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        }
+      ]
+    },
+    {
+      "id": "4.7",
+      "title": "Ensure \"Compliance status validity period (days)\" is set to \"7\" or less",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [
+        "Level 1 - Supervised Devices"
+      ],
+      "description": "This recommendation ensures that if devices do not check-in (report compliance status) within the defined validity period, they are marked as not compliant.",
+      "rationale": "This recommendation helps to ensure devices that have not reported compliance status in 7 days are treated as not compliant. If the default of 30 days is used, this period of time could mean devices may not follow compliance for up to 30 days before being marked as not compliant.",
+      "impact": "This applies to all compliance policies within the directory, regardless of device type.",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": [
+        {
+          "control": "4.1",
+          "title": "Establish and Maintain a Secure Configuration Process impact this Safeguard.",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "5.1",
+          "title": "Establish Secure Configurations authorized operating systems and software. Appendix: Summary Table CIS Benchmark Recommendation Set",
+          "version": "v8",
+          "ig1": true,
+          "ig2": true,
+          "ig3": true
+        },
+        {
+          "control": "2.1",
+          "title": "App Store, Doc Viewing, Gaming",
+          "version": "v7",
+          "ig1": false,
+          "ig2": false,
+          "ig3": false
+        }
+      ]
+    },
+    {
+      "id": "2.1.1",
+      "title": "Ensure \"Block viewing corporate documents in   unmanaged apps\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is   set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed   open-in\" is set to \"Yes\" (Manual) 2.2 Built-in Apps",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.2",
+      "title": "Ensure \"Block managed apps from storing data in   iCloud\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise   books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.6",
+      "title": "Ensure \"Block iCloud Photo Library\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)   2.4 Connected Devices",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing   password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to   Apple\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set   to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.3",
+      "title": "Ensure \"Block untrusted TLS certificates\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set   to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to   \"Yes\" (Manual) 2.6 Locked Screen Experience Page 227 Internal Only - General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is   set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock   screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set   to \"Yes\" (Manual) 2.7 Password",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.3",
+      "title": "Ensure \"Required password type\" is set to   \"Alphanumeric\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.4",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or   greater",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before   password is required\" is set to \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.6",
+      "title": "Ensure \"Maximum minutes of inactivity until screen   locks\" is set to \"2\" or less",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to   \"Yes\" (Manual) 2.8 Wireless",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "2.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set   to \"Yes\" (Manual) 3 Recommendations for Supervised (Organization) Devices 3.1 App Store, Doc Viewing, Gaming Page 228 Internal Only - General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.1",
+      "title": "Ensure \"Block viewing corporate documents in   unmanaged apps\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.2",
+      "title": "Ensure \"Treat AirDrop as an unmanaged destination\" is   set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.3",
+      "title": "Ensure \"Allow copy/paste to be affected by managed   open-in\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.4",
+      "title": "Ensure \"Block App Store\" is set to \"Yes\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.1.5",
+      "title": "Ensure \"Block access to network drive in Files app\" is   set to \"Yes\" (Manual) 3.2 Built-in Apps",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.2.1",
+      "title": "Ensure \"Block Siri while device is locked\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.1",
+      "title": "Ensure \"Force encrypted backup\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.2",
+      "title": "Ensure \"Block managed apps from storing data in   iCloud\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.3",
+      "title": "Ensure \"Block backup of enterprise books\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.4",
+      "title": "Ensure \"Block notes and highlights sync for enterprise   books\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.5",
+      "title": "Ensure \"Block iCloud Photos sync\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.7",
+      "title": "Ensure \"Block My Photo Stream\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.8",
+      "title": "Ensure \"Block Handoff\" is set to \"Yes\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.9",
+      "title": "Ensure \"Block iCloud backup\" is set to \"Yes\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.3.10",
+      "title": "Ensure \"Block iCloud document and data sync\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.1",
+      "title": "Ensure \"Force Apple Watch wrist detection\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.2",
+      "title": "Ensure \"Require AirPlay outgoing requests pairing   password\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.3",
+      "title": "Ensure \"Block Apple Watch auto unlock\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.4",
+      "title": "Ensure \"Block iBeacon discovery of AirPrint printers\" is   set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.4.5",
+      "title": "Ensure \"Block access to USB drive in Files app\" is set to   \"Yes\" (Manual) 3.5 General",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.1",
+      "title": "Ensure \"Block sending diagnostic and usage data to   Apple\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.2",
+      "title": "Ensure \"Block screenshots and screen recording\" is set   to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.4",
+      "title": "Ensure \"Force limited ad tracking\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.5",
+      "title": "Ensure \"Block trusting new enterprise app authors\" is set   to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.6",
+      "title": "Ensure \"Limit Apple personalized advertising\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.7",
+      "title": "Ensure \"Block users from erasing all content and   settings on device\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.8",
+      "title": "Ensure \"Block modification of device name\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.9",
+      "title": "Ensure \"Block configuration profile changes\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.10",
+      "title": "Ensure \"Allow activation lock\" is set to \"Yes\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.11",
+      "title": "Ensure \"Force automatic date and time\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.5.12",
+      "title": "Ensure \"Block VPN creation\" is set to \"Yes\" (Manual)   3.6 Locked Screen Experience",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.1",
+      "title": "Ensure \"Block Control Center access in lock screen\" is   set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.2",
+      "title": "Ensure \"Block Notifications Center access in lock   screen\" is set to \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.3",
+      "title": "Ensure \"Block Today view in lock screen\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.6.4",
+      "title": "Ensure \"Block Wallet notifications in lock screen\" is set   to \"Yes\" (Manual) 3.7 Password",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.1",
+      "title": "Ensure \"Require password\" is set to \"Yes\" (Manual)   Page 231 Internal Only - General CIS Benchmark Recommendation Set Correctly",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.2",
+      "title": "Ensure \"Block simple passwords\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.3",
+      "title": "Ensure \"Required password type\" is set to   \"Alphanumeric\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.4",
+      "title": "Ensure \"Minimum password length\" is set to \"6\" or   greater",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.5",
+      "title": "Ensure \"Maximum minutes after screen lock before   password is required\" is set to \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.6",
+      "title": "Ensure \"Maximum minutes of inactivity until screen   locks\" is set to \"2\" or less",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.7",
+      "title": "Ensure \"Block Touch ID and Face ID unlock\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.8",
+      "title": "Ensure \"Block password proximity requests\" is set to   \"Yes\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.9",
+      "title": "Ensure \"Block password sharing\" is set to \"Yes\"  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.7.10",
+      "title": "Ensure \"Require Touch ID or Face ID authentication for   AutoFill of password or credit card information\" is set to \"Yes\" (Manual) 3.8 Wireless",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "3.8.1",
+      "title": "Ensure \"Block voice dialing while device is locked\" is set   to \"Yes\" (Manual) 3.9 Lock Screen Message 3.9.1 Ensure a \"Lock Screen Message\" has been set (Manual)   3.10 Additional Recommendations 3.10.1 Ensure the ability to remove the management profile  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.1",
+      "title": "Ensure \"Jailbroken devices\" is set to \"Block\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.2",
+      "title": "Ensure \"Minimum OS version\" or \"Minimum OS build   version\" has been defined",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.3",
+      "title": "Ensure \"Mark device noncompliant\" is set to   \"Immediately\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.4",
+      "title": "Ensure \"Send email to end user\" is set to \"3 days\" or   less (Manual) 4.5 Ensure all devices are marked as \"compliant\" (Manual)  ",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    },
+    {
+      "id": "4.6",
+      "title": "Ensure \"Mark devices with no compliance policy   assigned as\" is set to \"Not compliant\"",
+      "level": "L1",
+      "type": "Manual",
+      "profileApplicability": [],
+      "description": "",
+      "rationale": "",
+      "impact": "",
+      "remediationPath": "",
+      "references": [],
+      "cisControls": []
+    }
+  ]
+}
