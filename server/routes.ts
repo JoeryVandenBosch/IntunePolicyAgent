@@ -713,6 +713,12 @@ function filterPolicies() {
         if (totalRecs > 0) {
           doc.font("Helvetica").fontSize(10).fillColor(textCol)
             .text(`${tocNum}. Recommendations (${totalRecs})`, LEFT);
+          tocNum++;
+          doc.moveDown(0.25);
+        }
+        if (analysis.compliance && Object.keys(analysis.compliance).length > 0) {
+          doc.font("Helvetica").fontSize(10).fillColor(textCol)
+            .text(`${tocNum}. CIS & ISO 27001 Compliance`, LEFT);
           doc.moveDown(0.25);
         }
 
@@ -836,6 +842,71 @@ function filterPolicies() {
               doc.moveDown(0.3);
             }
           }
+
+          const assign = analysis.assignments?.[p.id];
+          if (assign) {
+            sectionHeading("Assignments & Filters");
+            if (assign.included?.length > 0) {
+              doc.font("Helvetica-Bold").fontSize(b.bodyFontSize).fillColor([39, 174, 96])
+                .text("Included Groups", LEFT);
+              doc.moveDown(0.2);
+              for (const g of assign.included) {
+                ensureSpace(18);
+                const rowY = doc.y;
+                doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(textCol)
+                  .text(g.name, LEFT + 8, rowY, { width: contentWidth * 0.5, continued: false });
+                const metaParts = [];
+                if (g.type) metaParts.push(g.type);
+                if (g.memberCount != null) metaParts.push(`${g.memberCount} members`);
+                if (metaParts.length) {
+                  doc.font("Helvetica").fontSize(8).fillColor(secondary)
+                    .text(metaParts.join(" · "), LEFT + contentWidth * 0.55, rowY, { width: contentWidth * 0.45 });
+                }
+                doc.y = Math.max(doc.y, rowY + 14);
+                doc.moveDown(0.1);
+              }
+              doc.moveDown(0.3);
+            }
+            if (assign.excluded?.length > 0) {
+              doc.font("Helvetica-Bold").fontSize(b.bodyFontSize).fillColor([192, 57, 43])
+                .text("Excluded Groups", LEFT);
+              doc.moveDown(0.2);
+              for (const g of assign.excluded) {
+                ensureSpace(18);
+                const rowY = doc.y;
+                doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(textCol)
+                  .text(g.name, LEFT + 8, rowY, { width: contentWidth * 0.5 });
+                const metaParts = [];
+                if (g.type) metaParts.push(g.type);
+                if (g.memberCount != null) metaParts.push(`${g.memberCount} members`);
+                if (metaParts.length) {
+                  doc.font("Helvetica").fontSize(8).fillColor(secondary)
+                    .text(metaParts.join(" · "), LEFT + contentWidth * 0.55, rowY, { width: contentWidth * 0.45 });
+                }
+                doc.y = Math.max(doc.y, rowY + 14);
+                doc.moveDown(0.1);
+              }
+              doc.moveDown(0.3);
+            }
+            if (assign.filters?.length > 0) {
+              doc.font("Helvetica-Bold").fontSize(b.bodyFontSize).fillColor([128, 0, 128])
+                .text("Assignment Filters", LEFT);
+              doc.moveDown(0.2);
+              for (const f of assign.filters) {
+                ensureSpace(16);
+                doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(textCol)
+                  .text(`${f.name} (${f.mode})`, LEFT + 8);
+                doc.moveDown(0.1);
+              }
+              doc.moveDown(0.3);
+            }
+            if ((!assign.included || assign.included.length === 0) && (!assign.excluded || assign.excluded.length === 0) && (!assign.filters || assign.filters.length === 0)) {
+              ensureSpace(20);
+              doc.font("Helvetica").fontSize(b.bodyFontSize).fillColor([230, 126, 34])
+                .text("⚠ Unassigned Policy — no groups or filters configured.", LEFT);
+              doc.moveDown(0.3);
+            }
+          }
         }
       }
 
@@ -923,6 +994,154 @@ function filterPolicies() {
           doc.moveDown(0.2);
           drawHorizontalRule(doc.y, [235, 238, 242]);
           doc.moveDown(0.5);
+        }
+      }
+
+      if (!isExec && analysis.compliance && Object.keys(analysis.compliance).length > 0) {
+        doc.addPage();
+        doc.font("Helvetica-Bold").fontSize(18).fillColor(primary)
+          .text("CIS & ISO 27001 Compliance", LEFT, 65);
+        doc.moveDown(0.6);
+        drawHorizontalRule(doc.y, accent);
+        doc.moveDown(0.8);
+
+        const PLATFORM_TOTAL: Record<string, number> = { windows11: 1254, ios: 256, macos: 224 };
+        const PLATFORM_LABEL: Record<string, string> = { windows11: "Windows 11", ios: "iOS / iPadOS", macos: "macOS Sequoia" };
+
+        const platformStats: Record<string, { matched: number; compliant: number }> = {};
+        const isoMap = new Map<string, { title: string; compliant: number; total: number }>();
+        const allSettings: Array<{ policyName: string; settingName: string; settingValue: string; cisId: string; cisTitle: string; level: string; recommended: string; compliant: boolean | null }> = [];
+
+        for (const p of policies) {
+          const cd = analysis.compliance[p.id];
+          if (!cd?.settings) continue;
+          for (const s of cd.settings) {
+            const c = s.compliance;
+            const top = c?.matches?.[0];
+            if (!top) continue;
+            const platform = top.platform || p.platform;
+            if (!platformStats[platform]) platformStats[platform] = { matched: 0, compliant: 0 };
+            platformStats[platform].matched++;
+
+            const recommended = (() => {
+              const m = top.title.match(/is set to\s+['""]([^'""\\n]+)['""]/) || top.title.match(/is set to\s+(\\S+)/i);
+              return m ? m[1].replace(/\s*\(Automated\)|\s*\(Manual\)/gi, "").trim() : "See benchmark";
+            })();
+
+            const normVal = (v: string) => v.toLowerCase().replace(/\s+/g, " ").trim();
+            const positives = new Set(["enabled", "yes", "true", "1", "block", "required", "allowed"]);
+            const negatives = new Set(["disabled", "no", "false", "0", "not configured", "allow"]);
+            const actual = normVal(s.settingValue || "");
+            const rec = normVal(recommended);
+            let compliant: boolean | null = null;
+            if (rec && rec !== "see benchmark") {
+              if (actual === rec) compliant = true;
+              else if (positives.has(actual) && positives.has(rec)) compliant = true;
+              else if (negatives.has(actual) && negatives.has(rec)) compliant = true;
+              else {
+                const numA = parseFloat(actual); const numR = parseFloat(rec);
+                compliant = (!isNaN(numA) && !isNaN(numR) && numA === numR);
+              }
+            } else {
+              compliant = true;
+            }
+
+            if (compliant) platformStats[platform].compliant++;
+
+            allSettings.push({
+              policyName: p.name,
+              settingName: s.settingName,
+              settingValue: s.settingValue || "Not Configured",
+              cisId: top.recommendationId,
+              cisTitle: top.title,
+              level: top.level || "",
+              recommended,
+              compliant,
+            });
+
+            for (const iso of top.isoMappings || []) {
+              const e = isoMap.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0 };
+              e.total++;
+              if (compliant !== false) e.compliant++;
+              isoMap.set(iso.isoControl, e);
+            }
+          }
+        }
+
+        doc.font("Helvetica-Bold").fontSize(12).fillColor(primary).text("Platform Coverage", LEFT);
+        doc.moveDown(0.5);
+
+        for (const [platform, stats] of Object.entries(platformStats)) {
+          ensureSpace(30);
+          const pct = stats.matched > 0 ? Math.round((stats.compliant / stats.matched) * 100) : 0;
+          const pctColor: [number, number, number] = pct >= 80 ? [39, 174, 96] : pct >= 50 ? [230, 126, 34] : [192, 57, 43];
+          const label = PLATFORM_LABEL[platform] || platform;
+          const total = PLATFORM_TOTAL[platform] || "?";
+          doc.font("Helvetica-Bold").fontSize(b.bodyFontSize).fillColor(pctColor)
+            .text(`${pct}%`, LEFT, doc.y, { continued: true })
+            .font("Helvetica").fillColor(textCol)
+            .text(`  ${label} — ${stats.compliant} of ${stats.matched} matched settings compliant (${stats.matched} of ${total} CIS items addressed)`, { continued: false });
+          doc.moveDown(0.3);
+        }
+        doc.moveDown(0.5);
+
+        if (isoMap.size > 0) {
+          doc.font("Helvetica-Bold").fontSize(12).fillColor(primary).text("ISO 27001:2022 Control Rollup", LEFT);
+          doc.moveDown(0.4);
+
+          const isoRows = Array.from(isoMap.entries())
+            .map(([ctrl, v]) => ({ control: ctrl, ...v }))
+            .sort((a, b) => a.control.localeCompare(b.control));
+
+          const tableTop = doc.y;
+          const col1 = 80;
+          const col2 = contentWidth - col1 - 120;
+          const col3 = 120;
+          drawFilledRect(LEFT, tableTop, contentWidth, 18, [240, 240, 245]);
+          doc.font("Helvetica-Bold").fontSize(8).fillColor(secondary)
+            .text("Control", LEFT + 6, tableTop + 4, { width: col1 })
+            .text("Title", LEFT + col1 + 6, tableTop + 4, { width: col2 })
+            .text("Compliance", LEFT + col1 + col2 + 6, tableTop + 4, { width: col3 });
+          doc.y = tableTop + 20;
+
+          for (const row of isoRows) {
+            ensureSpace(18);
+            const rowY = doc.y;
+            const rowPct = row.total > 0 ? Math.round((row.compliant / row.total) * 100) : 0;
+            const rowColor: [number, number, number] = rowPct >= 80 ? [39, 174, 96] : rowPct >= 50 ? [230, 126, 34] : [192, 57, 43];
+            doc.font("Helvetica-Bold").fontSize(b.bodyFontSize - 1).fillColor(accent)
+              .text(row.control, LEFT + 6, rowY, { width: col1 });
+            doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(textCol)
+              .text(row.title, LEFT + col1 + 6, rowY, { width: col2 - 12 });
+            doc.font("Helvetica-Bold").fontSize(b.bodyFontSize - 1).fillColor(rowColor)
+              .text(`${row.compliant}/${row.total} (${rowPct}%)`, LEFT + col1 + col2 + 6, rowY, { width: col3 });
+            doc.y = Math.max(doc.y, rowY + 14);
+            drawHorizontalRule(doc.y, [235, 238, 242]);
+            doc.moveDown(0.15);
+          }
+          doc.moveDown(0.5);
+        }
+
+        if (allSettings.length > 0 && b.format !== "condensed") {
+          doc.font("Helvetica-Bold").fontSize(12).fillColor(primary).text("Per-Setting CIS Benchmark Mapping", LEFT);
+          doc.moveDown(0.4);
+
+          for (const s of allSettings) {
+            ensureSpace(40);
+            const statusIcon = s.compliant === true ? "✓" : s.compliant === false ? "✗" : "—";
+            const statusColor: [number, number, number] = s.compliant === true ? [39, 174, 96] : s.compliant === false ? [192, 57, 43] : secondary;
+            doc.font("Helvetica-Bold").fontSize(b.bodyFontSize).fillColor(statusColor)
+              .text(statusIcon, LEFT, doc.y, { continued: true })
+              .font("Helvetica-Bold").fillColor(textCol)
+              .text(`  ${s.settingName}`, { continued: false });
+            doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(secondary)
+              .text(`Policy: ${s.policyName}  |  CIS: ${s.cisId}  |  Level: ${s.level}`, LEFT + 12);
+            doc.font("Helvetica").fontSize(b.bodyFontSize - 1).fillColor(secondary)
+              .text(`Current: ${s.settingValue}  |  Recommended: ${s.recommended}`, LEFT + 12);
+            doc.moveDown(0.3);
+            drawHorizontalRule(doc.y, [235, 238, 242]);
+            doc.moveDown(0.2);
+          }
         }
       }
 
