@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, LogIn, FileText, ShieldCheck, Users, AlertTriangle, Lightbulb, Sparkles, Lock, ServerOff, Sun, Moon } from "lucide-react";
+import { Shield, LogIn, FileText, ShieldCheck, Users, AlertTriangle, Lightbulb, Sparkles, Lock, ServerOff, Sun, Moon, ClipboardCheck } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import logoImage from "@assets/Color_logo_with_background_-_Copy_1771682756194.png";
 
@@ -163,6 +163,11 @@ export default function LoginPage() {
               title="Recommendations"
               description="Get actionable recommendations for security hardening, optimization, and compliance improvements."
             />
+            <FeatureCard
+              icon={ClipboardCheck}
+              title="CIS & ISO 27001 Compliance"
+              description="Deterministic mapping against CIS Benchmarks (Windows 11, iOS 18, macOS 15) with ISO 27001:2022 control rollup and compliance scoring."
+            />
           </div>
         </div>
       </section>
@@ -176,8 +181,8 @@ export default function LoginPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StepCard step={1} title="Sign In" description="Click 'Sign in with Microsoft' and grant admin consent for your organization." />
             <StepCard step={2} title="Select Policies" description="Browse your Intune policies with search and filter. Select one or more to analyze." />
-            <StepCard step={3} title="AI Analysis" description="The agent retrieves policy details and runs AI-powered analysis across 6 dimensions." />
-            <StepCard step={4} title="Review & Export" description="Review results in tabbed view and export as HTML or text reports." />
+            <StepCard step={3} title="AI Analysis" description="The agent retrieves policy details and runs AI-powered analysis across 7 dimensions." />
+            <StepCard step={4} title="Review & Export" description="Review results in tabbed view and export as HTML, CSV, or PDF reports." />
           </div>
         </div>
       </section>

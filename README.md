@@ -1,6 +1,6 @@
 # Intune Policy Intelligence Agent
 
-AI-powered web application that analyzes Microsoft Intune policies. Users sign in with their Microsoft account, select policies from their tenant, and receive AI-powered analysis across six dimensions: summaries, end-user impact, security impact, assignments & filters, conflict detection, and recommendations.
+AI-powered web application that analyzes Microsoft Intune policies. Users sign in with their Microsoft account, select policies from their tenant, and receive AI-powered analysis across seven dimensions: summaries, end-user impact, security impact, assignments & filters, conflict detection, recommendations, and CIS/ISO 27001 compliance mapping.
 
 **Live at [policyagent.intunestuff.com](https://policyagent.intunestuff.com)**
 
@@ -12,8 +12,9 @@ AI-powered web application that analyzes Microsoft Intune policies. Users sign i
 - **End-User Impact** - Security Copilot-style structured analysis with severity ratings, per-setting impact breakdown, assignment scope, risk analysis, and overall summary.
 - **Security Impact** - Security Copilot-style structured analysis with compliance framework mappings (NIST 800-53, NIST 800-171, CIS Benchmarks, ISO 27001, HIPAA, SOC 2, PCI DSS), per-setting security impact, and risk analysis.
 - **Assignments & Filters** - View included/excluded groups and assignment filters with resolved group names, group types, and member counts.
-- **Settings & Conflict Detection** - Data-driven setting-level conflict detection with value normalization, cross-tenant comparison (auto-fetches up to 20 related policies), Intune portal deep links, and platform+source scoping to prevent false positives.
+- **Settings & Conflict Detection** - Data-driven setting-level conflict detection with value normalization, Intune portal deep links, and platform+source scoping to prevent false positives. Conflicts are only detected between selected policies.
 - **Recommendations** - Get actionable recommendations for security hardening, optimization, and compliance improvements.
+- **CIS & ISO 27001 Compliance** - Deterministic CIS Benchmark mapping for Windows 11 (v4.0.0), iOS 18 (v1.0.0), and macOS 15 (v1.0.0). CIS Controls v8.1 to ISO 27001:2022 cross-mapping, per-setting compliance scoring, and L1/L2 profile coverage. Fully deterministic — no AI required.
 - **Multi-Policy Analysis** - Select multiple policies for parallel AI analysis with per-policy dedicated AI calls and resilient fallbacks.
 - **Expand/Collapse All** - Quickly expand or collapse all policy sections per tab, plus expand/collapse all inner setting cards within End-User Impact and Security Impact views.
 - **Severity Tooltips** - Contextual info tooltips next to each policy's severity badge explaining what that level means (different descriptions for End-User Impact vs Security Impact).
@@ -196,7 +197,8 @@ Settings are saved to localStorage for persistence between sessions.
 │       ├── components/
 │       │   ├── pdf-branding-dialog.tsx  # PDF export settings dialog
 │       │   ├── enduser-impact-cards.tsx # Per-setting end-user impact cards with expand/collapse
-│       │   └── setting-card-grid.tsx    # Per-setting security impact cards with expand/collapse
+│       │   ├── setting-card-grid.tsx    # Per-setting security impact cards with expand/collapse
+│       │   └── compliance-tab.tsx       # CIS/ISO 27001 compliance visualization
 │       ├── lib/
 │       │   ├── auth-context.tsx   # React context for OAuth2 auth state
 │       │   ├── theme-context.tsx  # Theme provider (light/dark toggle)
@@ -214,7 +216,9 @@ Settings are saved to localStorage for persistence between sessions.
 │   ├── routes.ts                  # API routes (policies, analyze, export, analytics)
 │   ├── graph-client.ts            # Microsoft Graph API client
 │   ├── ai-analyzer.ts             # OpenAI-powered analysis functions
+│   ├── compliance-lookup.ts       # CIS Benchmark & ISO 27001 compliance mapping
 │   ├── analytics.ts               # Analytics event tracking and queries
+│   ├── data/compliance/           # CIS benchmark JSON data (Windows 11, iOS 18, macOS 15)
 │   ├── db.ts                      # Drizzle ORM database connection
 │   ├── storage.ts                 # Storage interface
 │   └── static.ts                  # Static file serving (production)
