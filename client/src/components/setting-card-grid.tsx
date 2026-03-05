@@ -82,7 +82,7 @@ function getFrameworkUrl(fw: string): string | null {
 }
 
 function SettingCard({ setting, forceOpen }: { setting: SecuritySettingDetail; forceOpen?: boolean }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const ratingColor = RATING_COLORS[setting.securityRating] || RATING_COLORS["Medium"];
 
   useEffect(() => {
@@ -156,7 +156,7 @@ interface SettingCardGridProps {
 }
 
 export default function SettingCardGrid({ settings }: SettingCardGridProps) {
-  const [allExpanded, setAllExpanded] = useState(false);
+  const [allExpanded, setAllExpanded] = useState(true);
   const [forceOpen, setForceOpen] = useState<boolean | undefined>(undefined);
 
   const counts = {

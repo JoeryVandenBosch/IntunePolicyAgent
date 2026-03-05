@@ -41,7 +41,7 @@ const IMPACT_COLORS: Record<string, string> = {
 };
 
 function EndUserSettingCard({ setting, forceOpen }: { setting: EndUserSettingDetail; forceOpen?: boolean }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const impactColor = IMPACT_COLORS[setting.impactLevel] || IMPACT_COLORS["Minimal"];
 
   useEffect(() => {
@@ -104,7 +104,7 @@ interface EndUserImpactCardsProps {
 }
 
 export default function EndUserImpactCards({ settings }: EndUserImpactCardsProps) {
-  const [allExpanded, setAllExpanded] = useState(false);
+  const [allExpanded, setAllExpanded] = useState(true);
   const [forceOpen, setForceOpen] = useState<boolean | undefined>(undefined);
 
   const counts = {

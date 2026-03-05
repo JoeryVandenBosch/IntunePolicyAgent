@@ -176,78 +176,15 @@ export async function registerRoutes(
         }
       }
 
-      let conflictPolicies = selectedPolicies;
-      let conflictDetails = enrichedDetails;
-
-      const selectedIds = new Set(selectedPolicies.map(p => p.id));
-      const relatedPolicies = selectedPolicies.length >= 2 ? allPolicies.filter(p => {
-        if (selectedIds.has(p.id)) return false;
-        return selectedPolicies.some(sp => {
-          const spSource = sp.rawData?._source;
-          const pSource = p.rawData?._source;
-          if (spSource !== pSource) return false;
-          if (sp.platform !== p.platform) return false;
-          return true;
-        });
-      }) : [];
-      console.log(`Found ${relatedPolicies.length} related policies in tenant for conflict comparison (${selectedPolicies.length} selected)`);
-
-      if (relatedPolicies.length > 0) {
-        const maxRelated = 20;
-        const relatedSubset = relatedPolicies.slice(0, maxRelated);
-        console.log(`Fetching ${relatedSubset.length} related policies for cross-tenant conflict detection`);
-        const relatedDetails = await Promise.all(
-          relatedSubset.map(p => fetchPolicyDetails(token, p.id, allPolicies))
-        );
-        const relatedEnrichedDetails = await Promise.all(relatedDetails.map(async (detail) => {
-          if (!detail?.settings) return detail;
-          const enriched = { ...detail };
-          const settingDefCache = new Map<string, { displayName: string; description: string }>();
-          enriched.settings = await Promise.all(
-            enriched.settings.map(async (setting: any) => {
-              const cleaned = { ...setting };
-              if (cleaned.settingInstance) {
-                const defId = cleaned.settingInstance.settingDefinitionId || "";
-                if (defId) {
-                  let defInfo = settingDefCache.get(defId);
-                  if (!defInfo) {
-                    defInfo = await fetchSettingDefinitionDisplayName(token, defId);
-                    settingDefCache.set(defId, defInfo);
-                  }
-                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : cleanSettingDefinitionId(defId);
-                }
-                if (cleaned.settingInstance.choiceSettingValue) {
-                  const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
-                  if (choiceValue.includes("_1")) {
-                    cleaned._settingFriendlyValue = "Enabled";
-                  } else if (choiceValue.includes("_0")) {
-                    cleaned._settingFriendlyValue = "Disabled";
-                  } else {
-                    cleaned._settingFriendlyValue = choiceValue.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-                  }
-                }
-                if (cleaned.settingInstance.simpleSettingValue) {
-                  cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
-                }
-              }
-              return cleaned;
-            })
-          );
-          return enriched;
-        }));
-        conflictPolicies = [...selectedPolicies, ...relatedSubset];
-        conflictDetails = [...enrichedDetails, ...relatedEnrichedDetails];
-      }
-
-      const { conflicts: settingConflicts, allSettings } = detectSettingConflicts(conflictPolicies, conflictDetails);
-      console.log(`Detected ${settingConflicts.length} setting-level conflicts, ${allSettings.length} total settings across ${conflictPolicies.length} policies (${selectedPolicies.length} selected + ${conflictPolicies.length - selectedPolicies.length} related)`);
+      const { conflicts: settingConflicts, allSettings } = detectSettingConflicts(selectedPolicies, enrichedDetails);
+      console.log(`Detected ${settingConflicts.length} setting-level conflicts, ${allSettings.length} total settings across ${selectedPolicies.length} selected policies`);
 
       const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
         analyzePolicySummaries(selectedPolicies, enrichedDetails),
         analyzeEndUserImpact(selectedPolicies, enrichedDetails),
         analyzeSecurityImpact(selectedPolicies, enrichedDetails),
         analyzeAssignments(selectedPolicies, enrichedDetails, groupResolver),
-        analyzeConflicts(conflictPolicies, conflictDetails),
+        analyzeConflicts(selectedPolicies, enrichedDetails),
         analyzeRecommendations(selectedPolicies, enrichedDetails),
       ]);
 

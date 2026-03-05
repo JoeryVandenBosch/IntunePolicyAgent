@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Search, Sparkles, LogOut, RefreshCw, ExternalLink, Sun, Moon, AlertTriangle } from "lucide-react";
+import { Shield, Search, Sparkles, LogOut, RefreshCw, ExternalLink, Sun, Moon, AlertTriangle, X } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useTheme } from "@/lib/theme-context";
 
@@ -320,15 +320,27 @@ export default function PolicyListPage() {
             <span className="text-sm text-muted-foreground">
               {selected.size} {selected.size === 1 ? "policy" : "policies"} selected
             </span>
-            <Button
-              data-testid="button-analyze"
-              onClick={handleAnalyze}
-              size="lg"
-              className="gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              Analyze {selected.size} {selected.size === 1 ? "Policy" : "Policies"}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                data-testid="button-clear-all"
+                onClick={() => setSelected(new Set())}
+                variant="outline"
+                size="lg"
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Clear All
+              </Button>
+              <Button
+                data-testid="button-analyze"
+                onClick={handleAnalyze}
+                size="lg"
+                className="gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Analyze {selected.size} {selected.size === 1 ? "Policy" : "Policies"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

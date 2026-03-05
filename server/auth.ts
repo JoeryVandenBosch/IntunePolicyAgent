@@ -31,9 +31,16 @@ function getAuthority(): string {
   return "https://login.microsoftonline.com/common";
 }
 
-function getRedirectUri(): string {
+function getRedirectUri(req?: any): string {
   if (process.env.APP_DOMAIN) {
     return `https://${process.env.APP_DOMAIN}/api/auth/callback`;
+  }
+  if (req) {
+    const host = req.get("x-forwarded-host") || req.get("host");
+    const proto = req.get("x-forwarded-proto") || req.protocol;
+    if (host && !host.includes("localhost")) {
+      return `${proto}://${host}/api/auth/callback`;
+    }
   }
   return `http://localhost:${process.env.PORT || 5000}/api/auth/callback`;
 }
@@ -71,7 +78,7 @@ export function registerAuthRoutes(app: Express): void {
       return res.status(500).json({ message: "Azure Client ID not configured" });
     }
 
-    const redirectUri = getRedirectUri();
+    const redirectUri = getRedirectUri(req);
     const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     req.session.oauthState = state;
@@ -120,7 +127,7 @@ export function registerAuthRoutes(app: Express): void {
     }
 
     try {
-      const redirectUri = getRedirectUri();
+      const redirectUri = getRedirectUri(req);
       const tokenUrl = `${getAuthority()}/oauth2/v2.0/token`;
 
       const body = new URLSearchParams({

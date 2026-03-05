@@ -35,6 +35,46 @@ function parseSettingLine(line: string): { name: string; value: string; detail: 
   return { name, value: semiSplit[0]?.trim() || "", detail: semiSplit.slice(1).join("; ").trim() };
 }
 
+function FormatAITextAsBullets({ text }: { text: string }) {
+  const items = text
+    .split(/(?:^|\s)[-–•]\s+|;\s+(?=[A-Z])|(?:\.\s+)(?=[A-Z][a-z].*?:)/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+
+  if (items.length <= 1) {
+    const colonItems = text.split(/:\s+(?=[A-Z])/).reduce<string[]>((acc, part, i, arr) => {
+      if (i === 0) return acc;
+      const prevParts = arr[i - 1].split(/\s+/);
+      const label = prevParts.pop() || "";
+      if (acc.length > 0) {
+        acc[acc.length - 1] = acc[acc.length - 1] + (prevParts.length > 0 ? " " + prevParts.join(" ") : "");
+      } else if (prevParts.length > 0) {
+        acc.push(prevParts.join(" "));
+      }
+      acc.push(label + ": " + part);
+      return acc;
+    }, []);
+    if (colonItems.length >= 3) {
+      return (
+        <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
+          {colonItems.map((item, idx) => (
+            <li key={idx}>{item.replace(/[.;,\s]+$/, "")}</li>
+          ))}
+        </ul>
+      );
+    }
+    return <p className="text-xs text-muted-foreground whitespace-pre-line">{text}</p>;
+  }
+
+  return (
+    <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
+      {items.map((item, idx) => (
+        <li key={idx}>{item.replace(/[.;,\s]+$/, "")}</li>
+      ))}
+    </ul>
+  );
+}
+
 function FormattedSettingsBlock({ text }: { text: string }) {
   let lines = text.split(/\n/).filter(l => l.trim());
 
@@ -327,8 +367,8 @@ export default function AnalysisPage() {
   const selectedPolicies = getSelectedPolicies(queryClientInstance);
 
   const [summaryExpanded, setSummaryExpanded] = useState(false);
-  const [enduserExpanded, setEnduserExpanded] = useState(false);
-  const [securityExpanded, setSecurityExpanded] = useState(false);
+  const [enduserExpanded, setEnduserExpanded] = useState(true);
+  const [securityExpanded, setSecurityExpanded] = useState(true);
   const [summaryForce, setSummaryForce] = useState<boolean | undefined>(undefined);
   const [enduserForce, setEnduserForce] = useState<boolean | undefined>(undefined);
   const [securityForce, setSecurityForce] = useState<boolean | undefined>(undefined);
@@ -543,7 +583,7 @@ export default function AnalysisPage() {
                   <Target className="w-3.5 h-3.5" /> Assignments & Filters
                 </TabsTrigger>
                 <TabsTrigger value="conflicts" data-testid="tab-conflicts" className="gap-1.5 text-xs">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Conflicts ({settingConflictCount})
+                  <AlertTriangle className="w-3.5 h-3.5" /> Conflicts ({conflictCount})
                 </TabsTrigger>
                 <TabsTrigger value="recommendations" data-testid="tab-recommendations" className="gap-1.5 text-xs">
                   <Lightbulb className="w-3.5 h-3.5" /> Recommendations
@@ -907,25 +947,25 @@ export default function AnalysisPage() {
                                 {conflict.conflictingSettings && (
                                   <div>
                                     <h4 className="text-xs font-bold text-foreground mb-1.5">Conflicting Settings:</h4>
-                                    <p>{conflict.conflictingSettings}</p>
+                                    <FormatAITextAsBullets text={conflict.conflictingSettings} />
                                   </div>
                                 )}
                                 {conflict.assignmentOverlap && (
                                   <div>
                                     <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Overlap:</h4>
-                                    <p>{conflict.assignmentOverlap}</p>
+                                    <FormatAITextAsBullets text={conflict.assignmentOverlap} />
                                   </div>
                                 )}
                                 {conflict.impactAssessment && (
                                   <div>
                                     <h4 className="text-xs font-bold text-foreground mb-1.5">Impact Assessment:</h4>
-                                    <p>{conflict.impactAssessment}</p>
+                                    <FormatAITextAsBullets text={conflict.impactAssessment} />
                                   </div>
                                 )}
                                 {conflict.resolutionSteps && (
                                   <div>
                                     <h4 className="text-xs font-bold text-foreground mb-1.5">Resolution Steps:</h4>
-                                    <p>{conflict.resolutionSteps}</p>
+                                    <FormatAITextAsBullets text={conflict.resolutionSteps} />
                                   </div>
                                 )}
                               </div>
