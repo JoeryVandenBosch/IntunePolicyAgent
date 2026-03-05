@@ -98,8 +98,8 @@ function isCompliant(settingValue: string, match: ComplianceBenchmarkMatch): boo
   const actual = normaliseVal(settingValue);
   if (!recommended || recommended === "see benchmark") return true;
   if (actual === recommended) return true;
-  const positives = new Set(["enabled", "yes", "true", "1", "block", "required", "allowed"]);
-  const negatives = new Set(["disabled", "no", "false", "0", "not configured", "allow"]);
+  const positives = new Set(["enabled", "yes", "true", "1", "block", "required", "allowed", "allow"]);
+  const negatives = new Set(["disabled", "no", "false", "0", "not configured", "not allowed", "notallowed", "none", "block"]);
   if (positives.has(actual) && positives.has(recommended)) return true;
   if (negatives.has(actual) && negatives.has(recommended)) return true;
   const numActual = parseFloat(actual);
