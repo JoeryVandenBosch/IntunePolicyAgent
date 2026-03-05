@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from "react";
-import { CheckCircle, XCircle, AlertCircle, ChevronDown } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, ChevronDown, ExternalLink, AlertTriangle, Wrench, Shield } from "lucide-react";
 import type {
   IntunePolicy,
   PolicyComplianceData,
@@ -208,23 +208,25 @@ interface IsoRollupRow {
   title: string;
   compliantSettings: number;
   totalSettings: number;
-  settings: Array<{ name: string; value: string; compliant: boolean | null }>;
+  policies: string[];
+  settings: Array<{ name: string; value: string; compliant: boolean | null; policyName: string; policyId: string; recommended: string; cisId: string }>;
 }
 
 function buildIsoRollup(settings: EnrichedSetting[]): IsoRollupRow[] {
-  const map = new Map<string, { title: string; compliant: number; total: number; settings: Array<{ name: string; value: string; compliant: boolean | null }> }>();
+  const map = new Map<string, { title: string; compliant: number; total: number; policies: Set<string>; settings: Array<{ name: string; value: string; compliant: boolean | null; policyName: string; policyId: string; recommended: string; cisId: string }> }>();
   for (const s of settings) {
     if (!s.hasMatch) continue;
     for (const iso of s.topMatch?.isoMappings ?? []) {
-      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0, settings: [] };
+      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0, policies: new Set<string>(), settings: [] };
       e.total++;
       if (s.compliant !== false) e.compliant++;
-      e.settings.push({ name: s.settingName, value: s.displayValue, compliant: s.compliant });
+      e.policies.add(s.policyName);
+      e.settings.push({ name: s.settingName, value: s.displayValue, compliant: s.compliant, policyName: s.policyName, policyId: s.policyId, recommended: s.recommended, cisId: s.cisId });
       map.set(iso.isoControl, e);
     }
   }
   return Array.from(map.entries())
-    .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total, settings: v.settings }))
+    .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total, policies: Array.from(v.policies), settings: v.settings }))
     .sort((a, b) => a.control.localeCompare(b.control));
 }
 
@@ -426,38 +428,180 @@ function SettingCard({ s, open, onToggle }: { s: EnrichedSetting; open: boolean;
 
 // ── ISO rollup ────────────────────────────────────────────────────────────────
 
+/** Amber pill matching the CIS tab style — e.g. "A5.14  Information transfer" */
+function IsoControlPill({ control, title }: { control: string; title?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded border px-2.5 py-1 shrink-0"
+      style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.25)" }}>
+      <span className="font-mono font-bold text-amber-400" style={{ fontSize: 12 }}>A{control}</span>
+      {title && <span className="text-muted-foreground" style={{ fontSize: 11 }}>{title}</span>}
+    </span>
+  );
+}
+
+/** Colour-coded % badge */
+function IsoPctBadge({ pct }: { pct: number }) {
+  const color  = pct >= 80 ? "#22c55e"              : pct >= 50 ? "#eab308"             : "#ef4444";
+  const bg     = pct >= 80 ? "rgba(34,197,94,0.1)"  : pct >= 50 ? "rgba(234,179,8,0.1)" : "rgba(239,68,68,0.1)";
+  const border = pct >= 80 ? "rgba(34,197,94,0.25)" : pct >= 50 ? "rgba(234,179,8,0.25)": "rgba(239,68,68,0.25)";
+  return (
+    <span className="text-xs font-extrabold rounded shrink-0" style={{ color, background: bg, border: `1px solid ${border}`, padding: "2px 8px" }}>
+      {pct}%
+    </span>
+  );
+}
+
+/** Policies contributing pill */
+function IsoPolicesPill({ policies }: { policies: string[] }) {
+  const unique = [...new Set(policies)];
+  return (
+    <span className="inline-flex items-center gap-1 shrink-0 rounded text-[10px] text-muted-foreground"
+      style={{ background: "rgba(56,139,253,0.07)", border: "1px solid rgba(56,139,253,0.15)", padding: "2px 7px" }}>
+      <Shield className="w-2.5 h-2.5 text-blue-400" />
+      {unique.length} {unique.length === 1 ? "policy" : "policies"}
+      <InfoTooltip text={`Settings from ${unique.length} distinct ${unique.length === 1 ? "policy" : "policies"} contribute to this ISO control: ${unique.join(", ")}`} />
+    </span>
+  );
+}
+
+/** Remediation hint for non-compliant settings */
+function IsoRemediationHint({ s }: { s: { name: string; recommended: string; cisId: string; compliant: boolean | null } }) {
+  if (s.compliant !== false || !s.recommended || s.recommended === "See benchmark") return null;
+  return (
+    <div className="flex items-start gap-2 rounded mt-1.5" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", padding: "7px 10px" }}>
+      <Wrench className="w-3 h-3 text-amber-400 mt-0.5 shrink-0" />
+      <p className="text-[11px] leading-relaxed m-0">
+        <span className="font-bold text-amber-400">To remediate: </span>
+        <span className="text-muted-foreground">Set </span>
+        <span className="font-semibold text-foreground">"{s.name}"</span>
+        <span className="text-muted-foreground"> to </span>
+        <span className="font-bold text-emerald-400 font-mono">{s.recommended}</span>
+        <span className="text-muted-foreground"> per CIS {s.cisId}</span>
+        <InfoTooltip text={`CIS benchmark ${s.cisId} requires this setting to be "${s.recommended}". Updating this in Intune will bring it into compliance with both CIS and the mapped ISO 27001:2022 control.`} />
+      </p>
+    </div>
+  );
+}
+
+/** Global ISO overview card — mirrors the CIS platform card */
+function IsoOverviewCard({ rows }: { rows: IsoRollupRow[] }) {
+  const totalSettings       = rows.reduce((n, r) => n + r.totalSettings, 0);
+  const compliantTotal      = rows.reduce((n, r) => n + r.compliantSettings, 0);
+  const nonCompliant        = totalSettings - compliantTotal;
+  const controlsCovered     = rows.length;
+  const fullyCompliant      = rows.filter(r => r.compliantSettings === r.totalSettings).length;
+  const pct = totalSettings > 0 ? Math.round((compliantTotal / totalSettings) * 100) : 0;
+  const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
+  return (
+    <div className="flex-1 min-w-[200px] rounded-lg border border-border/30 bg-card px-5 py-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="shrink-0 inline-block" style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">ISO 27001:2022</span>
+        <InfoTooltip text="ISO/IEC 27001:2022 Annex A controls that your policies map to, via the official CIS v8 → ISO mapping." />
+      </div>
+      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1, color: barColor }}>{pct}%</div>
+      <div className="text-xs text-muted-foreground">{compliantTotal} of {totalSettings} mapped settings compliant</div>
+      <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+      </div>
+      <div className="flex gap-4 pt-1 flex-wrap">
+        <div>
+          <div className="text-sm font-bold text-foreground">{controlsCovered}</div>
+          <div className="text-[11px] text-muted-foreground/70 flex items-center">
+            Annex A controls covered
+            <InfoTooltip text="Number of distinct ISO 27001:2022 Annex A controls that have at least one setting mapped to them via the CIS benchmark." />
+          </div>
+        </div>
+        <div>
+          <div className="text-sm font-bold text-emerald-400">{fullyCompliant}</div>
+          <div className="text-[11px] text-muted-foreground/70 flex items-center">
+            Fully compliant
+            <InfoTooltip text="ISO controls where every mapped setting meets the CIS benchmark recommendation." />
+          </div>
+        </div>
+        <div>
+          <div className={`text-sm font-bold ${nonCompliant > 0 ? "text-red-400" : "text-emerald-400"}`}>{nonCompliant}</div>
+          <div className="text-[11px] text-muted-foreground/70 flex items-center">
+            Non-compliant settings
+            <InfoTooltip text="Total number of settings across all ISO controls that do not meet the CIS benchmark recommendation." />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function IsoRollupRowItem({ row, isLast }: { row: IsoRollupRow; isLast: boolean }) {
   const [open, setOpen] = useState(false);
   const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
   const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
+  const nonCompliantCount = row.settings.filter(s => s.compliant === false).length;
   return (
     <div className={isLast ? "" : "border-b border-border/20"}>
-      <div onClick={() => setOpen(o => !o)} className={`flex items-center gap-4 px-5 py-3.5 cursor-pointer transition-colors ${open ? "bg-muted/10" : "hover:bg-muted/5"}`}>
-        <span className="font-mono text-sm font-bold text-blue-400 w-12 shrink-0">{row.control}</span>
-        <span className="text-sm text-muted-foreground flex-1">{row.title}</span>
+      <div onClick={() => setOpen(o => !o)} className={`flex items-center gap-3 px-5 py-3.5 cursor-pointer transition-colors flex-wrap ${open ? "bg-muted/10" : "hover:bg-muted/5"}`}>
+        {/* ✨ amber ISO control pill */}
+        <IsoControlPill control={row.control} title={row.title} />
+
+        <span className="flex-1" />
+
+        {/* ✨ non-compliant alert pill */}
+        {nonCompliantCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-400 rounded shrink-0"
+            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", padding: "2px 8px" }}>
+            <AlertTriangle className="w-2.5 h-2.5" />
+            {nonCompliantCount} non-compliant
+            <InfoTooltip text={`${nonCompliantCount} setting${nonCompliantCount > 1 ? "s are" : " is"} not meeting the CIS benchmark recommendation for this ISO control. Expand to see remediation steps.`} />
+          </span>
+        )}
+
         <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
           <strong className="text-foreground">{row.compliantSettings}</strong> of {row.totalSettings} settings
         </span>
-        <div className="w-32 h-1.5 rounded-full bg-muted/40 overflow-hidden shrink-0">
+
+        {/* ✨ policies contributing pill */}
+        <IsoPolicesPill policies={row.policies} />
+
+        <div className="w-24 h-1.5 rounded-full bg-muted/40 overflow-hidden shrink-0">
           <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
         </div>
+
+        {/* ✨ % badge */}
+        <IsoPctBadge pct={pct} />
+
         <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
       </div>
       {open && (
         <div className="border-t border-border/20 bg-background/50 pb-2 pt-1">
-          <div className="text-[10px] font-bold text-muted-foreground/40 tracking-wider px-5 py-2 pl-20">
-            Settings mapped to {row.control}
+          <div className="text-[10px] font-bold text-muted-foreground/40 tracking-wider px-5 py-2">
+            SETTINGS MAPPED TO A{row.control}
           </div>
           {row.settings.map((s, i) => (
-            <div key={i} className={`flex items-center gap-3 px-5 py-2 pl-20 ${i % 2 === 0 ? "bg-muted/5" : ""}`}>
-              {s.compliant === false
-                ? <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                : <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-              <span className="text-xs text-foreground flex-1">{s.name}</span>
-              <span className={`text-xs font-semibold shrink-0 ${s.compliant === false ? "text-red-400" : "text-emerald-400"}`}>{s.value || "Not Configured"}</span>
-              {s.compliant === false
-                ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">Non-Compliant</span>
-                : <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">Compliant</span>}
+            <div key={i} className={`px-5 py-2 ${i % 2 === 0 ? "bg-muted/5" : ""}`}>
+              <div className="flex items-center gap-3 flex-wrap">
+                {s.compliant === false
+                  ? <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                  : <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                <span className="text-xs text-foreground flex-1 min-w-[120px]">{s.name}</span>
+                <span className={`text-xs font-semibold shrink-0 ${s.compliant === false ? "text-red-400" : "text-emerald-400"}`}>{s.value || "Not Configured"}</span>
+                {s.compliant === false
+                  ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">Non-Compliant</span>
+                  : <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">Compliant</span>}
+                {/* ✨ policy name deep-link pill */}
+                <a
+                  href={`https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configurationProfiles/policyId/${s.policyId}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 rounded shrink-0 no-underline transition-colors"
+                  style={{ background: "rgba(56,139,253,0.1)", border: "1px solid rgba(56,139,253,0.22)", padding: "2px 8px" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(56,139,253,0.2)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(56,139,253,0.1)")}
+                >
+                  {s.policyName}
+                  <ExternalLink className="w-2.5 h-2.5" />
+                  <InfoTooltip text={`This setting belongs to the Intune policy "${s.policyName}". Click to open it directly in the Intune admin center.`} />
+                </a>
+              </div>
+              {/* ✨ remediation hint */}
+              <IsoRemediationHint s={s} />
             </div>
           ))}
         </div>
@@ -471,9 +615,14 @@ function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
   return (
     <div className="space-y-3">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">ISO 27001:2022 Control Coverage</h3>
+        <h3 className="text-sm font-semibold text-foreground inline-flex items-center">
+          ISO 27001:2022 Control Coverage
+          <InfoTooltip text="ISO/IEC 27001:2022 Annex A controls that your policies map to, via the official CIS v8 → ISO mapping." />
+        </h3>
         <p className="text-xs text-muted-foreground mt-0.5">Rollup of CIS benchmark compliance grouped by ISO Annex A control</p>
       </div>
+      {/* ✨ global overview card */}
+      <IsoOverviewCard rows={rows} />
       <div className="rounded-lg border border-border/30 overflow-hidden">
         {rows.map((row, i) => (
           <IsoRollupRowItem key={row.control} row={row} isLast={i === rows.length - 1} />
