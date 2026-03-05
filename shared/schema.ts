@@ -140,6 +140,62 @@ export interface SettingComparison {
   }[];
 }
 
+// ── Compliance types (Phase 2: CIS Benchmark → ISO 27001 mapping) ──────────
+
+export interface ComplianceIsoMapping {
+  isoControl: string;
+  isoTitle: string | null;
+  relationship: string | null;
+}
+
+export interface ComplianceCisControl {
+  control: string;
+  title: string;
+  version: string;
+  ig1: boolean;
+  ig2: boolean;
+  ig3: boolean;
+}
+
+export interface ComplianceBenchmarkMatch {
+  platform: string;
+  recommendationId: string;
+  title: string;
+  level: "L1" | "L2";
+  type: "Automated" | "Manual";
+  confidence: number;
+  cisControls: ComplianceCisControl[];
+  isoMappings: ComplianceIsoMapping[];
+  implementationGroups: string[];
+}
+
+export interface ComplianceLookupResult {
+  settingName: string;
+  platform: string;
+  matches: ComplianceBenchmarkMatch[];
+  allCisControls: string[];
+  allIsoControls: string[];
+  highestLevel: "L1" | "L2" | null;
+  implementationGroups: string[];
+  complianceScore: number;
+}
+
+export interface PolicyComplianceSummary {
+  coveredSettings: number;
+  totalSettings: number;
+  coveragePercent: number;
+  allCisControls: string[];
+  allIsoControls: string[];
+  implementationGroups: string[];
+  l1Count: number;
+  l2Count: number;
+}
+
+export interface PolicyComplianceData {
+  settings: Array<SecuritySettingDetail & { compliance: ComplianceLookupResult | null }>;
+  summary: PolicyComplianceSummary;
+}
+
 export interface AnalysisResult {
   summaries: Record<string, PolicySummary>;
   endUserImpact: Record<string, PolicyEndUserImpact>;
@@ -150,4 +206,5 @@ export interface AnalysisResult {
   conflicts: PolicyConflict[];
   recommendations: PolicyRecommendation[];
   unassignedCount?: number;
+  compliance?: Record<string, PolicyComplianceData>;
 }

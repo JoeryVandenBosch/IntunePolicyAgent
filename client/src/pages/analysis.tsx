@@ -11,6 +11,7 @@ import { Shield, FileText, Users, ShieldAlert, AlertTriangle, Lightbulb, ArrowLe
 import PdfBrandingDialog, { type PdfBrandingSettings } from "@/components/pdf-branding-dialog";
 import SettingCardGrid from "@/components/setting-card-grid";
 import EndUserImpactCards from "@/components/enduser-impact-cards";
+import ComplianceTab from "@/components/compliance-tab";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -588,6 +589,9 @@ export default function AnalysisPage() {
                 <TabsTrigger value="recommendations" data-testid="tab-recommendations" className="gap-1.5 text-xs">
                   <Lightbulb className="w-3.5 h-3.5" /> Recommendations
                 </TabsTrigger>
+                <TabsTrigger value="compliance" data-testid="tab-compliance" className="gap-1.5 text-xs">
+                  <Shield className="w-3.5 h-3.5" /> CIS / ISO 27001
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="summary" className="space-y-3">
@@ -1011,6 +1015,21 @@ export default function AnalysisPage() {
                       </CardContent>
                     </Card>
                   ))
+                )}
+              </TabsContent>
+
+              <TabsContent value="compliance" className="space-y-3">
+                {analysis.compliance && Object.keys(analysis.compliance).length > 0 ? (
+                  <ComplianceTab
+                    policies={selectedPolicies}
+                    compliance={analysis.compliance}
+                  />
+                ) : (
+                  <div className="rounded-md border border-border/30 bg-card p-6 text-center space-y-2">
+                    <Shield className="w-8 h-8 text-muted-foreground/30 mx-auto" />
+                    <p className="text-sm text-muted-foreground">No compliance data available for the selected policies.</p>
+                    <p className="text-xs text-muted-foreground/60">CIS / ISO 27001 mapping requires security settings from Settings Catalog policies on Windows 11, iOS, or macOS.</p>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
