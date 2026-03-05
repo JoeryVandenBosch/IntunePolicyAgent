@@ -31,11 +31,26 @@ export interface IntunePolicy {
   templateId?: string;
 }
 
+export interface PolicySummaryKeyItem {
+  name: string;
+  value: string;
+  significance: string;
+}
+
 export interface PolicySummary {
+  // Legacy / fallback text blob
   overview: string;
   keySettings: number;
   lastModified: string;
   configuredSettings?: string[];
+
+  // Structured Security-Copilot-style fields
+  headline?: string;                        // One-sentence policy purpose
+  whatItDoes?: string;                      // 2-3 sentence plain-English explanation
+  whoItTargets?: string;                    // Assignment scope in plain language
+  keySettingsList?: PolicySummaryKeyItem[]; // Every configured setting with significance
+  notableObservations?: string[];           // Unusual, risky, or misconfigured items
+  recommendedNextSteps?: string[];          // Concrete actions (Security Copilot "where to look next")
 }
 
 export interface EndUserSettingDetail {

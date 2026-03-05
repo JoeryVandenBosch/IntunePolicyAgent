@@ -251,36 +251,42 @@ function remapAIResponseKeys(aiResult: Record<string, any>, policies: IntunePoli
   return mapped;
 }
 
-async function analyzeSinglePolicySummary(policy: IntunePolicyRaw, detail: any): Promise<{ id: string; data: { overview: string; keySettings: number; lastModified: string } }> {
+async function analyzeSinglePolicySummary(policy: IntunePolicyRaw, detail: any): Promise<{ id: string; data: any }> {
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Analyze the provided policy and generate a factual, data-driven summary.
+    `You are Microsoft Security Copilot embedded in Microsoft Intune. When an admin clicks "Summarize with Copilot" on a policy, you produce the exact same style of output: clear, structured, executive-friendly, and directly actionable.
 
 CRITICAL RULES:
-- Base your summary ONLY on the actual setting names and values provided in the data. Do NOT infer, assume, or fabricate settings that are not listed.
-- If two policies have identical settings except for one, their summaries should be nearly identical except for that one difference.
-- List each configured setting exactly as it appears in the data with its exact value.
-- Do NOT add speculative commentary about settings not present in the data.
+- Base your analysis ONLY on actual setting names and values in the provided data. Never invent or infer settings not listed.
+- Use plain business English. Translate every technical setting name into what it means for the organization and its users.
+- Be specific: reference actual setting names, values, group names, and member counts from the data.
+- Do NOT analyse conflicts — that is handled separately.
 
-Provide:
-- overview: A structured summary with these sections:
-  1. Policy name (with GUID), type, platform, and stated purpose/description.
-  2. "Configured Settings:" - List each configured setting using this exact format, one per line:
-     SettingName: value — what it controls
-     Use the EXACT setting name as it appears in the "Configured Settings" data below. Copy the name character-for-character — do NOT rename, rephrase, add spaces, remove spaces, or add source prefixes. Only discuss settings actually listed in the data.
-  3. "Assignment Scope:" - Which groups are targeted (include/exclude), member counts, and any assignment filters with their rules.
-  4. "Summary:" - A factual closing: how many settings are configured, the policy's scope, and the overall configuration approach.
-  End with: "This summary covers N configured setting(s) for this policy."
+You must produce a JSON object with ALL of these fields:
 
-- keySettings: number of settings configured
-- lastModified: the last modified date
+- headline: A single, crisp sentence that states what this policy is and what it does (e.g., "Enforces BitLocker encryption and Secure Boot on all Windows 11 company devices").
 
-IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
+- whatItDoes: 2–3 sentences in plain language explaining the policy's purpose, what it enforces or restricts, and why it matters for the organization. Write as if briefing an IT director who is not a Intune expert.
 
-Return ONLY valid JSON in this format:
-{ "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }`,
-    `Analyze this Intune policy:\n${context}`,
+- whoItTargets: A plain-language paragraph (2–4 sentences) describing which users, devices, or groups this policy applies to, based on the Assignments data. Include group names, member counts, and any assignment filters with their rules. If unassigned, state clearly: "This policy is not currently assigned to any users or devices and is therefore not actively enforced."
+
+- keySettingsList: A JSON array — one object per configured setting — with these fields:
+  { "name": "Human-readable setting name (NOT raw OMA-URI path)", "value": "The configured value", "significance": "One sentence explaining what this controls and why it matters in business terms" }
+  Include EVERY setting from the data. For names, translate OMA-URI paths and CSP paths into readable names (e.g., "BitLocker Drive Encryption" not "device_vendor_msft_bitlocker_requiredeviceencryption").
+
+- notableObservations: A JSON array of strings. Each string is a notable finding about this policy — something unusual, potentially misconfigured, worth an admin's attention, or a security/compliance gap. Examples: a setting that is disabled when best practice is to enable it; a policy that is unassigned; settings that may conflict with Zero Trust principles; overly permissive values. If everything looks correct, return an empty array [].
+
+- recommendedNextSteps: A JSON array of strings. Each string is a concrete, actionable next step for the admin — the "where to look next" that Security Copilot always provides. Be specific about WHAT to do and WHERE in the Intune admin center. Examples: "Review the assignment scope under Assignments to ensure the 'Autopilot Devices' group includes all new enrollments", "Enable the 'Require Encryption' setting to close a data-at-rest protection gap". Provide 2–4 items.
+
+- overview: A single comprehensive paragraph (4–6 sentences) that a CISO could read aloud to summarize this policy. Include: policy name (with GUID in parentheses), type, platform, number of configured settings, what it enforces, who is affected, and a clear verdict on whether this policy is well-configured.
+
+- keySettings: The total number of configured settings (integer).
+- lastModified: The last modified date as "YYYY-MM-DD".
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble:
+{ "headline": "...", "whatItDoes": "...", "whoItTargets": "...", "keySettingsList": [...], "notableObservations": [...], "recommendedNextSteps": [...], "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }`,
+    `Summarize this Intune policy:\n${context}`,
     12000
   );
 
@@ -289,17 +295,30 @@ Return ONLY valid JSON in this format:
     if (!parsed || typeof parsed !== "object") {
       throw new Error("AI returned non-object response for summary");
     }
-    if (parsed.overview) {
+    if (parsed.headline || parsed.overview) {
       return { id: policy.id, data: parsed };
     }
     const firstValue = Object.values(parsed)[0] as any;
-    if (firstValue?.overview) {
+    if (firstValue?.headline || firstValue?.overview) {
       return { id: policy.id, data: firstValue };
     }
     throw new Error("Unexpected response structure");
   } catch (e) {
     console.error(`Failed to parse summary for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
-    return { id: policy.id, data: { overview: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`, keySettings: policy.settingsCount, lastModified: policy.lastModified } };
+    return {
+      id: policy.id,
+      data: {
+        headline: `${policy.type} policy for ${policy.platform}`,
+        whatItDoes: `${policy.name} is a ${policy.type} policy targeting ${policy.platform} devices with ${policy.settingsCount} configured settings.`,
+        whoItTargets: "Assignment information not available.",
+        keySettingsList: [],
+        notableObservations: [],
+        recommendedNextSteps: [],
+        overview: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+        keySettings: policy.settingsCount,
+        lastModified: policy.lastModified,
+      },
+    };
   }
 }
 

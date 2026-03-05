@@ -597,36 +597,154 @@ export default function AnalysisPage() {
               <TabsContent value="summary" className="space-y-3">
                 <ExpandCollapseBar expanded={summaryExpanded} onToggle={() => { const next = !summaryExpanded; setSummaryExpanded(next); setSummaryForce(next); }} />
                 {selectedPolicies.map(policy => {
-                  const overview = analysis.summaries[policy.id]?.overview || "No summary available.";
+                  const summary = analysis.summaries[policy.id];
+                  const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
+                  const hasStructured = !!(summary?.headline || summary?.whatItDoes);
+
                   return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={summaryForce}>
-                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                        <div className="bg-muted/30 rounded-md p-3 text-xs space-y-0.5 border border-border/40">
-                          <div><span className="text-foreground font-medium">Policy name:</span> {policy.name} ({policy.id})</div>
-                          <div><span className="text-foreground font-medium">Type:</span> {policy.type}</div>
-                          <div><span className="text-foreground font-medium">Platform:</span> {policy.platform}</div>
-                          <div><span className="text-foreground font-medium">Last Modified:</span> {policy.lastModified}</div>
-                          {policy.description && (
-                            <div><span className="text-foreground font-medium">Description:</span> {policy.description}</div>
-                          )}
+                    <PolicySection key={policy.id} policy={policy} isUnassigned={isUnassigned} forceOpen={summaryForce}>
+                      <div className="space-y-3 text-sm">
+
+                        {/* Metrics bar */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { label: "Type", value: policy.type },
+                            { label: "Platform", value: policy.platform },
+                            { label: "Settings", value: String(summary?.keySettings ?? policy.settingsCount) },
+                            { label: "Last modified", value: summary?.lastModified ?? policy.lastModified },
+                          ].map(({ label, value }) => (
+                            <div key={label} className="bg-muted/30 border border-border/40 rounded-md px-3 py-2 text-xs">
+                              <div className="text-muted-foreground/70 mb-0.5">{label}</div>
+                              <div className="font-medium text-foreground truncate">{value}</div>
+                            </div>
+                          ))}
                         </div>
-                        <div className="whitespace-pre-line">
-                          {overview.split(/\n\n+/).map((paragraph, idx) => {
-                            const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());
-                            if (isHeader) {
-                              const colonIdx = paragraph.indexOf(":");
-                              const header = paragraph.substring(0, colonIdx).trim();
-                              const rest = paragraph.substring(colonIdx + 1).trim();
-                              return (
-                                <div key={idx}>
-                                  <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
-                                  {rest && <p>{rest}</p>}
+
+                        {hasStructured ? (
+                          <>
+                            {/* Headline */}
+                            {summary.headline && (
+                              <div className="flex items-start gap-2 rounded-md bg-primary/8 border border-primary/20 px-3 py-2.5">
+                                <Info className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                                <p className="text-xs font-medium text-foreground leading-relaxed">{summary.headline}</p>
+                              </div>
+                            )}
+
+                            {/* What it does */}
+                            {summary.whatItDoes && (
+                              <div className="space-y-1">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <FileText className="w-3.5 h-3.5 text-muted-foreground" /> What it does
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.whatItDoes}</p>
+                              </div>
+                            )}
+
+                            {/* Who it targets */}
+                            {summary.whoItTargets && (
+                              <div className="space-y-1">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <Target className="w-3.5 h-3.5 text-muted-foreground" /> Who it targets
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.whoItTargets}</p>
+                              </div>
+                            )}
+
+                            {/* Key settings */}
+                            {summary.keySettingsList && summary.keySettingsList.length > 0 && (
+                              <div className="space-y-1.5">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <Shield className="w-3.5 h-3.5 text-muted-foreground" /> Configured settings
+                                </h4>
+                                <div className="rounded-md border border-border/40 overflow-hidden">
+                                  <table className="w-full text-xs">
+                                    <thead>
+                                      <tr className="bg-muted/50 border-b border-border/30">
+                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground w-[30%]">Setting</th>
+                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground w-[20%]">Value</th>
+                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground">What it controls</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {summary.keySettingsList.map((s: any, idx: number) => (
+                                        <tr key={idx} className={"border-b border-border/20 last:border-0 " + (idx % 2 === 0 ? "bg-transparent" : "bg-muted/20")}>
+                                          <td className="px-3 py-2 font-medium text-foreground align-top">{s.name}</td>
+                                          <td className="px-3 py-2 text-muted-foreground align-top">
+                                            <span className="inline-block bg-muted/50 border border-border/30 rounded px-1.5 py-0.5 font-mono text-[11px]">{s.value}</span>
+                                          </td>
+                                          <td className="px-3 py-2 text-muted-foreground align-top leading-relaxed">{s.significance}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
                                 </div>
-                              );
-                            }
-                            return <p key={idx}>{paragraph}</p>;
-                          })}
-                        </div>
+                              </div>
+                            )}
+
+                            {/* Notable observations */}
+                            {summary.notableObservations && summary.notableObservations.length > 0 && (
+                              <div className="space-y-1.5">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Notable observations
+                                </h4>
+                                <div className="space-y-1">
+                                  {summary.notableObservations.map((obs: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
+                                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                                      <p className="text-xs text-muted-foreground leading-relaxed">{obs}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Recommended next steps */}
+                            {summary.recommendedNextSteps && summary.recommendedNextSteps.length > 0 && (
+                              <div className="space-y-1.5">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <Lightbulb className="w-3.5 h-3.5 text-primary" /> Recommended next steps
+                                </h4>
+                                <div className="space-y-1">
+                                  {summary.recommendedNextSteps.map((step: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-2 rounded-md bg-primary/5 border border-primary/15 px-3 py-2">
+                                      <span className="text-[10px] font-bold text-primary bg-primary/15 rounded-full w-4 h-4 flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                                      <p className="text-xs text-muted-foreground leading-relaxed">{step}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Overall summary */}
+                            {summary.overview && (
+                              <div className="space-y-1">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall summary
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.overview}</p>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          /* Fallback for legacy text-blob summaries */
+                          <div className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">
+                            {(summary?.overview || "No summary available.").split(/\n\n+/).map((paragraph: string, idx: number) => {
+                              const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());
+                              if (isHeader) {
+                                const colonIdx = paragraph.indexOf(":");
+                                const header = paragraph.substring(0, colonIdx).trim();
+                                const rest = paragraph.substring(colonIdx + 1).trim();
+                                return (
+                                  <div key={idx}>
+                                    <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
+                                    {rest && <p>{rest}</p>}
+                                  </div>
+                                );
+                              }
+                              return <p key={idx}>{paragraph}</p>;
+                            })}
+                          </div>
+                        )}
                       </div>
                     </PolicySection>
                   );
