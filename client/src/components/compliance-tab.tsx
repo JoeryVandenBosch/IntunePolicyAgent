@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { CheckCircle, XCircle, AlertCircle, ChevronDown } from "lucide-react";
 import type {
   IntunePolicy,
@@ -10,8 +10,10 @@ import type {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function extractRecommended(title: string): string {
-  const m = title.match(/is set to\s+['"'""]([^'"'""\n]+)['"'""]/) ||
-            title.match(/is set to\s+(\S+)/i);
+  const clean = title.replace(/[\u2018\u2019\u201C\u201D]/g, "'");
+  const m = clean.match(/is set to\s+'([^'\n]+)'/) ||
+            clean.match(/is set to\s+"([^"\n]+)"/) ||
+            clean.match(/is set to\s+(\S+)/i);
   return m ? m[1].replace(/\s*\(Automated\)|\s*\(Manual\)/gi, "").trim() : "See benchmark";
 }
 
@@ -296,7 +298,24 @@ interface ComplianceTabProps {
   compliance: Record<string, PolicyComplianceData>;
 }
 
-export default function ComplianceTab({ policies, compliance }: ComplianceTabProps) {
+class ComplianceErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: string | null }> {
+  constructor(props: any) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(e: any) { return { error: e?.message ?? String(e) }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="rounded-lg border border-red-500/30 bg-card p-6 text-center space-y-2">
+          <AlertCircle className="w-8 h-8 text-red-400/50 mx-auto" />
+          <p className="text-sm text-red-400">Compliance tab error — please report this</p>
+          <p className="text-xs text-muted-foreground font-mono break-all">{this.state.error}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ComplianceTabInner({ policies, compliance }: ComplianceTabProps) {
   const [filter, setFilter] = useState<FilterType>("all");
 
   const allSettings = useMemo<EnrichedSetting[]>(() => {
@@ -344,6 +363,7 @@ export default function ComplianceTab({ policies, compliance }: ComplianceTabPro
   }
 
   return (
+    <ComplianceErrorBoundary>
     <div className="space-y-6">
 
       {/* platform summary cards */}
@@ -383,5 +403,10 @@ export default function ComplianceTab({ policies, compliance }: ComplianceTabPro
       <IsoRollupSection rows={isoRollup} />
 
     </div>
+    </ComplianceErrorBoundary>
   );
+}
+
+export default function ComplianceTab(props: ComplianceTabProps) {
+  return <ComplianceErrorBoundary><ComplianceTabInner {...props} /></ComplianceErrorBoundary>;
 }
