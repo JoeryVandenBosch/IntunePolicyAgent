@@ -4,6 +4,7 @@ import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } f
 import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, cleanSettingDefinitionId } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
+import { lookupComplianceForSetting, enrichSettingsWithCompliance, computePolicyComplianceSummary } from "./compliance-lookup";
 import type { IntunePolicyRaw } from "./graph-client";
 import PDFDocument from "pdfkit";
 
@@ -222,6 +223,22 @@ export async function registerRoutes(
         }
       }
 
+      // ── Compliance enrichment (CIS Benchmark → ISO 27001) ──────────────────
+      // Enrich each policy's security settings with deterministic CIS/ISO lookups
+      const complianceByPolicy: Record<string, any> = {};
+      for (const policy of selectedPolicies) {
+        const impact = securityImpact[policy.id];
+        if (impact?.settings && impact.settings.length > 0) {
+          const platform = policy.platform || "";
+          const enriched = enrichSettingsWithCompliance(impact.settings, platform);
+          const summary = computePolicyComplianceSummary(impact.settings, platform);
+          complianceByPolicy[policy.id] = {
+            settings: enriched,
+            summary,
+          };
+        }
+      }
+
       res.json({
         summaries,
         endUserImpact,
@@ -232,6 +249,7 @@ export async function registerRoutes(
         conflicts,
         recommendations,
         unassignedCount,
+        compliance: complianceByPolicy,
       });
     } catch (error: any) {
       console.error("Analysis error:", error);
@@ -994,6 +1012,40 @@ function filterPolicies() {
 
   app.get("/api/analytics/status", async (req: any, res) => {
     res.json({ authorized: !!req.session?.analyticsAuthorized });
+  });
+
+  // ── Compliance lookup endpoint ─────────────────────────────────────────────
+  // GET /api/compliance/lookup?setting=<name>&platform=<platform>
+  app.get("/api/compliance/lookup", async (req: any, res) => {
+    try {
+      const settingName = (req.query.setting as string || "").trim();
+      const platform = (req.query.platform as string || "").trim();
+      if (!settingName) {
+        return res.status(400).json({ message: "setting query param required" });
+      }
+      const result = lookupComplianceForSetting(settingName, platform);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // GET /api/compliance/stats — return dataset stats (no auth required, useful for UI)
+  app.get("/api/compliance/stats", async (_req, res) => {
+    try {
+      const stats = {
+        benchmarks: [
+          { platform: "windows11", label: "Windows 11", version: "v4.0.0", recommendations: 1254 },
+          { platform: "ios",       label: "iOS 18 / iPadOS 18", version: "v1.0.0", recommendations: 256 },
+          { platform: "macos",     label: "macOS 15 Sequoia", version: "v1.0.0", recommendations: 224 },
+        ],
+        cisIsoMapping: { safeguards: 150, isoVersion: "ISO/IEC 27001:2022" },
+        lastUpdated: "2025",
+      };
+      res.json(stats);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
   app.get("/api/analytics", async (req: any, res) => {
