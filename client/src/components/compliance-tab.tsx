@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, ChevronDown } from "lucide-react";
 import type {
   IntunePolicy,
   PolicyComplianceData,
