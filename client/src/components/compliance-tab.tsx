@@ -225,7 +225,7 @@ function SettingCard({ s }: { s: EnrichedSetting }) {
   );
 }
 
-function IsoRollupRow({ row, isLast }: { row: IsoRollupRow; isLast: boolean }) {
+function IsoRollupRowItem({ row, isLast }: { row: IsoRollupRow; isLast: boolean }) {
   const [open, setOpen] = useState(false);
   const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
   const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
@@ -280,7 +280,7 @@ function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
       </div>
       <div className="rounded-lg border border-border/30 overflow-hidden">
         {rows.map((row, i) => (
-          <IsoRollupRow key={row.control} row={row} isLast={i === rows.length - 1} />
+          <IsoRollupRowItem key={row.control} row={row} isLast={i === rows.length - 1} />
         ))}
       </div>
     </div>
