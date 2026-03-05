@@ -31,26 +31,31 @@ export interface IntunePolicy {
   templateId?: string;
 }
 
-export interface PolicySummaryKeyItem {
-  name: string;
-  value: string;
-  significance: string;
+export interface PolicySummarySettingGroup {
+  groupName: string;  // Thematic group label (e.g. "Bluetooth advertising, discoverability, and pre-pairing")
+  summary: string;    // One sentence describing all settings in this group and their values
+}
+
+export interface PolicySummaryTopSetting {
+  name: string;   // Human-readable setting name
+  value: string;  // Configured value
+  impact: string; // One sentence on why this setting matters
 }
 
 export interface PolicySummary {
-  // Legacy / fallback text blob
+  // Core fields (always present)
   overview: string;
   keySettings: number;
   lastModified: string;
-  configuredSettings?: string[];
 
-  // Structured Security-Copilot-style fields
-  headline?: string;                        // One-sentence policy purpose
-  whatItDoes?: string;                      // 2-3 sentence plain-English explanation
-  whoItTargets?: string;                    // Assignment scope in plain language
-  keySettingsList?: PolicySummaryKeyItem[]; // Every configured setting with significance
-  notableObservations?: string[];           // Unusual, risky, or misconfigured items
-  recommendedNextSteps?: string[];          // Concrete actions (Security Copilot "where to look next")
+  // Security Copilot-style structured fields
+  headline?: string;                          // One-sentence policy purpose chip
+  introParagraph?: string;                    // Plain-language intro paragraph
+  settingGroups?: PolicySummarySettingGroup[]; // Numbered thematic groups
+  topSettings?: PolicySummaryTopSetting[];    // Top N most important settings ranked by impact
+  assignmentScope?: string;                   // Who is targeted (plain language)
+  overallSummary?: string;                    // Closing verdict paragraph
+  footerNote?: string;                        // Footnote about additional settings
 }
 
 export interface EndUserSettingDetail {

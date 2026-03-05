@@ -599,13 +599,17 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const summary = analysis.summaries[policy.id];
                   const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
-                  const hasStructured = !!(summary?.headline || summary?.whatItDoes);
+                  const hasStructured = !!(summary?.introParagraph || summary?.settingGroups || summary?.topSettings);
+                  const [showAllGroups, setShowAllGroups] = useState(false);
+                  const visibleGroups = showAllGroups
+                    ? (summary?.settingGroups ?? [])
+                    : (summary?.settingGroups ?? []).slice(0, 8);
 
                   return (
                     <PolicySection key={policy.id} policy={policy} isUnassigned={isUnassigned} forceOpen={summaryForce}>
                       <div className="space-y-3 text-sm">
 
-                        {/* Metrics bar */}
+                        {/* ── Metrics bar ── */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           {[
                             { label: "Type", value: policy.type },
@@ -622,7 +626,7 @@ export default function AnalysisPage() {
 
                         {hasStructured ? (
                           <>
-                            {/* Headline */}
+                            {/* ── Headline chip ── */}
                             {summary.headline && (
                               <div className="flex items-start gap-2 rounded-md bg-primary/8 border border-primary/20 px-3 py-2.5">
                                 <Info className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
@@ -630,103 +634,101 @@ export default function AnalysisPage() {
                               </div>
                             )}
 
-                            {/* What it does */}
-                            {summary.whatItDoes && (
-                              <div className="space-y-1">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <FileText className="w-3.5 h-3.5 text-muted-foreground" /> What it does
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.whatItDoes}</p>
-                              </div>
+                            {/* ── Intro paragraph ── */}
+                            {summary.introParagraph && (
+                              <p className="text-xs text-muted-foreground leading-relaxed">{summary.introParagraph}</p>
                             )}
 
-                            {/* Who it targets */}
-                            {summary.whoItTargets && (
-                              <div className="space-y-1">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <Target className="w-3.5 h-3.5 text-muted-foreground" /> Who it targets
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.whoItTargets}</p>
-                              </div>
-                            )}
-
-                            {/* Key settings */}
-                            {summary.keySettingsList && summary.keySettingsList.length > 0 && (
+                            {/* ── Numbered grouped settings ── */}
+                            {summary.settingGroups && summary.settingGroups.length > 0 && (
                               <div className="space-y-1.5">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <Shield className="w-3.5 h-3.5 text-muted-foreground" /> Configured settings
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                                  <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Configured Settings Summary
                                 </h4>
-                                <div className="rounded-md border border-border/40 overflow-hidden">
-                                  <table className="w-full text-xs">
-                                    <thead>
-                                      <tr className="bg-muted/50 border-b border-border/30">
-                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground w-[30%]">Setting</th>
-                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground w-[20%]">Value</th>
-                                        <th className="text-left px-3 py-2 font-medium text-muted-foreground">What it controls</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {summary.keySettingsList.map((s: any, idx: number) => (
-                                        <tr key={idx} className={"border-b border-border/20 last:border-0 " + (idx % 2 === 0 ? "bg-transparent" : "bg-muted/20")}>
-                                          <td className="px-3 py-2 font-medium text-foreground align-top">{s.name}</td>
-                                          <td className="px-3 py-2 text-muted-foreground align-top">
-                                            <span className="inline-block bg-muted/50 border border-border/30 rounded px-1.5 py-0.5 font-mono text-[11px]">{s.value}</span>
-                                          </td>
-                                          <td className="px-3 py-2 text-muted-foreground align-top leading-relaxed">{s.significance}</td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Notable observations */}
-                            {summary.notableObservations && summary.notableObservations.length > 0 && (
-                              <div className="space-y-1.5">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Notable observations
-                                </h4>
-                                <div className="space-y-1">
-                                  {summary.notableObservations.map((obs: string, idx: number) => (
-                                    <div key={idx} className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
-                                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                                      <p className="text-xs text-muted-foreground leading-relaxed">{obs}</p>
+                                <div className="space-y-0.5">
+                                  {visibleGroups.map((g: any, idx: number) => (
+                                    <div key={idx} className="flex gap-2 text-xs py-1.5">
+                                      <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
+                                      <p className="text-muted-foreground leading-relaxed m-0">
+                                        <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.summary}
+                                      </p>
                                     </div>
                                   ))}
                                 </div>
+                                {(summary.settingGroups.length > 8) && (
+                                  <button
+                                    onClick={() => setShowAllGroups(v => !v)}
+                                    className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
+                                  >
+                                    <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
+                                    {showAllGroups
+                                      ? "Show fewer"
+                                      : `Show ${summary.settingGroups.length - 8} more setting groups`}
+                                  </button>
+                                )}
                               </div>
                             )}
 
-                            {/* Recommended next steps */}
-                            {summary.recommendedNextSteps && summary.recommendedNextSteps.length > 0 && (
+                            {/* ── Top N Most Important Settings ── */}
+                            {summary.topSettings && summary.topSettings.length > 0 && (
                               <div className="space-y-1.5">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <Lightbulb className="w-3.5 h-3.5 text-primary" /> Recommended next steps
-                                </h4>
-                                <div className="space-y-1">
-                                  {summary.recommendedNextSteps.map((step: string, idx: number) => (
-                                    <div key={idx} className="flex items-start gap-2 rounded-md bg-primary/5 border border-primary/15 px-3 py-2">
-                                      <span className="text-[10px] font-bold text-primary bg-primary/15 rounded-full w-4 h-4 flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                                      <p className="text-xs text-muted-foreground leading-relaxed">{step}</p>
-                                    </div>
-                                  ))}
+                                <div className="border-t border-border/30 pt-3">
+                                  <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide mb-2">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                    Top {summary.topSettings.length} Most Important Configured Settings
+                                  </h4>
+                                  <div className="space-y-1">
+                                    {summary.topSettings.map((s: any, idx: number) => (
+                                      <div key={idx} className="flex items-start gap-2 px-2 py-1.5 rounded text-xs" style={{ background: idx % 2 === 1 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                                        <span className="w-4 h-4 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                                        <p className="text-muted-foreground leading-relaxed m-0">
+                                          <strong className="text-foreground font-semibold">{s.name}</strong>
+                                          {" "}
+                                          <span className="inline-block bg-muted/60 border border-border/40 rounded px-1.5 font-mono text-[10px] align-middle mx-0.5">{s.value}</span>
+                                          {" "}{s.impact}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <p className="text-[11px] text-muted-foreground/70 italic mt-2 leading-relaxed">
+                                    These settings are highlighted due to their direct impact on privacy, user experience, and security posture. The policy contains many more settings, but these are among the most significant due to their broad effect on device behaviour and user interaction.
+                                  </p>
                                 </div>
                               </div>
                             )}
 
-                            {/* Overall summary */}
-                            {summary.overview && (
-                              <div className="space-y-1">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall summary
+                            {/* ── Assignment scope ── */}
+                            {summary.assignmentScope && (
+                              <div className="border-t border-border/30 pt-3 space-y-1">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                                  <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
                                 </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed pl-5">{summary.overview}</p>
+                                {isUnassigned ? (
+                                  <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* ── Overall summary ── */}
+                            {summary.overallSummary && (
+                              <div className="border-t border-border/30 pt-3 space-y-1">
+                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
+                                </h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{summary.overallSummary}</p>
+                                {summary.footerNote && (
+                                  <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed border-t border-border/20 pt-2 mt-1">{summary.footerNote}</p>
+                                )}
                               </div>
                             )}
                           </>
                         ) : (
-                          /* Fallback for legacy text-blob summaries */
+                          /* Fallback for any legacy text-blob summaries */
                           <div className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">
                             {(summary?.overview || "No summary available.").split(/\n\n+/).map((paragraph: string, idx: number) => {
                               const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());

@@ -255,37 +255,38 @@ async function analyzeSinglePolicySummary(policy: IntunePolicyRaw, detail: any):
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are Microsoft Security Copilot embedded in Microsoft Intune. When an admin clicks "Summarize with Copilot" on a policy, you produce the exact same style of output: clear, structured, executive-friendly, and directly actionable.
+    `You are Microsoft Security Copilot embedded in Microsoft Intune. When an admin clicks "Summarize with Copilot" on a policy, produce output that matches Security Copilot's exact style: a brief intro, a numbered list of thematically-grouped settings, a ranked "Top N Most Important" list, an assignment scope paragraph, and a closing overall summary.
 
 CRITICAL RULES:
 - Base your analysis ONLY on actual setting names and values in the provided data. Never invent or infer settings not listed.
-- Use plain business English. Translate every technical setting name into what it means for the organization and its users.
-- Be specific: reference actual setting names, values, group names, and member counts from the data.
+- Use plain business English. Translate technical OMA-URI and CSP setting names into human-readable labels.
+- Group related settings together thematically (e.g. all Bluetooth settings in one group, all Edge browser settings in one group, all Defender settings in one group).
 - Do NOT analyse conflicts — that is handled separately.
 
-You must produce a JSON object with ALL of these fields:
+Produce a JSON object with ALL of these fields:
 
-- headline: A single, crisp sentence that states what this policy is and what it does (e.g., "Enforces BitLocker encryption and Secure Boot on all Windows 11 company devices").
+- headline: A single crisp sentence summarising what this policy does and why it exists (e.g. "Maximises privacy and restricts user access by disabling Windows Spotlight, Edge browser features, and Bluetooth capabilities.").
 
-- whatItDoes: 2–3 sentences in plain language explaining the policy's purpose, what it enforces or restricts, and why it matters for the organization. Write as if briefing an IT director who is not a Intune expert.
+- introParagraph: 2–3 sentences in plain language introducing the policy's purpose, what it enforces or restricts, and why it matters. End with "Below is a summary of the key configured settings and their values:".
 
-- whoItTargets: A plain-language paragraph (2–4 sentences) describing which users, devices, or groups this policy applies to, based on the Assignments data. Include group names, member counts, and any assignment filters with their rules. If unassigned, state clearly: "This policy is not currently assigned to any users or devices and is therefore not actively enforced."
+- settingGroups: A JSON array of thematic groups. Bundle related settings together — do NOT list each setting individually. Each object:
+  { "groupName": "Human-readable group label covering all settings in this group (e.g. 'Bluetooth advertising, discoverability, pre-pairing, and proximal connections')", "summary": "One sentence describing what all settings in this group are configured to and what effect that has." }
+  Aim for 8–20 groups depending on policy size. Group settings by feature area, not alphabetically.
 
-- keySettingsList: A JSON array — one object per configured setting — with these fields:
-  { "name": "Human-readable setting name (NOT raw OMA-URI path)", "value": "The configured value", "significance": "One sentence explaining what this controls and why it matters in business terms" }
-  Include EVERY setting from the data. For names, translate OMA-URI paths and CSP paths into readable names (e.g., "BitLocker Drive Encryption" not "device_vendor_msft_bitlocker_requiredeviceencryption").
+- topSettings: A JSON array of the most important configured settings, ranked by security/privacy/user-experience impact (most impactful first). Include up to 10. Each object:
+  { "name": "Human-readable setting name", "value": "Configured value", "impact": "One sentence explaining why this setting matters and what it protects or restricts." }
 
-- notableObservations: A JSON array of strings. Each string is a notable finding about this policy — something unusual, potentially misconfigured, worth an admin's attention, or a security/compliance gap. Examples: a setting that is disabled when best practice is to enable it; a policy that is unassigned; settings that may conflict with Zero Trust principles; overly permissive values. If everything looks correct, return an empty array [].
+- assignmentScope: A plain-language paragraph describing which users, devices, or groups are targeted. Include group names, member counts, and any assignment filters with their rules. If the policy is not assigned, write: "There is no assignment information provided for this policy, meaning it is not currently assigned to any users or devices."
 
-- recommendedNextSteps: A JSON array of strings. Each string is a concrete, actionable next step for the admin — the "where to look next" that Security Copilot always provides. Be specific about WHAT to do and WHERE in the Intune admin center. Examples: "Review the assignment scope under Assignments to ensure the 'Autopilot Devices' group includes all new enrollments", "Enable the 'Require Encryption' setting to close a data-at-rest protection gap". Provide 2–4 items.
+- overallSummary: A closing paragraph (4–6 sentences) summarising the policy's purpose, scope, number of configured settings, what it does well, and any notable gaps or caveats. Reference the policy name (with GUID in parentheses).
 
-- overview: A single comprehensive paragraph (4–6 sentences) that a CISO could read aloud to summarize this policy. Include: policy name (with GUID in parentheses), type, platform, number of configured settings, what it enforces, who is affected, and a clear verdict on whether this policy is well-configured.
+- footerNote: A single sentence noting that the summary covers the most important settings and that the policy may contain additional settings not listed here.
 
-- keySettings: The total number of configured settings (integer).
-- lastModified: The last modified date as "YYYY-MM-DD".
+- keySettings: Total number of configured settings (integer).
+- lastModified: Last modified date as "YYYY-MM-DD".
 
 Return ONLY valid JSON. No markdown, no backticks, no preamble:
-{ "headline": "...", "whatItDoes": "...", "whoItTargets": "...", "keySettingsList": [...], "notableObservations": [...], "recommendedNextSteps": [...], "overview": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }`,
+{ "headline": "...", "introParagraph": "...", "settingGroups": [...], "topSettings": [...], "assignmentScope": "...", "overallSummary": "...", "footerNote": "...", "keySettings": N, "lastModified": "YYYY-MM-DD" }`,
     `Summarize this Intune policy:\n${context}`,
     12000
   );
@@ -295,11 +296,14 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     if (!parsed || typeof parsed !== "object") {
       throw new Error("AI returned non-object response for summary");
     }
-    if (parsed.headline || parsed.overview) {
+    if (parsed.headline || parsed.introParagraph || parsed.overallSummary) {
+      // backfill overview for any code that still reads it
+      if (!parsed.overview) parsed.overview = parsed.overallSummary || "";
       return { id: policy.id, data: parsed };
     }
     const firstValue = Object.values(parsed)[0] as any;
-    if (firstValue?.headline || firstValue?.overview) {
+    if (firstValue?.headline || firstValue?.introParagraph) {
+      if (!firstValue.overview) firstValue.overview = firstValue.overallSummary || "";
       return { id: policy.id, data: firstValue };
     }
     throw new Error("Unexpected response structure");
@@ -309,12 +313,13 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
       id: policy.id,
       data: {
         headline: `${policy.type} policy for ${policy.platform}`,
-        whatItDoes: `${policy.name} is a ${policy.type} policy targeting ${policy.platform} devices with ${policy.settingsCount} configured settings.`,
-        whoItTargets: "Assignment information not available.",
-        keySettingsList: [],
-        notableObservations: [],
-        recommendedNextSteps: [],
+        introParagraph: `${policy.name} is a ${policy.type} policy targeting ${policy.platform} devices with ${policy.settingsCount} configured settings.`,
+        settingGroups: [],
+        topSettings: [],
+        assignmentScope: "Assignment information not available.",
+        overallSummary: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`,
         overview: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+        footerNote: "",
         keySettings: policy.settingsCount,
         lastModified: policy.lastModified,
       },
