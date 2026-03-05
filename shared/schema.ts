@@ -67,16 +67,28 @@ export interface EndUserSettingDetail {
   workaround: string | null;
 }
 
+export interface EndUserImpactGroup {
+  groupName: string; // Thematic group label (e.g. "Bluetooth advertising, discoverability, and pre-pairing")
+  impact: string;    // One sentence describing the user-facing impact of all settings in this group
+}
+
+export interface EndUserRiskAnalysis {
+  productivity: string[]; // Bullet points for productivity risks
+  security: string[];     // Bullet points for security risks
+  configuration: string[]; // Bullet points for configuration/gap risks
+}
+
 export interface PolicyEndUserImpact {
   severity: "Minimal" | "Low" | "Medium" | "High" | "Critical";
   description: string;
-  workarounds?: string;
-  policySettingsAndImpact?: string;
   settings?: EndUserSettingDetail[] | null;
   assignmentScope?: string;
-  riskAnalysis?: string;
-  conflictAnalysis?: string;
   overallSummary?: string;
+
+  // Security Copilot-style structured fields
+  keyImpactGroups?: EndUserImpactGroup[]; // Numbered thematic groups (SC numbered list)
+  riskAnalysis?: EndUserRiskAnalysis;     // Split into productivity / security / configuration
+  footerNote?: string;                    // Footnote below the numbered list
 }
 
 export interface SecuritySettingDetail {

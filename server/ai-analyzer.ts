@@ -348,32 +348,42 @@ async function analyzeSingleEndUserImpact(policy: IntunePolicyRaw, detail: any):
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune policy expert similar to Microsoft Security Copilot. Write a clear, executive-friendly end-user impact analysis for this policy. Your audience is C-level management and non-technical stakeholders who need to understand what this policy means for their employees' daily work.
+    `You are Microsoft Security Copilot embedded in Microsoft Intune. When an admin asks about end-user impact of a policy, produce output matching Security Copilot's exact style: per-setting impact details, a numbered thematic group list, a risk analysis split into Productivity/Security/Configuration sub-sections, an assignment scope paragraph, and a closing overall summary.
 
 CRITICAL RULES:
 - Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
-- Write in clear, flowing paragraphs — NOT bullet points or lists. Use plain business English that a non-technical executive can understand.
-- Explain the real-world effect on employees, not the technical setting name. For example, instead of "RequireWorkProfilePassword: Required", write "employees will be required to set a separate password to access their work apps."
-- Be specific about what users will experience, what changes in their daily workflow, and what restrictions they will notice.
+- Use plain business English. Translate technical OMA-URI and CSP setting names into human-readable labels.
+- For the keyImpactGroups, group related settings thematically — do NOT list each setting individually.
+- Do NOT include conflict analysis — that is handled separately.
 
-Provide these structured fields:
-- severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" - overall impact severity on end users
-- settings: A JSON array where each element represents ONE configured setting with these fields:
-  { "settingName": "Human-readable setting name (NOT raw OMA-URI)", "technicalName": "The actual setting path, OMA-URI, or settingDefinitionId", "settingValue": "The configured value", "impactLevel": "Minimal"|"Low"|"Medium"|"High"|"Critical", "userExperience": "What the end user will actually see or experience in plain language", "workaround": "Any workaround the user can apply, or null if none needed" }
-  Include EVERY setting from the data. Use human-readable names for settingName (e.g., "Require Work Profile Password" not "device_vendor_msft_policy_config_...").
-- assignmentScope: A clear paragraph explaining who is affected. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it has no active impact."
-- riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what real-world risks this policy introduces for end users. Consider: Will employees be locked out of features they use daily? Could they lose access to data? Are there settings that could frustrate users or slow down their workflow? Are there gaps where important protections are missing? Write like a senior IT consultant briefing a CTO — concrete, specific, and referencing actual settings and their values.
-- overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that summarizes the policy's purpose, its scope of impact, the number of configured settings, and the net effect on end users. Mention whether the policy is currently assigned and actively impacting users. End with a clear assessment of whether this policy is well-balanced for user productivity vs. security. Write as a consultant summarizing findings for leadership.
-- description: Brief 1-2 sentence summary of end-user impact.
+Produce a JSON object with ALL of these fields:
 
-Do NOT include any conflict analysis - conflicts are handled separately.
+- severity: "Minimal"|"Low"|"Medium"|"High"|"Critical" — overall end-user impact severity.
 
-IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
+- description: 1–2 sentence plain-language summary of the overall user impact.
+
+- settings: Array of per-setting impact objects — one per configured setting:
+  { "settingName": "Human-readable name (NOT raw OMA-URI)", "technicalName": "actual setting path or OMA-URI", "settingValue": "configured value", "impactLevel": "Minimal"|"Low"|"Medium"|"High"|"Critical", "userExperience": "What the end user will actually see or experience in plain language", "workaround": "Workaround the user can apply, or null if none" }
+  Include EVERY setting. Sorted by impactLevel descending (Critical first).
+
+- keyImpactGroups: Array of thematic groups bundling related settings — matching Security Copilot's numbered list format:
+  { "groupName": "Human-readable group label covering all settings in this group", "impact": "One sentence describing the user-facing impact of all settings in this group." }
+  Aim for 5–15 groups. Group by feature area (e.g. all Bluetooth, all Edge privacy, all Defender, all notifications).
+
+- footerNote: One sentence noting the policy configures many more settings all contributing to a controlled environment.
+
+- riskAnalysis: Object with three arrays:
+  { "productivity": ["bullet 1", "bullet 2", ...], "security": ["bullet 1", ...], "configuration": ["bullet 1", ...] }
+  Each array has 2–4 concrete bullet points referencing actual settings and values. Productivity = user frustration/workflow impact. Security = risks from disabled protections. Configuration = gaps, unassigned state, not-configured settings.
+
+- assignmentScope: Plain-language paragraph describing which users/devices are targeted. Include group names, member counts, and filters. If unassigned: "This policy is not currently assigned to any users or devices, so it has no active impact."
+
+- overallSummary: Closing paragraph (4–6 sentences) summarising purpose, scope, number of configured settings, net user effect, and a verdict on productivity vs security balance.
 
 Return ONLY valid JSON. No markdown, no backticks, no preamble:
-{ "severity": "...", "description": "...", "settings": [ { "settingName": "...", "technicalName": "...", "settingValue": "...", "impactLevel": "...", "userExperience": "...", "workaround": "..." }, ... ], "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+{ "severity": "...", "description": "...", "settings": [...], "keyImpactGroups": [...], "footerNote": "...", "riskAnalysis": { "productivity": [...], "security": [...], "configuration": [...] }, "assignmentScope": "...", "overallSummary": "..." }`,
     `Analyze end-user impact for this policy:\n${context}`,
-    12000
+    14000
   );
 
   try {
@@ -391,7 +401,19 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     throw new Error("Unexpected response structure");
   } catch (e) {
     console.error(`Failed to parse end-user impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
-    return { id: policy.id, data: { severity: "Minimal", description: `Standard ${policy.type} configuration with typical user impact.`, policySettingsAndImpact: `This policy configures ${policy.type} settings for ${policy.platform}.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings.` } };
+    return {
+      id: policy.id,
+      data: {
+        severity: "Minimal",
+        description: `Standard ${policy.type} configuration with typical user impact.`,
+        settings: [],
+        keyImpactGroups: [],
+        footerNote: "",
+        riskAnalysis: { productivity: [], security: [], configuration: [] },
+        assignmentScope: "Assignment information not available.",
+        overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+      },
+    };
   }
 }
 
