@@ -1,381 +1,256 @@
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, Shield, BookOpen, ExternalLink, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import type {
   IntunePolicy,
   PolicyComplianceData,
-  PolicyComplianceSummary,
-  ComplianceLookupResult,
   ComplianceBenchmarkMatch,
+  ComplianceLookupResult,
 } from "@shared/schema";
 
-// ── small reusable atoms ────────────────────────────────────────────────────
+// ── helpers ──────────────────────────────────────────────────────────────────
 
-function CisTag({ control, title }: { control: string; title: string }) {
-  return (
-    <a
-      href="https://www.cisecurity.org/controls/v8"
-      target="_blank"
-      rel="noopener noreferrer"
-      title={title}
-      className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded
-                 bg-blue-500/10 text-blue-400 border border-blue-500/25
-                 hover:bg-blue-500/20 transition-colors no-underline"
-    >
-      CIS {control}
-    </a>
-  );
+function extractRecommended(title: string): string {
+  const m = title.match(/is set to\s+['"'""]([^'"'""\n]+)['"'""]/) ||
+            title.match(/is set to\s+(\S+)/i);
+  return m ? m[1].replace(/\s*\(Automated\)|\s*\(Manual\)/gi, "").trim() : "See benchmark";
 }
 
-function IsoTag({ control, title }: { control: string; title: string }) {
-  return (
-    <a
-      href="https://www.iso.org/standard/27001"
-      target="_blank"
-      rel="noopener noreferrer"
-      title={title ?? control}
-      className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded
-                 bg-amber-500/10 text-amber-400 border border-amber-500/25
-                 hover:bg-amber-500/20 transition-colors no-underline"
-    >
-      {control}
-    </a>
-  );
+function normaliseVal(v: string) {
+  return v.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-function LevelBadge({ level }: { level: "L1" | "L2" | null }) {
-  if (!level) return null;
-  return (
-    <Badge
-      variant="outline"
-      className={`text-[10px] font-bold border ${
-        level === "L1"
-          ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
-          : "bg-orange-500/10 text-orange-400 border-orange-500/30"
-      }`}
-    >
-      {level}
-    </Badge>
-  );
+function isCompliant(settingValue: string, match: ComplianceBenchmarkMatch): boolean {
+  const recommended = normaliseVal(extractRecommended(match.title));
+  const actual = normaliseVal(settingValue);
+  if (!recommended || recommended === "see benchmark") return true;
+  if (actual === recommended) return true;
+  const positives = new Set(["enabled", "yes", "true", "1", "block", "required", "allowed"]);
+  const negatives = new Set(["disabled", "no", "false", "0", "not configured", "allow"]);
+  if (positives.has(actual) && positives.has(recommended)) return true;
+  if (negatives.has(actual) && negatives.has(recommended)) return true;
+  const numActual = parseFloat(actual);
+  const numRec = parseFloat(recommended);
+  if (!isNaN(numActual) && !isNaN(numRec) && numActual === numRec) return true;
+  return false;
 }
 
-function TypeBadge({ type }: { type: "Automated" | "Manual" }) {
-  return (
-    <Badge
-      variant="outline"
-      className={`text-[10px] border ${
-        type === "Automated"
-          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
-          : "bg-muted text-muted-foreground border-border/40"
-      }`}
-    >
-      {type}
-    </Badge>
-  );
+interface PlatformStat {
+  platform: string;
+  label: string;
+  dot: string;
+  matched: number;
+  compliantCount: number;
 }
 
-function ConfidenceDot({ score }: { score: number }) {
-  const color =
-    score >= 0.7 ? "bg-emerald-400" : score >= 0.4 ? "bg-yellow-400" : "bg-orange-400";
-  const label =
-    score >= 0.7 ? "High confidence" : score >= 0.4 ? "Medium confidence" : "Low confidence";
-  return (
-    <span title={`${label} (${Math.round(score * 100)}%)`} className="inline-flex items-center gap-1">
-      <span className={`w-1.5 h-1.5 rounded-full ${color}`} />
-      <span className="text-[10px] text-muted-foreground">{Math.round(score * 100)}%</span>
-    </span>
-  );
-}
+const PLATFORM_TOTAL: Record<string, number> = { windows11: 1254, ios: 256, macos: 224 };
+const PLATFORM_LABEL: Record<string, string> = { windows11: "Windows 11", ios: "iOS / iPadOS", macos: "macOS Sequoia" };
+const PLATFORM_DOT: Record<string, string> = { windows11: "#3b82f6", ios: "#a78bfa", macos: "#f97316" };
 
-// ── benchmark match card ─────────────────────────────────────────────────────
-
-function BenchmarkMatchCard({ match }: { match: ComplianceBenchmarkMatch }) {
-  const [open, setOpen] = useState(false);
-
-  const platformLabel =
-    match.platform === "windows11" ? "Windows 11"
-    : match.platform === "ios" ? "iOS / iPadOS"
-    : match.platform === "macos" ? "macOS"
-    : match.platform;
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="w-full text-left">
-        <div className="flex items-start gap-2 py-1.5 px-2 rounded hover:bg-muted/30 transition-colors group">
-          {/* toggle chevron */}
-          {open
-            ? <ChevronDown className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
-            : <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
-          }
-
-          <div className="flex flex-col gap-1 flex-1 min-w-0">
-            {/* title row */}
-            <span className="text-xs text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-              {match.title}
-            </span>
-            {/* badges row */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] text-muted-foreground font-mono">{match.recommendationId}</span>
-              <span className="text-[10px] text-muted-foreground/40">·</span>
-              <span className="text-[10px] text-muted-foreground">{platformLabel}</span>
-              <span className="text-[10px] text-muted-foreground/40">·</span>
-              <LevelBadge level={match.level} />
-              <TypeBadge type={match.type} />
-              <ConfidenceDot score={match.confidence} />
-            </div>
-          </div>
-
-          {/* quick CIS + ISO tags */}
-          <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
-            {match.cisControls.slice(0, 2).map(c => (
-              <CisTag key={c.control} control={c.control} title={c.title} />
-            ))}
-            <span className="text-[10px] text-muted-foreground/30">→</span>
-            {match.isoMappings.slice(0, 2).map(i => (
-              <IsoTag key={i.isoControl} control={i.isoControl} title={i.isoTitle ?? ""} />
-            ))}
-            {match.isoMappings.length > 2 && (
-              <span className="text-[10px] text-muted-foreground">+{match.isoMappings.length - 2}</span>
-            )}
-          </div>
-        </div>
-      </CollapsibleTrigger>
-
-      <CollapsibleContent>
-        <div className="ml-5 mt-1 mb-2 space-y-3 border-l border-border/30 pl-3">
-
-          {/* CIS Controls */}
-          {match.cisControls.length > 0 && (
-            <div>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                CIS Controls v8
-              </p>
-              <div className="space-y-1.5">
-                {match.cisControls.map(c => (
-                  <div
-                    key={c.control}
-                    className="flex items-start gap-2 px-2.5 py-1.5 rounded bg-blue-500/5 border border-blue-500/10"
-                  >
-                    <span className="font-mono text-[11px] font-bold text-blue-400 shrink-0 mt-0.5">
-                      {c.control}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground flex-1 leading-snug">
-                      {c.title}
-                    </span>
-                    <div className="flex gap-0.5 shrink-0">
-                      {[c.ig1, c.ig2, c.ig3].map((active, idx) =>
-                        active ? (
-                          <span
-                            key={idx}
-                            className="text-[9px] font-bold px-1 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20"
-                          >
-                            IG{idx + 1}
-                          </span>
-                        ) : null
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ISO 27001 Controls */}
-          {match.isoMappings.length > 0 && (
-            <div>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                ISO/IEC 27001:2022 Controls
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {match.isoMappings.map(i => (
-                  <a
-                    key={i.isoControl}
-                    href="https://www.iso.org/standard/27001"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={i.isoTitle ?? i.isoControl}
-                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded
-                               bg-amber-500/7 border border-amber-500/20 no-underline
-                               hover:bg-amber-500/15 transition-colors group/iso"
-                  >
-                    <span className="font-mono text-[11px] font-bold text-amber-400">{i.isoControl}</span>
-                    {i.isoTitle && (
-                      <span className="text-[11px] text-muted-foreground group-hover/iso:text-foreground transition-colors">
-                        {i.isoTitle}
-                      </span>
-                    )}
-                    {i.relationship && (
-                      <span className="text-[9px] text-muted-foreground/50 border border-border/30 px-1 rounded">
-                        {i.relationship}
-                      </span>
-                    )}
-                    <ExternalLink className="w-2.5 h-2.5 text-muted-foreground/30 shrink-0" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
-  );
-}
-
-// ── per-setting row ──────────────────────────────────────────────────────────
-
-function SettingComplianceRow({
-  settingName,
-  settingValue,
-  compliance,
-}: {
+interface EnrichedSetting {
   settingName: string;
   settingValue: string;
   compliance: ComplianceLookupResult | null;
-}) {
-  const [open, setOpen] = useState(false);
-  const hasMatch = compliance && compliance.matches.length > 0;
+  hasMatch: boolean;
+  topMatch: ComplianceBenchmarkMatch | null;
+  recommended: string;
+  compliant: boolean | null;
+  platform: string;
+  level: "L1" | "L2" | null;
+  cisId: string;
+}
 
+function buildEnrichedSettings(data: PolicyComplianceData, policy: IntunePolicy): EnrichedSetting[] {
+  return data.settings.map(s => {
+    const c = s.compliance;
+    const top = c?.matches[0] ?? null;
+    return {
+      settingName: s.settingName,
+      settingValue: s.settingValue,
+      compliance: c,
+      hasMatch: !!top,
+      topMatch: top,
+      recommended: top ? extractRecommended(top.title) : "",
+      compliant: top ? isCompliant(s.settingValue, top) : null,
+      platform: top?.platform ?? policy.platform,
+      level: top?.level ?? null,
+      cisId: top ? top.recommendationId : "",
+    };
+  });
+}
+
+interface IsoRollupRow { control: string; title: string; compliantSettings: number; totalSettings: number; }
+
+function buildIsoRollup(settings: EnrichedSetting[]): IsoRollupRow[] {
+  const map = new Map<string, { title: string; compliant: number; total: number }>();
+  for (const s of settings) {
+    if (!s.hasMatch) continue;
+    for (const iso of s.topMatch?.isoMappings ?? []) {
+      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0 };
+      e.total++;
+      if (s.compliant !== false) e.compliant++;
+      map.set(iso.isoControl, e);
+    }
+  }
+  return Array.from(map.entries())
+    .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total }))
+    .sort((a, b) => a.control.localeCompare(b.control));
+}
+
+// ── sub-components ─────────────────────────────────────────────────────────────
+
+function PlatformCard({ stat }: { stat: PlatformStat }) {
+  const pct = stat.matched > 0 ? Math.round((stat.compliantCount / stat.matched) * 100) : 0;
+  const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="w-full text-left">
-        <div className="flex items-center gap-2 py-2 px-3 rounded-md hover:bg-muted/20 transition-colors group border border-border/20 mb-1">
-          {/* match indicator */}
-          {hasMatch ? (
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          ) : (
-            <XCircle className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
-          )}
-
-          {/* setting name */}
-          <span className="text-xs font-medium text-foreground flex-1 truncate">{settingName}</span>
-
-          {/* setting value */}
-          <Badge variant="outline" className="text-[10px] border-border/30 text-muted-foreground shrink-0 max-w-[120px] truncate">
-            {settingValue}
-          </Badge>
-
-          {/* quick tags when matched */}
-          {hasMatch && (
-            <>
-              <div className="flex gap-1 items-center">
-                {compliance.allCisControls.slice(0, 2).map(c => (
-                  <span key={c} className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    CIS {c}
-                  </span>
-                ))}
-                {compliance.allCisControls.length > 2 && (
-                  <span className="text-[10px] text-muted-foreground">+{compliance.allCisControls.length - 2}</span>
-                )}
-              </div>
-              <span className="text-[10px] text-muted-foreground/30">→</span>
-              <div className="flex gap-1 items-center">
-                {compliance.allIsoControls.slice(0, 2).map(c => (
-                  <span key={c} className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    {c}
-                  </span>
-                ))}
-                {compliance.allIsoControls.length > 2 && (
-                  <span className="text-[10px] text-muted-foreground">+{compliance.allIsoControls.length - 2}</span>
-                )}
-              </div>
-              <LevelBadge level={compliance.highestLevel} />
-            </>
-          )}
-
-          {/* expand chevron */}
-          {hasMatch && (
-            open
-              ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          )}
-        </div>
-      </CollapsibleTrigger>
-
-      {hasMatch && (
-        <CollapsibleContent>
-          <div className="ml-6 mb-3 space-y-1 border-l border-border/20 pl-3">
-            {compliance.matches.map((m, idx) => (
-              <BenchmarkMatchCard key={idx} match={m} />
-            ))}
-          </div>
-        </CollapsibleContent>
-      )}
-    </Collapsible>
+    <div className="flex-1 min-w-[180px] rounded-lg border border-border/30 bg-card px-5 py-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: stat.dot, display: "inline-block", flexShrink: 0 }} />
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+      </div>
+      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1, color: barColor }}>{pct}%</div>
+      <div className="text-xs text-muted-foreground">{stat.compliantCount} of {stat.matched} matched settings compliant</div>
+      <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+      </div>
+      <div className="text-[11px] text-muted-foreground/50">{stat.matched} of {PLATFORM_TOTAL[stat.platform] ?? "?"} CIS benchmark items addressed</div>
+    </div>
   );
 }
 
-// ── per-policy summary bar ───────────────────────────────────────────────────
-
-function PolicyComplianceSummaryBar({ summary }: { summary: PolicyComplianceSummary }) {
-  const pct = summary.coveragePercent;
-  const barColor =
-    pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-yellow-500" : "bg-orange-500";
-
+function SettingCard({ s }: { s: EnrichedSetting }) {
+  const [open, setOpen] = useState(false);
+  const top = s.topMatch;
   return (
-    <div className="flex flex-wrap items-center gap-4 mb-4 p-3 rounded-md bg-muted/20 border border-border/20">
-      {/* coverage bar */}
-      <div className="flex items-center gap-2 flex-1 min-w-[160px]">
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-          CIS Coverage
-        </span>
-        <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all ${barColor}`}
-            style={{ width: `${pct}%` }}
-          />
+    <div className={`rounded-lg border bg-card transition-colors ${s.compliant === false ? "border-red-500/25" : "border-border/30"}`}>
+      <div className="flex items-start justify-between gap-3 px-4 py-3 cursor-pointer" onClick={() => s.hasMatch && setOpen(o => !o)}>
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* name row */}
+          <div className="flex items-center gap-2">
+            {s.compliant === true  && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+            {s.compliant === false && <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+            {s.compliant === null  && <span className="w-4 h-4 shrink-0" />}
+            <span className="text-sm font-semibold text-foreground">{s.settingName}</span>
+          </div>
+          {/* metadata row */}
+          <div className="flex items-center gap-4 pl-6 flex-wrap">
+            <span className="text-xs text-muted-foreground">Current Value <span className={`font-semibold ${s.compliant === false ? "text-red-400" : "text-emerald-400"}`}>{s.settingValue || "Not Configured"}</span></span>
+            {top && <span className="text-xs text-muted-foreground">CIS Recommended <span className="font-semibold text-foreground">{s.recommended}</span></span>}
+            {s.level && (
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${s.level === "L1" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"}`}>
+                {s.level}
+              </span>
+            )}
+            {top?.platform && top.platform !== "windows11" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/40 border border-border/20 text-muted-foreground">{PLATFORM_LABEL[top.platform] ?? top.platform}</span>
+            )}
+            {s.compliant === true  && <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"><CheckCircle className="w-3 h-3" />Compliant</span>}
+            {s.compliant === false && <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/25"><XCircle className="w-3 h-3" />Non-Compliant</span>}
+          </div>
+          {/* tags row */}
+          {top && (
+            <div className="flex items-center gap-1.5 pl-6 flex-wrap">
+              {top.cisControls.slice(0, 2).map(c => (
+                <a key={c.control} href="https://www.cisecurity.org/controls/v8" target="_blank" rel="noopener noreferrer" title={c.title}
+                   className="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors no-underline whitespace-nowrap">
+                  CIS v8: {c.control} {c.title.split(" ").slice(0, 4).join(" ")}
+                </a>
+              ))}
+              {top.isoMappings.slice(0, 3).map(i => (
+                <a key={i.isoControl} href="https://www.iso.org/standard/27001" target="_blank" rel="noopener noreferrer" title={i.isoTitle ?? ""}
+                   className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 transition-colors no-underline whitespace-nowrap">
+                  <span className="text-muted-foreground/50 font-normal">ISO</span> {i.isoControl} {(i.isoTitle ?? "").split(" ").slice(0, 3).join(" ")}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
-        <span className="text-xs font-bold text-foreground tabular-nums">{pct}%</span>
-        <span className="text-[10px] text-muted-foreground">
-          ({summary.coveredSettings}/{summary.totalSettings})
-        </span>
+        {s.cisId && (
+          <div className="shrink-0 text-[10px] font-bold px-2 py-1 rounded bg-muted/30 border border-border/30 text-muted-foreground font-mono">
+            CIS {s.cisId}
+          </div>
+        )}
       </div>
 
-      {/* stat chips */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {summary.l1Count > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
-            <span className="text-[10px] font-bold text-yellow-400">{summary.l1Count}</span>
-            <span className="text-[10px] text-muted-foreground">L1 settings</span>
-          </div>
-        )}
-        {summary.l2Count > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-orange-500/10 border border-orange-500/20">
-            <span className="text-[10px] font-bold text-orange-400">{summary.l2Count}</span>
-            <span className="text-[10px] text-muted-foreground">L2 settings</span>
-          </div>
-        )}
-        {summary.allCisControls.length > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-            <span className="text-[10px] font-bold text-blue-400">{summary.allCisControls.length}</span>
-            <span className="text-[10px] text-muted-foreground">CIS controls</span>
-          </div>
-        )}
-        {summary.allIsoControls.length > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-            <span className="text-[10px] font-bold text-amber-400">{summary.allIsoControls.length}</span>
-            <span className="text-[10px] text-muted-foreground">ISO 27001 controls</span>
-          </div>
-        )}
-        {summary.implementationGroups.length > 0 && (
-          <div className="flex gap-1">
-            {summary.implementationGroups.map(ig => (
-              <span
-                key={ig}
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20"
-              >
-                {ig}
+      {/* expanded detail */}
+      {open && top && (
+        <div className="border-t border-border/20 px-4 pb-4 pt-3 space-y-4">
+          {s.compliance!.matches.map((m, i) => (
+            <div key={i} className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">{m.recommendationId}</span>
+                <span className="text-[10px] text-muted-foreground">· {PLATFORM_LABEL[m.platform] ?? m.platform} ·</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${m.level === "L1" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"}`}>{m.level}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${m.type === "Automated" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-muted text-muted-foreground border-border/20"}`}>{m.type}</span>
+                <span className="text-[10px] text-muted-foreground/60">● {Math.round(m.confidence * 100)}%</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{m.title}</p>
+              {m.cisControls.length > 0 && (
+                <div className="space-y-1 pl-3 border-l-2 border-blue-500/20">
+                  {m.cisControls.map(c => (
+                    <div key={c.control} className="flex items-center gap-2 text-[11px]">
+                      <span className="font-mono font-bold text-blue-400 w-8 shrink-0">{c.control}</span>
+                      <span className="text-muted-foreground flex-1">{c.title}</span>
+                      <div className="flex gap-0.5">
+                        {[c.ig1, c.ig2, c.ig3].map((a, idx) => a ? (
+                          <span key={idx} className="text-[9px] font-bold px-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/15">IG{idx+1}</span>
+                        ) : null)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {m.isoMappings.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {m.isoMappings.map(iso => (
+                    <a key={iso.isoControl} href="https://www.iso.org/standard/27001" target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1.5 text-[11px] px-2 py-1 rounded border border-amber-500/20 bg-amber-500/5 no-underline hover:bg-amber-500/15 transition-colors">
+                      <span className="font-mono font-bold text-amber-400">{iso.isoControl}</span>
+                      {iso.isoTitle && <span className="text-muted-foreground">{iso.isoTitle}</span>}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
+  if (!rows.length) return null;
+  return (
+    <div className="space-y-3">
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">ISO 27001:2022 Control Coverage</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">Rollup of CIS benchmark compliance grouped by ISO Annex A control</p>
+      </div>
+      <div className="rounded-lg border border-border/30 overflow-hidden">
+        {rows.map((row, i) => {
+          const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
+          const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
+          return (
+            <div key={row.control} className={`flex items-center gap-4 px-5 py-3.5 hover:bg-muted/10 transition-colors ${i < rows.length - 1 ? "border-b border-border/20" : ""}`}>
+              <span className="font-mono text-sm font-bold text-blue-400 w-12 shrink-0">{row.control}</span>
+              <span className="text-sm text-muted-foreground flex-1">{row.title}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                <strong className="text-foreground">{row.compliantSettings}</strong> of {row.totalSettings} settings
               </span>
-            ))}
-          </div>
-        )}
+              <div className="w-32 h-1.5 rounded-full bg-muted/40 overflow-hidden shrink-0">
+                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ── main export ──────────────────────────────────────────────────────────────
+// ── main ──────────────────────────────────────────────────────────────────────
+
+type FilterType = "all" | "compliant" | "non-compliant" | "windows11" | "ios" | "macos";
 
 interface ComplianceTabProps {
   policies: IntunePolicy[];
@@ -383,121 +258,91 @@ interface ComplianceTabProps {
 }
 
 export default function ComplianceTab({ policies, compliance }: ComplianceTabProps) {
-  const totalPolicies = policies.length;
-  const policiesWithData = policies.filter(p => compliance[p.id]).length;
-  const allCisControls = new Set<string>();
-  const allIsoControls = new Set<string>();
-  let totalCovered = 0;
-  let totalSettings = 0;
+  const [filter, setFilter] = useState<FilterType>("all");
 
-  for (const data of Object.values(compliance)) {
-    data.summary.allCisControls.forEach(c => allCisControls.add(c));
-    data.summary.allIsoControls.forEach(c => allIsoControls.add(c));
-    totalCovered += data.summary.coveredSettings;
-    totalSettings += data.summary.totalSettings;
-  }
+  const allSettings = useMemo<EnrichedSetting[]>(() => {
+    const result: EnrichedSetting[] = [];
+    for (const policy of policies) {
+      const data = compliance[policy.id];
+      if (data) result.push(...buildEnrichedSettings(data, policy));
+    }
+    return result;
+  }, [policies, compliance]);
 
-  const overallPct = totalSettings > 0 ? Math.round((totalCovered / totalSettings) * 100) : 0;
+  const matched = allSettings.filter(s => s.hasMatch);
 
-  if (policiesWithData === 0) {
+  const platformStats = useMemo<PlatformStat[]>(() => {
+    return ["windows11", "ios", "macos"]
+      .map(p => {
+        const ps = matched.filter(s => s.platform === p);
+        if (!ps.length) return null;
+        return { platform: p, label: PLATFORM_LABEL[p], dot: PLATFORM_DOT[p], matched: ps.length, compliantCount: ps.filter(s => s.compliant !== false).length } as PlatformStat;
+      })
+      .filter(Boolean) as PlatformStat[];
+  }, [matched]);
+
+  const compliantCount = matched.filter(s => s.compliant !== false).length;
+  const nonCompliantCount = matched.filter(s => s.compliant === false).length;
+  const platformsPresent = [...new Set(matched.map(s => s.platform))];
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return matched;
+    if (filter === "compliant") return matched.filter(s => s.compliant !== false);
+    if (filter === "non-compliant") return matched.filter(s => s.compliant === false);
+    return matched.filter(s => s.platform === filter);
+  }, [matched, filter]);
+
+  const isoRollup = useMemo(() => buildIsoRollup(matched), [matched]);
+
+  if (!matched.length) {
     return (
-      <Card className="border-border/30">
-        <CardContent className="pt-6 text-center space-y-2">
-          <AlertCircle className="w-8 h-8 text-muted-foreground/30 mx-auto" />
-          <p className="text-sm text-muted-foreground">
-            No compliance data available. This usually means the selected policies had no security settings that could be matched against CIS benchmarks.
-          </p>
-          <p className="text-xs text-muted-foreground/60">
-            Compliance mapping works best with Settings Catalog policies on Windows 11, iOS, or macOS.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-lg border border-border/30 bg-card p-8 text-center space-y-3">
+        <AlertCircle className="w-8 h-8 text-muted-foreground/30 mx-auto" />
+        <p className="text-sm text-muted-foreground">No CIS benchmark matches found for the selected policies.</p>
+        <p className="text-xs text-muted-foreground/60">CIS / ISO 27001 mapping works with Settings Catalog policies on Windows 11, iOS, or macOS.</p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
 
-      {/* ── overall header card ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-3 rounded-md bg-card border border-border/30 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Overall Coverage</p>
-          <p className={`text-2xl font-bold ${overallPct >= 70 ? "text-emerald-400" : overallPct >= 40 ? "text-yellow-400" : "text-orange-400"}`}>
-            {overallPct}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">{totalCovered}/{totalSettings} settings mapped</p>
+      {/* platform summary cards */}
+      <div className="flex gap-3 flex-wrap">
+        {platformStats.map(s => <PlatformCard key={s.platform} stat={s} />)}
+      </div>
+
+      {/* CIS benchmark compliance list */}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">CIS Benchmark Compliance</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Settings matched against CIS Microsoft Intune Benchmarks</p>
+          </div>
+          <div className="flex items-center gap-1 flex-wrap">
+            {([
+              ["all",           `All (${matched.length})`],
+              ["compliant",     `Compliant (${compliantCount})`],
+              ["non-compliant", `Non-Compliant (${nonCompliantCount})`],
+              ...(platformsPresent.includes("windows11") ? [["windows11","Windows"]] : []),
+              ...(platformsPresent.includes("ios")       ? [["ios","iOS"]]           : []),
+              ...(platformsPresent.includes("macos")     ? [["macos","macOS"]]       : []),
+            ] as [FilterType, string][]).map(([key, label]) => (
+              <button key={key} onClick={() => setFilter(key)}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors border ${filter === key ? "bg-primary/10 text-primary border-primary/30" : "bg-transparent text-muted-foreground border-border/30 hover:border-border/60 hover:text-foreground"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="p-3 rounded-md bg-card border border-border/30 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">CIS Controls</p>
-          <p className="text-2xl font-bold text-blue-400">{allCisControls.size}</p>
-          <p className="text-[10px] text-muted-foreground">unique controls matched</p>
-        </div>
-        <div className="p-3 rounded-md bg-card border border-border/30 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">ISO 27001 Controls</p>
-          <p className="text-2xl font-bold text-amber-400">{allIsoControls.size}</p>
-          <p className="text-[10px] text-muted-foreground">unique controls matched</p>
-        </div>
-        <div className="p-3 rounded-md bg-card border border-border/30 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Source</p>
-          <p className="text-2xl font-bold text-foreground">{policiesWithData}</p>
-          <p className="text-[10px] text-muted-foreground">
-            of {totalPolicies} {totalPolicies === 1 ? "policy" : "policies"} mapped
-          </p>
+        <div className="space-y-2">
+          {filtered.map((s, i) => <SettingCard key={i} s={s} />)}
         </div>
       </div>
 
-      {/* ── legend ── */}
-      <div className="flex items-start gap-3 px-3 py-2.5 rounded-md bg-muted/10 border border-border/20 text-[11px] text-muted-foreground">
-        <Shield className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
-        <span>
-          Each setting below is matched against{" "}
-          <strong className="text-foreground">1,734 CIS Intune benchmark recommendations</strong>{" "}
-          (Windows 11, iOS 18, macOS 15), then chained to{" "}
-          <strong className="text-foreground">ISO/IEC 27001:2022 controls</strong>{" "}
-          via the official CIS v8.1→ISO mapping.{" "}
-          <span className="text-muted-foreground/60">
-            Matching is deterministic — no AI calls. Click any row to expand the full chain.
-          </span>
-        </span>
-      </div>
+      {/* ISO 27001 rollup */}
+      <IsoRollupSection rows={isoRollup} />
 
-      {/* ── per-policy sections ── */}
-      {policies.map(policy => {
-        const data = compliance[policy.id];
-        if (!data) return null;
-
-        return (
-          <Card key={policy.id} className="border-border/30">
-            <CardContent className="pt-4">
-
-              {/* policy header */}
-              <div className="flex items-center gap-2 mb-3">
-                <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="text-sm font-semibold text-foreground">{policy.name}</span>
-                <Badge variant="outline" className="text-[10px] border-border/30 text-muted-foreground">
-                  {policy.platform}
-                </Badge>
-              </div>
-
-              {/* per-policy summary bar */}
-              <PolicyComplianceSummaryBar summary={data.summary} />
-
-              {/* setting rows */}
-              <div className="space-y-0.5">
-                {data.settings.map((s, idx) => (
-                  <SettingComplianceRow
-                    key={idx}
-                    settingName={s.settingName}
-                    settingValue={s.settingValue}
-                    compliance={s.compliance}
-                  />
-                ))}
-              </div>
-
-            </CardContent>
-          </Card>
-        );
-      })}
     </div>
   );
 }
