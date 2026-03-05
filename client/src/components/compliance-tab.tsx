@@ -78,21 +78,28 @@ function buildEnrichedSettings(data: PolicyComplianceData, policy: IntunePolicy)
   });
 }
 
-interface IsoRollupRow { control: string; title: string; compliantSettings: number; totalSettings: number; }
+interface IsoRollupRow {
+  control: string;
+  title: string;
+  compliantSettings: number;
+  totalSettings: number;
+  settings: Array<{ name: string; value: string; compliant: boolean | null }>;
+}
 
 function buildIsoRollup(settings: EnrichedSetting[]): IsoRollupRow[] {
-  const map = new Map<string, { title: string; compliant: number; total: number }>();
+  const map = new Map<string, { title: string; compliant: number; total: number; settings: Array<{ name: string; value: string; compliant: boolean | null }> }>();
   for (const s of settings) {
     if (!s.hasMatch) continue;
     for (const iso of s.topMatch?.isoMappings ?? []) {
-      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0 };
+      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0, settings: [] };
       e.total++;
       if (s.compliant !== false) e.compliant++;
+      e.settings.push({ name: s.settingName, value: s.settingValue, compliant: s.compliant });
       map.set(iso.isoControl, e);
     }
   }
   return Array.from(map.entries())
-    .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total }))
+    .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total, settings: v.settings }))
     .sort((a, b) => a.control.localeCompare(b.control));
 }
 
@@ -218,6 +225,51 @@ function SettingCard({ s }: { s: EnrichedSetting }) {
   );
 }
 
+function IsoRollupRow({ row, isLast }: { row: IsoRollupRow; isLast: boolean }) {
+  const [open, setOpen] = useState(false);
+  const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
+  const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
+  return (
+    <div className={isLast ? "" : "border-b border-border/20"}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-4 px-5 py-3.5 cursor-pointer transition-colors ${open ? "bg-muted/10" : "hover:bg-muted/5"}`}
+      >
+        <span className="font-mono text-sm font-bold text-blue-400 w-12 shrink-0">{row.control}</span>
+        <span className="text-sm text-muted-foreground flex-1">{row.title}</span>
+        <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+          <strong className="text-foreground">{row.compliantSettings}</strong> of {row.totalSettings} settings
+        </span>
+        <div className="w-32 h-1.5 rounded-full bg-muted/40 overflow-hidden shrink-0">
+          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
+        </div>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/50 shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
+      </div>
+      {open && (
+        <div className="border-t border-border/20 bg-background/50 pb-2 pt-1">
+          <div className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider px-5 py-2 pl-20">
+            Settings mapped to {row.control}
+          </div>
+          {row.settings.map((s, i) => (
+            <div key={i} className={`flex items-center gap-3 px-5 py-2 pl-20 ${i % 2 === 0 ? "bg-muted/5" : ""}`}>
+              {s.compliant === false
+                ? <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                : <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+              <span className="text-xs text-foreground flex-1">{s.name}</span>
+              <span className={`text-xs font-semibold shrink-0 ${s.compliant === false ? "text-red-400" : "text-emerald-400"}`}>
+                {s.value || "Not Configured"}
+              </span>
+              {s.compliant === false
+                ? <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 shrink-0">Non-Compliant</span>
+                : <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">Compliant</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
   if (!rows.length) return null;
   return (
@@ -227,22 +279,9 @@ function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
         <p className="text-xs text-muted-foreground mt-0.5">Rollup of CIS benchmark compliance grouped by ISO Annex A control</p>
       </div>
       <div className="rounded-lg border border-border/30 overflow-hidden">
-        {rows.map((row, i) => {
-          const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
-          const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
-          return (
-            <div key={row.control} className={`flex items-center gap-4 px-5 py-3.5 hover:bg-muted/10 transition-colors ${i < rows.length - 1 ? "border-b border-border/20" : ""}`}>
-              <span className="font-mono text-sm font-bold text-blue-400 w-12 shrink-0">{row.control}</span>
-              <span className="text-sm text-muted-foreground flex-1">{row.title}</span>
-              <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                <strong className="text-foreground">{row.compliantSettings}</strong> of {row.totalSettings} settings
-              </span>
-              <div className="w-32 h-1.5 rounded-full bg-muted/40 overflow-hidden shrink-0">
-                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: barColor }} />
-              </div>
-            </div>
-          );
-        })}
+        {rows.map((row, i) => (
+          <IsoRollupRow key={row.control} row={row} isLast={i === rows.length - 1} />
+        ))}
       </div>
     </div>
   );
