@@ -265,39 +265,6 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-function SecureScoreCard() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["/api/secure-score"],
-    queryFn: async () => {
-      const res = await fetch("/api/secure-score");
-      if (!res.ok) throw new Error("Failed");
-      return res.json();
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-
-  const pct = data?.percentage ?? null;
-  const color = pct === null ? "text-muted-foreground"
-    : pct >= 80 ? "text-emerald-400"
-    : pct >= 50 ? "text-yellow-400"
-    : "text-red-400";
-
-  return (
-    <div className="p-4 rounded-md bg-card border border-border/30 space-y-1">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Secure Score</p>
-      {isLoading && <p className="text-2xl font-bold text-muted-foreground">...</p>}
-      {isError  && <p className="text-sm text-muted-foreground/50 pt-1">Unavailable</p>}
-      {data?.score != null && (
-        <>
-          <p className={`text-2xl font-bold ${color}`}>{pct}%</p>
-          <p className="text-[10px] text-muted-foreground">{data.score} / {data.maxScore} pts</p>
-        </>
-      )}
-    </div>
-  );
-}
-
 function PolicySection({ policy, children, isUnassigned, forceOpen }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean; forceOpen?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const platformColor = PLATFORM_COLORS[policy.platform] || "bg-muted text-muted-foreground";
@@ -580,12 +547,11 @@ export default function AnalysisPage() {
           </div>
         ) : analysis ? (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard label="Policies Analyzed" value={selectedPolicies.length} color="text-primary" />
               <StatCard label="Total Settings" value={totalSettings} color="text-primary" />
               <StatCard label="Conflicting Settings" value={settingConflictCount} color={settingConflictCount > 0 ? "text-orange-400" : "text-emerald-400"} />
               <StatCard label="Recommendations" value={recCount} color="text-chart-4" />
-              <SecureScoreCard />
             </div>
 
             {/* Unassigned policy banner (#15) */}
