@@ -289,6 +289,305 @@ function formatAssignmentsForContext(assignments: any[]): string {
   }).join("\n");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DETERMINISTIC API-DRIVEN HELPERS
+// These replace AI for fields that can be computed exactly from Graph API data.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── 1. Assignment scope — built purely from resolved Graph API data ──────────
+export function buildAssignmentScope(detail: any): string {
+  const assignments = detail?.assignments;
+  if (!assignments || !Array.isArray(assignments) || assignments.length === 0) {
+    return "This policy is not currently assigned to any users or devices, so it provides no active security protection.";
+  }
+
+  const included: string[] = [];
+  const excluded: string[] = [];
+  const filters: string[] = [];
+
+  for (const a of assignments) {
+    const target = a.target;
+    if (!target) continue;
+    const type = target["@odata.type"] || "";
+
+    if (type.includes("allDevices")) {
+      included.push("All Devices");
+    } else if (type.includes("allLicensedUsers")) {
+      included.push("All Licensed Users");
+    } else if (type.includes("exclusion")) {
+      const name = target._resolvedGroupName || target.groupId || "Unknown group";
+      const count = target._resolvedMemberCount;
+      excluded.push(count ? `${name} (${count} members)` : name);
+    } else if (target.groupId) {
+      const name = target._resolvedGroupName || target.groupId || "Unknown group";
+      const count = target._resolvedMemberCount;
+      included.push(count ? `${name} (${count} members)` : name);
+    }
+
+    if (target.deviceAndAppManagementAssignmentFilterId && target._resolvedFilterName) {
+      const mode = target.deviceAndAppManagementAssignmentFilterType === "include" ? "Include" : "Exclude";
+      const rule = target._resolvedFilterRule ? ` — rule: ${target._resolvedFilterRule}` : "";
+      filters.push(`${target._resolvedFilterName} (mode: ${mode}${rule})`);
+    }
+  }
+
+  if (included.length === 0) {
+    return "This policy is not currently assigned to any users or devices, so it provides no active security protection.";
+  }
+
+  let scope = `This policy is assigned to: ${included.join(", ")}.`;
+  if (excluded.length > 0) {
+    scope += ` The following are excluded: ${excluded.join(", ")}.`;
+  }
+  if (filters.length > 0) {
+    scope += ` Assignment filters applied: ${filters.join("; ")}.`;
+  }
+  return scope;
+}
+
+// ── 2. Policy-level rating rollup from per-setting ratings ───────────────────
+// No more AI guessing — if any setting is Critical, policy is Critical, etc.
+export function calculatePolicyRating(
+  settings: any[],
+  ratingField: "securityRating" | "impactLevel"
+): string {
+  if (!settings || settings.length === 0) return "Low";
+  const ORDER = ["Critical", "High", "Medium", "Low", "Minimal"];
+  let highest = ORDER.length - 1;
+  for (const s of settings) {
+    const r = s[ratingField] || "Low";
+    const idx = ORDER.indexOf(r);
+    if (idx !== -1 && idx < highest) highest = idx;
+  }
+  return ORDER[highest];
+}
+
+// ── 3. Compliance frameworks — aggregated from compliance-lookup, not AI ─────
+import { lookupComplianceForSetting } from "./compliance-lookup.js";
+
+export function aggregateComplianceFrameworks(
+  settings: Array<{ settingName: string }>,
+  platform: string
+): string[] {
+  const frameworks = new Set<string>();
+  // Always include the three core frameworks if we have any settings
+  if (settings.length > 0) {
+    frameworks.add("NIST SP 800-53 Rev. 5");
+    frameworks.add("CIS Critical Security Controls v8");
+    frameworks.add("ISO/IEC 27001");
+  }
+  // Add specific ones from compliance-lookup matches
+  for (const s of settings.slice(0, 30)) { // cap at 30 to avoid perf hit
+    try {
+      const result = lookupComplianceForSetting(s.settingName, platform);
+      for (const match of result.matches) {
+        if (match.level === "L1" || match.level === "L2") {
+          frameworks.add("CIS Critical Security Controls v8");
+        }
+        for (const iso of match.isoMappings) {
+          if (iso.isoControl) frameworks.add("ISO/IEC 27001");
+        }
+        for (const cis of match.cisControls) {
+          if (cis.version === "v8") frameworks.add("CIS Critical Security Controls v8");
+        }
+      }
+    } catch { /* non-fatal */ }
+  }
+  return [...frameworks].sort();
+}
+
+// ── 4. Known-setting security risk registry ──────────────────────────────────
+// Maps exact settingDefinitionId substrings → deterministic security rating.
+// Covers the most common CSP paths across Windows, iOS, Android, macOS.
+// AI rating is overridden with this value when a match is found.
+// Sources: Windows Security Baseline, CIS Benchmarks L1/L2, NIST guidance.
+
+type RiskLevel = "Critical" | "High" | "Medium" | "Low";
+
+interface KnownRisk {
+  rating: RiskLevel;
+  // Optionally override the plain-language detail/userExperience when blank
+  hint?: string;
+}
+
+const KNOWN_RISK_REGISTRY: Array<{ pattern: string; risk: KnownRisk }> = [
+  // ── Defender / Antivirus ──────────────────────────────────────────────────
+  { pattern: "defender_allowrealtimemonitoring",          risk: { rating: "Critical", hint: "Real-time malware protection" } },
+  { pattern: "defender_allowbehaviormonitoring",          risk: { rating: "Critical", hint: "Behavioral threat detection" } },
+  { pattern: "defender_allowcloudprotection",             risk: { rating: "Critical", hint: "Cloud-delivered threat intelligence" } },
+  { pattern: "defender_allowioavprotection",              risk: { rating: "Critical", hint: "On-access file scanning" } },
+  { pattern: "defender_enablenetworkprotection",          risk: { rating: "Critical", hint: "Network-based exploit protection" } },
+  { pattern: "defender_disablecatchupfullscan",           risk: { rating: "High"     } },
+  { pattern: "defender_disablecatchupquickscan",          risk: { rating: "High"     } },
+  { pattern: "defender_allowscanningnetworkfiles",        risk: { rating: "High"     } },
+  { pattern: "defender_allowscriptscanning",              risk: { rating: "High"     } },
+  { pattern: "defender_allowscanarchivefiles",            risk: { rating: "Medium"   } },
+  { pattern: "defender_allowremovablevolumefilesinspect", risk: { rating: "High"     } },
+  { pattern: "defender_puaprotection",                    risk: { rating: "Medium"   } },
+  { pattern: "defender_submitsamplesconsent",             risk: { rating: "Medium"   } },
+  { pattern: "defender_signatureupdatefallbackorder",     risk: { rating: "Medium"   } },
+  { pattern: "defender_schedulequickscantime",            risk: { rating: "Low"      } },
+  { pattern: "defender_schedulescanday",                  risk: { rating: "Low"      } },
+
+  // ── BitLocker / Encryption ────────────────────────────────────────────────
+  { pattern: "bitlocker_requiredeviceencryption",         risk: { rating: "Critical", hint: "Full-disk encryption enforcement" } },
+  { pattern: "bitlocker_encryptionmethod",                risk: { rating: "High"     } },
+  { pattern: "bitlocker_enableprebootinputprotectors",    risk: { rating: "High"     } },
+  { pattern: "bitlocker_allowstandarduserencryption",     risk: { rating: "Medium"   } },
+  { pattern: "bitlocker_recoveryoptions",                 risk: { rating: "Medium"   } },
+  { pattern: "devicepasswordenabled",                     risk: { rating: "Critical", hint: "Device PIN/password enforcement" } },
+  { pattern: "requiredeviceencryption",                   risk: { rating: "Critical", hint: "Storage encryption" } },
+  { pattern: "storagecardencrypt",                        risk: { rating: "High"     } },
+
+  // ── Authentication / Password ─────────────────────────────────────────────
+  { pattern: "devicelock_devicepasswordenabled",          risk: { rating: "Critical" } },
+  { pattern: "devicelock_mindevicepasswordlength",        risk: { rating: "High"     } },
+  { pattern: "devicelock_devicepasswordexpiration",       risk: { rating: "Medium"   } },
+  { pattern: "devicelock_maxinactivitytimedevicelock",    risk: { rating: "High"     } },
+  { pattern: "devicelock_maxdevicepasswordfailedattempts",risk: { rating: "High"     } },
+  { pattern: "devicelock_allowsimpledevicepassword",      risk: { rating: "High"     } },
+  { pattern: "devicelock_alphanumericdevicepasswordreq",  risk: { rating: "High"     } },
+  { pattern: "devicelock_minpasswordcomplexcharacters",   risk: { rating: "High"     } },
+  { pattern: "accountsettings_allowmicrosoftaccountconn", risk: { rating: "Medium"   } },
+  { pattern: "accounts_allowaddingnonmicrosoftaccount",   risk: { rating: "Medium"   } },
+  { pattern: "localpoliciessecurityoptions_accounts",     risk: { rating: "High"     } },
+  { pattern: "localpoliciessecurityoptions_interactivelog",risk: { rating: "High"    } },
+  { pattern: "authentication_allowfastreconnect",         risk: { rating: "Medium"   } },
+  { pattern: "passcodelock",                              risk: { rating: "Critical" } },
+  { pattern: "minimumpasscodelength",                     risk: { rating: "High"     } },
+  { pattern: "maxinactivitytimedevicelock",               risk: { rating: "High"     } },
+
+  // ── Windows Firewall ──────────────────────────────────────────────────────
+  { pattern: "firewall_enablefirewall",                   risk: { rating: "Critical", hint: "Host-based firewall protection" } },
+  { pattern: "firewall_defaultinboundaction",             risk: { rating: "High"     } },
+  { pattern: "firewall_defaultoutboundaction",            risk: { rating: "Medium"   } },
+  { pattern: "firewall_disablestealthmode",               risk: { rating: "High"     } },
+  { pattern: "firewall_disableunirecast",                 risk: { rating: "Medium"   } },
+  { pattern: "firewall_allowlocalfirewallrules",          risk: { rating: "Medium"   } },
+
+  // ── SmartScreen / Browser ─────────────────────────────────────────────────
+  { pattern: "smartscreen_enablesmartscreeninshell",      risk: { rating: "High",    hint: "Windows SmartScreen protection" } },
+  { pattern: "smartscreen_enableappsinstallcontrol",      risk: { rating: "High"     } },
+  { pattern: "browser_allowsmartscreen",                  risk: { rating: "High"     } },
+  { pattern: "browser_preventsmartscreenpromptoverride",  risk: { rating: "High"     } },
+  { pattern: "browser_preventsmartscreenpromptoverrideforfiles", risk: { rating: "High" } },
+  { pattern: "browser_blockmixedcontent",                 risk: { rating: "High"     } },
+  { pattern: "browser_allowpasswordmanager",              risk: { rating: "Medium"   } },
+  { pattern: "browser_allowinprivate",                    risk: { rating: "Low"      } },
+  { pattern: "browser_allowdevelopertools",               risk: { rating: "Low"      } },
+  { pattern: "browserblock",                              risk: { rating: "Medium"   } },
+  { pattern: "safariallowpopups",                         risk: { rating: "Low"      } },
+  { pattern: "safaricookieacceptpolicy",                  risk: { rating: "Medium"   } },
+
+  // ── Windows Update / Patching ─────────────────────────────────────────────
+  { pattern: "update_requireupdateapproval",              risk: { rating: "High"     } },
+  { pattern: "update_allowautoupdate",                    risk: { rating: "High",    hint: "Automatic security patch delivery" } },
+  { pattern: "update_deferqualityupdatesperioddays",      risk: { rating: "High",    hint: "Delay before security patches install" } },
+  { pattern: "update_deferfeatureupdatesperioddays",      risk: { rating: "Medium"   } },
+  { pattern: "update_scheduledinstallday",                risk: { rating: "Low"      } },
+  { pattern: "update_pausequalityupdates",                risk: { rating: "High"     } },
+  { pattern: "update_managepreviewbuilds",                risk: { rating: "Medium"   } },
+  { pattern: "softwareupdates_enforcedos",                risk: { rating: "High"     } },
+
+  // ── App Installation / Store ──────────────────────────────────────────────
+  { pattern: "applicationmanagement_allowappstoreautoupdate", risk: { rating: "High" } },
+  { pattern: "applicationmanagement_allowgaminginisolateduserenv", risk: { rating: "Medium" } },
+  { pattern: "applicationmanagement_allowstore",          risk: { rating: "Medium"   } },
+  { pattern: "applicationmanagement_allowalltrustedapps", risk: { rating: "High",    hint: "Sideloading unsigned applications" } },
+  { pattern: "applicationmanagement_requireprivatestoreonly", risk: { rating: "High" } },
+  { pattern: "appinstallcontrol",                         risk: { rating: "High"     } },
+  { pattern: "enterpriseallowedapps",                     risk: { rating: "Medium"   } },
+
+  // ── USB / Removable Storage ───────────────────────────────────────────────
+  { pattern: "storage_allowremovablestorage",             risk: { rating: "High",    hint: "USB and removable media data exfiltration" } },
+  { pattern: "connectivity_allowusbconnection",           risk: { rating: "High"     } },
+  { pattern: "devicelock_allowidlereturnwithoutpassword", risk: { rating: "High"     } },
+  { pattern: "removabledrivespolicy",                     risk: { rating: "High"     } },
+
+  // ── Bluetooth ─────────────────────────────────────────────────────────────
+  { pattern: "bluetooth_allowadvertising",                risk: { rating: "Medium"   } },
+  { pattern: "bluetooth_allowdiscoverablemode",           risk: { rating: "Medium"   } },
+  { pattern: "bluetooth_allowprepairing",                 risk: { rating: "Medium"   } },
+  { pattern: "bluetooth_allowpromotedconnection",         risk: { rating: "Low"      } },
+  { pattern: "bluetooth_localdevicename",                 risk: { rating: "Low"      } },
+
+  // ── VPN / Network ─────────────────────────────────────────────────────────
+  { pattern: "vpn_allowvpn",                              risk: { rating: "Medium"   } },
+  { pattern: "wifi_allowwifi",                            risk: { rating: "Medium"   } },
+  { pattern: "wifi_allowautomaticconnectinghotspot",      risk: { rating: "High",    hint: "Automatic connection to unknown networks" } },
+  { pattern: "wifi_allowmanualwificonfiguration",         risk: { rating: "Medium"   } },
+  { pattern: "connectivity_allowcellulardata",            risk: { rating: "Low"      } },
+
+  // ── Windows Hello / Biometrics ────────────────────────────────────────────
+  { pattern: "passportforwork",                           risk: { rating: "Medium"   } },
+  { pattern: "biometrics_allowbiometrics",                risk: { rating: "Medium"   } },
+  { pattern: "biometrics_facialfeaturesuseenhancedantisp",risk: { rating: "High"     } },
+  { pattern: "windowshello",                              risk: { rating: "Medium"   } },
+
+  // ── Telemetry / Privacy ───────────────────────────────────────────────────
+  { pattern: "system_allowtelemetry",                     risk: { rating: "Low"      } },
+  { pattern: "privacy_letappsaccesscalendar",             risk: { rating: "Medium"   } },
+  { pattern: "privacy_letappsaccesscamera",               risk: { rating: "Medium"   } },
+  { pattern: "privacy_letappsaccesscontacts",             risk: { rating: "Medium"   } },
+  { pattern: "privacy_letappsaccesslocation",             risk: { rating: "Medium"   } },
+  { pattern: "privacy_letappsaccessmicrophone",           risk: { rating: "Medium"   } },
+  { pattern: "experience_allowwindowsspotlight",          risk: { rating: "Low"      } },
+  { pattern: "experience_allowtailoredexperienceswithdiagnosticdata", risk: { rating: "Low" } },
+  { pattern: "experience_allowcortana",                   risk: { rating: "Medium"   } },
+
+  // ── Credential Guard / Virtualization ────────────────────────────────────
+  { pattern: "virtualizationbasedtechnology",             risk: { rating: "High"     } },
+  { pattern: "credentialguard",                           risk: { rating: "High",    hint: "Credential theft protection" } },
+  { pattern: "hypervisorprotectedcodeintegrity",          risk: { rating: "High"     } },
+  { pattern: "lsaprotection",                             risk: { rating: "Critical", hint: "Protects Windows credential store from LSASS attacks" } },
+
+  // ── Audit / Logging ───────────────────────────────────────────────────────
+  { pattern: "auditpolicy",                               risk: { rating: "High"     } },
+  { pattern: "eventlog",                                  risk: { rating: "Medium"   } },
+
+  // ── Email / Exchange ──────────────────────────────────────────────────────
+  { pattern: "email_allowidlereturnwithoutpassword",      risk: { rating: "High"     } },
+  { pattern: "exchange_requiressl",                       risk: { rating: "High",    hint: "Encrypted email transmission" } },
+
+  // ── iOS / macOS specific ──────────────────────────────────────────────────
+  { pattern: "allowscreenshot",                           risk: { rating: "Medium"   } },
+  { pattern: "allowfingerprintunlock",                    risk: { rating: "Medium"   } },
+  { pattern: "allowfaceid",                               risk: { rating: "Medium"   } },
+  { pattern: "forcedencryptedbackup",                     risk: { rating: "High"     } },
+  { pattern: "allowcloudbackup",                          risk: { rating: "Medium"   } },
+  { pattern: "allowcloudkeychainsyncing",                 risk: { rating: "Medium"   } },
+  { pattern: "allowmanagedappscloudiorcloud",             risk: { rating: "Medium"   } },
+  { pattern: "allowcopypastetoenterprisecontexts",        risk: { rating: "High",    hint: "Data exfiltration via clipboard" } },
+  { pattern: "requiremanageddomainsforpasswords",         risk: { rating: "Medium"   } },
+  { pattern: "safeguard",                                 risk: { rating: "Medium"   } },
+  { pattern: "gatekeeper",                                risk: { rating: "High",    hint: "macOS application trust enforcement" } },
+  { pattern: "systeminboundconnections",                  risk: { rating: "High"     } },
+  { pattern: "automaticupdates",                          risk: { rating: "High"     } },
+];
+
+// Lookup a setting's risk from the registry by matching its settingDefinitionId
+export function lookupKnownRisk(settingKey: string): KnownRisk | null {
+  const key = settingKey.toLowerCase();
+  for (const entry of KNOWN_RISK_REGISTRY) {
+    if (key.includes(entry.pattern.toLowerCase())) {
+      return entry.risk;
+    }
+  }
+  return null;
+}
+
+// Apply known-risk registry to a ground truth list, returning enriched objects
+// with pre-filled securityRating. AI will then only fill gaps (unknown settings).
+export function applyKnownRisks(groundTruth: GroundTruthSetting[]): Array<GroundTruthSetting & { knownRating?: RiskLevel; knownHint?: string }> {
+  return groundTruth.map(s => {
+    const known = lookupKnownRisk(s.settingKey);
+    if (known) {
+      return { ...s, knownRating: known.rating, knownHint: known.hint };
+    }
+    return s;
+  });
+}
+
 function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string {
   return policies.map((p, i) => {
     const detail = details[i];
@@ -300,7 +599,11 @@ function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string
       const totalSettings = gt.length;
       const maxDisplay = 100;
       const displayed = gt.slice(0, maxDisplay);
-      const rows = displayed.map((s, idx) => `  [${idx}] ${s.settingName}: ${s.settingValue}`).join("\n");
+      const enriched = applyKnownRisks(displayed);
+      const rows = enriched.map((s, idx) => {
+        const ratingHint = s.knownRating ? ` [KNOWN-RISK:${s.knownRating}]` : "";
+        return `  [${idx}] ${s.settingName}: ${s.settingValue}${ratingHint}`;
+      }).join("\n");
       settingsInfo = `\nConfigured Settings (${totalSettings} total${totalSettings > maxDisplay ? `, showing first ${maxDisplay}` : ""}):\n${rows}`;
       settingsInfo += `\n\nIMPORTANT: The [index], settingName, and settingValue above are authoritative API values. ` +
         `Copy them EXACTLY into your settings array. Do NOT change, rephrase, or infer any name or value. ` +
@@ -405,13 +708,20 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
       throw new Error("AI returned non-object response for summary");
     }
     if (parsed.headline || parsed.introParagraph || parsed.overallSummary) {
-      // backfill overview for any code that still reads it
       if (!parsed.overview) parsed.overview = parsed.overallSummary || "";
+      // Always inject from API — never trust AI for these
+      parsed.keySettings = detail?.settingsCount ?? policy.settingsCount;
+      parsed.lastModified = policy.lastModified;
+      // Assignment scope from API
+      parsed.assignmentScope = buildAssignmentScope(detail);
       return { id: policy.id, data: parsed };
     }
     const firstValue = Object.values(parsed)[0] as any;
     if (firstValue?.headline || firstValue?.introParagraph) {
       if (!firstValue.overview) firstValue.overview = firstValue.overallSummary || "";
+      firstValue.keySettings = detail?.settingsCount ?? policy.settingsCount;
+      firstValue.lastModified = policy.lastModified;
+      firstValue.assignmentScope = buildAssignmentScope(detail);
       return { id: policy.id, data: firstValue };
     }
     throw new Error("Unexpected response structure");
@@ -503,10 +813,25 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     let data = parsed.severity ? parsed : (Object.values(parsed)[0] as any);
     if (!data?.severity) throw new Error("Unexpected response structure");
 
-    // Overwrite AI-produced settingName/settingValue with authoritative API values
+    // 1. Overwrite settingName/settingValue with authoritative API values
     if (gt.length > 0 && Array.isArray(data.settings)) {
       data.settings = mergeGroundTruth(data.settings, gt, "settingName", "settingValue");
     }
+
+    // 2. Override AI impactLevel with known-risk registry where available
+    const enrichedGtEu = applyKnownRisks(gt);
+    if (Array.isArray(data.settings)) {
+      data.settings = data.settings.map((s: any, idx: number) => {
+        const known = enrichedGtEu[idx]?.knownRating;
+        return known ? { ...s, impactLevel: known } : s;
+      });
+    }
+
+    // 3. Policy severity: rolled up from per-setting impactLevel, not AI guess
+    data.severity = calculatePolicyRating(data.settings || [], "impactLevel");
+
+    // 4. Assignment scope: built from resolved API data, not AI
+    data.assignmentScope = buildAssignmentScope(detail);
 
     return { id: policy.id, data };
   } catch (e) {
@@ -520,7 +845,7 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
         keyImpactGroups: [],
         footerNote: "",
         riskAnalysis: { productivity: [], security: [], configuration: [] },
-        assignmentScope: "Assignment information not available.",
+        assignmentScope: buildAssignmentScope(detail),
         overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings.`,
       },
     };
@@ -599,10 +924,31 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     let data = parsed.rating ? parsed : (Object.values(parsed)[0] as any);
     if (!data?.rating) throw new Error("Unexpected response structure");
 
-    // Overwrite AI-produced settingName/settingValue with authoritative API values
+    // 1. Overwrite settingName/settingValue with authoritative API values
     if (gt.length > 0 && Array.isArray(data.settings)) {
       data.settings = mergeGroundTruth(data.settings, gt, "settingName", "settingValue");
     }
+
+    // 2. Override AI securityRating with known-risk registry where available
+    const enrichedGt = applyKnownRisks(gt);
+    if (Array.isArray(data.settings)) {
+      data.settings = data.settings.map((s: any, idx: number) => {
+        const known = enrichedGt[idx]?.knownRating;
+        return known ? { ...s, securityRating: known } : s;
+      });
+    }
+
+    // 3. Policy-level rating: calculated from per-setting ratings, not AI guess
+    data.rating = calculatePolicyRating(data.settings || [], "securityRating");
+
+    // 4. Assignment scope: built from resolved API data, not AI
+    data.assignmentScope = buildAssignmentScope(detail);
+
+    // 5. Compliance frameworks: aggregated from compliance-lookup, not AI
+    data.complianceFrameworks = aggregateComplianceFrameworks(
+      (data.settings || []).map((s: any) => ({ settingName: s.settingName })),
+      policy.platform
+    );
 
     return { id: policy.id, data };
   } catch (e) {
@@ -617,7 +963,7 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
         securityImpactGroups: [],
         footerNote: "",
         riskItems: [],
-        assignmentScope: "Assignment information not available.",
+        assignmentScope: buildAssignmentScope(detail),
         overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings that contributes to organisational security.`,
       },
     };
