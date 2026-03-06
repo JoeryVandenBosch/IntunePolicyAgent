@@ -216,18 +216,33 @@ function buildIsoRollup(settings: EnrichedSetting[]): IsoRollupRow[] {
   const map = new Map<string, { title: string; compliant: number; total: number; policies: Set<string>; settings: Array<{ name: string; value: string; compliant: boolean | null; policyName: string; policyId: string; recommended: string; cisId: string }> }>();
   for (const s of settings) {
     if (!s.hasMatch) continue;
-    for (const iso of s.topMatch?.isoMappings ?? []) {
-      const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0, policies: new Set<string>(), settings: [] };
+    const isoMappings = s.topMatch?.isoMappings ?? [];
+    if (isoMappings.length > 0) {
+      for (const iso of isoMappings) {
+        const e = map.get(iso.isoControl) ?? { title: iso.isoTitle ?? iso.isoControl, compliant: 0, total: 0, policies: new Set<string>(), settings: [] };
+        e.total++;
+        if (s.compliant !== false) e.compliant++;
+        e.policies.add(s.policyName);
+        e.settings.push({ name: s.settingName, value: s.displayValue, compliant: s.compliant, policyName: s.policyName, policyId: s.policyId, recommended: s.recommended, cisId: s.cisId });
+        map.set(iso.isoControl, e);
+      }
+    } else {
+      const noIsoKey = "_NO_ISO_MAPPING";
+      const e = map.get(noIsoKey) ?? { title: "CIS Matched — No ISO Annex A Mapping", compliant: 0, total: 0, policies: new Set<string>(), settings: [] };
       e.total++;
       if (s.compliant !== false) e.compliant++;
       e.policies.add(s.policyName);
       e.settings.push({ name: s.settingName, value: s.displayValue, compliant: s.compliant, policyName: s.policyName, policyId: s.policyId, recommended: s.recommended, cisId: s.cisId });
-      map.set(iso.isoControl, e);
+      map.set(noIsoKey, e);
     }
   }
   return Array.from(map.entries())
     .map(([ctrl, v]) => ({ control: ctrl, title: v.title, compliantSettings: v.compliant, totalSettings: v.total, policies: Array.from(v.policies), settings: v.settings }))
-    .sort((a, b) => a.control.localeCompare(b.control));
+    .sort((a, b) => {
+      if (a.control === "_NO_ISO_MAPPING") return 1;
+      if (b.control === "_NO_ISO_MAPPING") return -1;
+      return a.control.localeCompare(b.control);
+    });
 }
 
 // ── ValueComparison bar ───────────────────────────────────────────────────────
@@ -430,10 +445,11 @@ function SettingCard({ s, open, onToggle }: { s: EnrichedSetting; open: boolean;
 
 /** Amber pill matching the CIS tab style — e.g. "A5.14  Information transfer" */
 function IsoControlPill({ control, title }: { control: string; title?: string }) {
+  const isNoIso = control === "_NO_ISO_MAPPING";
   return (
     <span className="inline-flex items-center gap-1.5 rounded border px-2.5 py-1 shrink-0"
-      style={{ background: "rgba(245,158,11,0.08)", borderColor: "rgba(245,158,11,0.25)" }}>
-      <span className="font-mono font-bold text-amber-400" style={{ fontSize: 12 }}>A{control}</span>
+      style={{ background: isNoIso ? "rgba(100,116,139,0.08)" : "rgba(245,158,11,0.08)", borderColor: isNoIso ? "rgba(100,116,139,0.25)" : "rgba(245,158,11,0.25)" }}>
+      <span className={`font-mono font-bold ${isNoIso ? "text-slate-400" : "text-amber-400"}`} style={{ fontSize: 12 }}>{isNoIso ? "CIS" : `A${control}`}</span>
       {title && <span className="text-muted-foreground" style={{ fontSize: 11 }}>{title}</span>}
     </span>
   );
@@ -485,11 +501,12 @@ function IsoRemediationHint({ s }: { s: { name: string; recommended: string; cis
 
 /** Global ISO overview card — mirrors the CIS platform card */
 function IsoOverviewCard({ rows }: { rows: IsoRollupRow[] }) {
+  const isoRows             = rows.filter(r => r.control !== "_NO_ISO_MAPPING");
   const totalSettings       = rows.reduce((n, r) => n + r.totalSettings, 0);
   const compliantTotal      = rows.reduce((n, r) => n + r.compliantSettings, 0);
   const nonCompliant        = totalSettings - compliantTotal;
-  const controlsCovered     = rows.length;
-  const fullyCompliant      = rows.filter(r => r.compliantSettings === r.totalSettings).length;
+  const controlsCovered     = isoRows.length;
+  const fullyCompliant      = isoRows.filter(r => r.compliantSettings === r.totalSettings).length;
   const pct = totalSettings > 0 ? Math.round((compliantTotal / totalSettings) * 100) : 0;
   const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
   return (
@@ -531,14 +548,19 @@ function IsoOverviewCard({ rows }: { rows: IsoRollupRow[] }) {
   );
 }
 
-function IsoRollupRowItem({ row, isLast }: { row: IsoRollupRow; isLast: boolean }) {
+function IsoRollupRowItem({ row, isLast, forceOpen }: { row: IsoRollupRow; isLast: boolean; forceOpen?: boolean }) {
   const [open, setOpen] = useState(false);
+  const prevForceOpen = useRef(forceOpen);
+  if (prevForceOpen.current !== forceOpen) {
+    prevForceOpen.current = forceOpen;
+    if (forceOpen !== undefined) setOpen(forceOpen);
+  }
   const pct = row.totalSettings > 0 ? Math.round((row.compliantSettings / row.totalSettings) * 100) : 0;
   const barColor = pct >= 80 ? "#22c55e" : pct >= 50 ? "#eab308" : "#ef4444";
   const nonCompliantCount = row.settings.filter(s => s.compliant === false).length;
   return (
     <div className={isLast ? "" : "border-b border-border/20"}>
-      <div onClick={() => setOpen(o => !o)} className={`flex items-center gap-3 px-5 py-3.5 cursor-pointer transition-colors flex-wrap ${open ? "bg-muted/10" : "hover:bg-muted/5"}`}>
+      <div onClick={() => setOpen(o => !o)} className={`flex items-center gap-3 px-5 py-3.5 cursor-pointer transition-colors flex-wrap ${open ? "bg-muted/15 border-l-2 border-l-primary/50" : "hover:bg-muted/10 border-l-2 border-l-transparent"}`} data-testid={`iso-row-${row.control}`}>
         {/* ✨ amber ISO control pill */}
         <IsoControlPill control={row.control} title={row.title} />
 
@@ -573,7 +595,7 @@ function IsoRollupRowItem({ row, isLast }: { row: IsoRollupRow; isLast: boolean 
       {open && (
         <div className="border-t border-border/20 bg-background/50 pb-2 pt-1">
           <div className="text-[10px] font-bold text-muted-foreground/40 tracking-wider px-5 py-2">
-            SETTINGS MAPPED TO A{row.control}
+            {row.control === "_NO_ISO_MAPPING" ? "CIS MATCHED SETTINGS WITHOUT ISO MAPPING" : `SETTINGS MAPPED TO A${row.control}`}
           </div>
           {row.settings.map((s, i) => (
             <div key={i} className={`px-5 py-2 ${i % 2 === 0 ? "bg-muted/5" : ""}`}>
@@ -610,24 +632,88 @@ function IsoRollupRowItem({ row, isLast }: { row: IsoRollupRow; isLast: boolean 
   );
 }
 
-function IsoRollupSection({ rows }: { rows: IsoRollupRow[] }) {
-  if (!rows.length) return null;
+function UnmappedSettingsSection({ unmappedSettings }: { unmappedSettings?: Array<{ name: string; value: string; policyName: string; policyId: string }> }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!unmappedSettings || unmappedSettings.length === 0) {
+    return (
+      <div className="rounded-lg border border-border/20 bg-emerald-500/5 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="text-xs font-medium text-emerald-400">All configured settings have CIS Benchmark mappings</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-border/30 overflow-hidden">
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full px-5 py-3 bg-muted/10 border-b border-border/20 flex items-center gap-2 cursor-pointer text-left hover:bg-muted/15 transition-colors"
+        data-testid="button-toggle-unmapped"
+      >
+        <ChevronDown className={`w-3.5 h-3.5 text-amber-400 shrink-0 transition-transform ${expanded ? "" : "-rotate-90"}`} />
+        <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+        <span className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Settings Without ISO 27001 Mapping</span>
+        <InfoTooltip text="These configured settings do not currently map to any CIS benchmark recommendation, so no ISO 27001 control mapping is available. They may still be important for your security posture." />
+        <span className="text-[10px] text-muted-foreground ml-auto">{unmappedSettings.length} setting{unmappedSettings.length !== 1 ? "s" : ""}</span>
+      </button>
+      {expanded && unmappedSettings.map((s, i) => (
+        <div key={i} className={`px-5 py-2 ${i % 2 === 0 ? "bg-muted/5" : ""} ${i === unmappedSettings.length - 1 ? "" : "border-b border-border/10"}`}>
+          <div className="flex items-center gap-3 flex-wrap">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-400/60 shrink-0" />
+            <span className="text-xs text-foreground flex-1 min-w-[120px]">{s.name}</span>
+            <span className="text-xs font-semibold text-muted-foreground shrink-0">{s.value || "Not Configured"}</span>
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">No CIS Mapping</span>
+            <a
+              href={`https://intune.microsoft.com/#view/Microsoft_Intune_DeviceSettings/DevicesMenu/~/configurationProfiles/policyId/${s.policyId}`}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 rounded shrink-0 no-underline transition-colors"
+              style={{ background: "rgba(56,139,253,0.1)", border: "1px solid rgba(56,139,253,0.22)", padding: "2px 8px" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(56,139,253,0.2)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "rgba(56,139,253,0.1)")}
+            >
+              {s.policyName}
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function IsoRollupSection({ rows, unmappedSettings }: { rows: IsoRollupRow[]; unmappedSettings?: Array<{ name: string; value: string; policyName: string; policyId: string }> }) {
+  const [allIsoOpen, setAllIsoOpen] = useState(false);
+  if (!rows.length && (!unmappedSettings || !unmappedSettings.length)) return null;
   return (
     <div className="space-y-3">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground inline-flex items-center">
-          ISO 27001:2022 Control Coverage
-          <InfoTooltip text="ISO/IEC 27001:2022 Annex A controls that your policies map to, via the official CIS v8 → ISO mapping." />
-        </h3>
-        <p className="text-xs text-muted-foreground mt-0.5">Rollup of CIS benchmark compliance grouped by ISO Annex A control</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground inline-flex items-center">
+            ISO 27001:2022 Control Coverage
+            <InfoTooltip text="ISO/IEC 27001:2022 Annex A controls that your policies map to, via the official CIS v8 → ISO mapping." />
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Rollup of CIS benchmark compliance grouped by ISO Annex A control</p>
+        </div>
+        {rows.length > 0 && (
+          <button
+            onClick={() => setAllIsoOpen(o => !o)}
+            className="px-3 py-1 rounded text-xs font-medium border border-border/40 bg-muted/20 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="button-iso-expand-all"
+          >
+            {allIsoOpen ? "⊟ Collapse all" : "⊞ Expand all"}
+          </button>
+        )}
       </div>
-      {/* ✨ global overview card */}
       <IsoOverviewCard rows={rows} />
-      <div className="rounded-lg border border-border/30 overflow-hidden">
-        {rows.map((row, i) => (
-          <IsoRollupRowItem key={row.control} row={row} isLast={i === rows.length - 1} />
-        ))}
-      </div>
+      {rows.length > 0 && (
+        <div className="rounded-lg border border-border/30 overflow-hidden">
+          {rows.map((row, i) => (
+            <IsoRollupRowItem key={row.control} row={row} isLast={i === rows.length - 1 && (!unmappedSettings || !unmappedSettings.length)} forceOpen={allIsoOpen} />
+          ))}
+        </div>
+      )}
+      <UnmappedSettingsSection unmappedSettings={unmappedSettings} />
     </div>
   );
 }
@@ -720,12 +806,30 @@ function ComplianceTabInner({ policies, compliance }: ComplianceTabProps) {
 
   const isoRollup = useMemo(() => buildIsoRollup(matched), [matched]);
 
-  if (!matched.length) {
+  const unmappedSettings = useMemo(() => {
+    return allSettings
+      .filter(s => !s.hasMatch)
+      .map(s => ({ name: s.settingName, value: s.displayValue, policyName: s.policyName, policyId: s.policyId }));
+  }, [allSettings]);
+
+  if (!matched.length && !unmappedSettings.length) {
     return (
       <div className="rounded-lg border border-border/30 bg-card p-8 text-center space-y-3">
         <AlertCircle className="w-8 h-8 text-muted-foreground/30 mx-auto" />
         <p className="text-sm text-muted-foreground">No CIS benchmark matches found for the selected policies.</p>
         <p className="text-xs text-muted-foreground/60">CIS / ISO 27001 mapping works with Settings Catalog policies on Windows 11, iOS, or macOS.</p>
+      </div>
+    );
+  }
+
+  if (!matched.length && unmappedSettings.length > 0) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-lg border border-border/30 bg-card p-6 text-center space-y-2">
+          <AlertCircle className="w-6 h-6 text-amber-400/50 mx-auto" />
+          <p className="text-sm text-muted-foreground">No settings matched to CIS benchmarks, but {unmappedSettings.length} configured setting{unmappedSettings.length !== 1 ? "s were" : " was"} found.</p>
+        </div>
+        <IsoRollupSection rows={[]} unmappedSettings={unmappedSettings} />
       </div>
     );
   }
@@ -776,7 +880,7 @@ function ComplianceTabInner({ policies, compliance }: ComplianceTabProps) {
       </div>
 
       {/* ISO rollup */}
-      <IsoRollupSection rows={isoRollup} />
+      <IsoRollupSection rows={isoRollup} unmappedSettings={unmappedSettings} />
     </div>
   );
 }

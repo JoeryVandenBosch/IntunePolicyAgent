@@ -372,6 +372,48 @@ function getPolicyType(policy: any, source: string): string {
   return "Configuration Profile";
 }
 
+function countSettingInstanceChildren(inst: any): number {
+  if (!inst) return 0;
+  let count = 0;
+
+  const countChildArray = (children: any[]) => {
+    if (!Array.isArray(children)) return;
+    for (const child of children) {
+      const childInst = child.settingInstance || child;
+      if (childInst.settingDefinitionId || childInst.choiceSettingValue || childInst.simpleSettingValue || childInst.groupSettingValue || childInst.groupSettingCollectionValue) {
+        count += 1;
+        count += countSettingInstanceChildren(childInst);
+      }
+    }
+  };
+
+  if (inst.choiceSettingValue) {
+    countChildArray(inst.choiceSettingValue.children);
+  } else if (inst.choiceSettingCollectionValue && Array.isArray(inst.choiceSettingCollectionValue)) {
+    for (const cv of inst.choiceSettingCollectionValue) {
+      countChildArray(cv.children);
+    }
+  } else if (inst.groupSettingValue) {
+    countChildArray(inst.groupSettingValue.children);
+  } else if (inst.groupSettingCollectionValue && Array.isArray(inst.groupSettingCollectionValue)) {
+    for (const gv of inst.groupSettingCollectionValue) {
+      countChildArray(gv.children);
+    }
+  }
+  return count;
+}
+
+function countSettingsCatalogSettings(settings: any[]): number {
+  let total = 0;
+  for (const si of settings) {
+    const inst = si.settingInstance;
+    if (!inst) { total += 1; continue; }
+    total += 1;
+    total += countSettingInstanceChildren(inst);
+  }
+  return total;
+}
+
 function countPolicySettings(item: any, source: string): number {
   if (source === "configurationPolicies") {
     return item.settingCount || 0;
@@ -485,8 +527,8 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
     if (source === "configurationPolicies") {
       const settings = await graphGetAll(token, `${baseUrl}/configurationPolicies('${policyId}')/settings`);
       details.settings = settings;
-      details.settingsCount = settings.length;
-      console.log(`  Fetched ${settings.length} settings from Settings Catalog for "${policy.name}"`);
+      details.settingsCount = countSettingsCatalogSettings(settings);
+      console.log(`  Fetched ${details.settingsCount} settings (${settings.length} top-level) from Settings Catalog for "${policy.name}"`);
     } else if (source === "intents") {
       const allIntentSettings: any[] = [];
       try {

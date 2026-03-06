@@ -140,6 +140,17 @@ export async function registerRoutes(
             }
           }
 
+          const processChildren = async (children: any[]) => {
+            if (!Array.isArray(children)) return;
+            for (const child of children) {
+              const inst = child.settingInstance || child;
+              if (inst.settingDefinitionId || inst.choiceSettingValue || inst.simpleSettingValue || inst.groupSettingValue || inst.groupSettingCollectionValue || inst.choiceSettingCollectionValue || inst.simpleSettingCollectionValue) {
+                const childResults = await processSettingInstance(inst);
+                results.push(...childResults);
+              }
+            }
+          };
+
           if (instance.choiceSettingValue) {
             const choiceValue = instance.choiceSettingValue.value || "";
             const optionDisplayName = await fetchChoiceOptionDisplayName(token, defId, choiceValue);
@@ -150,30 +161,45 @@ export async function registerRoutes(
               item._settingFriendlyValue = tail.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
             }
             results.push(item);
+            await processChildren(instance.choiceSettingValue.children);
 
-            if (instance.choiceSettingValue.children && Array.isArray(instance.choiceSettingValue.children)) {
-              for (const child of instance.choiceSettingValue.children) {
-                if (child.settingInstance) {
-                  const childResults = await processSettingInstance(child.settingInstance);
-                  results.push(...childResults);
-                }
+          } else if (instance.choiceSettingCollectionValue && Array.isArray(instance.choiceSettingCollectionValue)) {
+            for (const choiceItem of instance.choiceSettingCollectionValue) {
+              const choiceValue = choiceItem.value || "";
+              const optionDisplayName = await fetchChoiceOptionDisplayName(token, defId, choiceValue);
+              const cloneItem = { ...item };
+              if (optionDisplayName && optionDisplayName !== choiceValue) {
+                cloneItem._settingFriendlyValue = optionDisplayName;
+              } else {
+                const tail = choiceValue.replace(/^.*[~_]([^~_]+)$/, "$1");
+                cloneItem._settingFriendlyValue = tail.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
               }
+              results.push(cloneItem);
+              await processChildren(choiceItem.children);
             }
+            if (instance.choiceSettingCollectionValue.length === 0) {
+              results.push(item);
+            }
+
           } else if (instance.simpleSettingValue) {
             item._settingFriendlyValue = String(instance.simpleSettingValue.value ?? "");
             results.push(item);
+
+          } else if (instance.simpleSettingCollectionValue && Array.isArray(instance.simpleSettingCollectionValue)) {
+            const values = instance.simpleSettingCollectionValue.map((v: any) => String(v.value ?? ""));
+            item._settingFriendlyValue = values.join(", ");
+            results.push(item);
+
+          } else if (instance.groupSettingValue) {
+            results.push(item);
+            await processChildren(instance.groupSettingValue.children);
+
           } else if (instance.groupSettingCollectionValue && Array.isArray(instance.groupSettingCollectionValue)) {
             results.push(item);
             for (const group of instance.groupSettingCollectionValue) {
-              if (group.children && Array.isArray(group.children)) {
-                for (const child of group.children) {
-                  if (child.settingInstance) {
-                    const childResults = await processSettingInstance(child.settingInstance);
-                    results.push(...childResults);
-                  }
-                }
-              }
+              await processChildren(group.children);
             }
+
           } else {
             results.push(item);
           }
@@ -196,6 +222,8 @@ export async function registerRoutes(
           }
           enriched.settings = expandedSettings;
           enriched.settingsCount = expandedSettings.length;
+          const policyName = enriched._policyMeta?.name || "unknown";
+          console.log(`  Expanded ${expandedSettings.length} settings (from ${enriched.settings?.length ?? 0} raw) for "${policyName}"`);
         }
 
         return enriched;
@@ -215,6 +243,12 @@ export async function registerRoutes(
             platforms: platform,
           });
         }
+      }
+
+      const expandedSettingsCounts: Record<string, number> = {};
+      for (let i = 0; i < selectedPolicies.length; i++) {
+        const pId = selectedPolicies[i].id;
+        expandedSettingsCounts[pId] = enrichedDetails[i]?.settingsCount ?? selectedPolicies[i].settingsCount;
       }
 
       const { conflicts: settingConflicts, allSettings } = detectSettingConflicts(selectedPolicies, enrichedDetails);
@@ -305,6 +339,7 @@ export async function registerRoutes(
         recommendations,
         unassignedCount,
         compliance: complianceByPolicy,
+        expandedSettingsCounts,
       });
     } catch (error: any) {
       console.error("Analysis error:", error);

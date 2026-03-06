@@ -162,7 +162,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 const CONFLICT_SEVERITY_COLORS: Record<string, string> = {
-  "Info": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  "Info": "bg-amber-500/20 text-amber-400 border-amber-500/30",
   "Warning": "bg-orange-500/20 text-orange-400 border-orange-500/30",
   "Critical": "bg-red-500/20 text-red-400 border-red-500/30",
 };
@@ -265,7 +265,7 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
-function PolicySection({ policy, children, isUnassigned, forceOpen }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean; forceOpen?: boolean }) {
+function PolicySection({ policy, children, isUnassigned, forceOpen, expandedSettingsCount }: { policy: IntunePolicy; children: React.ReactNode; isUnassigned?: boolean; forceOpen?: boolean; expandedSettingsCount?: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const platformColor = PLATFORM_COLORS[policy.platform] || "bg-muted text-muted-foreground";
 
@@ -274,11 +274,11 @@ function PolicySection({ policy, children, isUnassigned, forceOpen }: { policy: 
   }, [forceOpen]);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border border-border/30 rounded-md">
-      <CollapsibleTrigger className="flex items-center gap-3 w-full p-4 text-left" data-testid={`trigger-policy-${policy.id}`}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className={`border border-border/30 rounded-md ${isOpen ? "border-l-2 border-l-primary/60" : ""}`}>
+      <CollapsibleTrigger className={`flex items-center gap-3 w-full p-4 text-left ${isOpen ? "bg-muted/10 sticky top-0 z-10 backdrop-blur-sm border-b border-border/20" : ""}`} data-testid={`trigger-policy-${policy.id}`}>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`} />
-        <div className="flex flex-col">
-          <span className="font-medium text-foreground text-sm">{policy.name}</span>
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="font-semibold text-foreground truncate text-sm">{policy.name}</span>
           <span className="text-[10px] text-muted-foreground font-mono">{policy.id}</span>
         </div>
         <Badge variant="outline" className={`text-xs border ${platformColor}`}>{policy.platform}</Badge>
@@ -361,7 +361,7 @@ function getSelectedPolicies(queryClientInstance: ReturnType<typeof useQueryClie
 }
 
 // ── Subcomponent: one policy row in the Summary tab ──────────────────────
-function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen }: { policy: any; summary: any; isUnassigned?: boolean; forceOpen?: boolean }) {
+function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen, expandedSettingsCount }: { policy: any; summary: any; isUnassigned?: boolean; forceOpen?: boolean; expandedSettingsCount?: number }) {
   const [showAllGroups, setShowAllGroups] = useState(false);
   const hasStructured = !!(summary?.introParagraph || summary?.settingGroups || summary?.topSettings);
   const visibleGroups = showAllGroups
@@ -376,7 +376,7 @@ function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen }: { policy
           {[
             { label: "Type", value: policy.type },
             { label: "Platform", value: policy.platform },
-            { label: "Settings", value: String(summary?.keySettings ?? policy.settingsCount) },
+            { label: "Settings", value: String(expandedSettingsCount ?? summary?.keySettings ?? policy.settingsCount) },
             { label: "Last modified", value: summary?.lastModified ?? policy.lastModified },
           ].map(({ label, value }) => (
             <div key={label} className="bg-muted/30 border border-border/40 rounded-md px-3 py-2 text-xs">
@@ -428,7 +428,7 @@ function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen }: { policy
                 <div className="border-t border-border/30 pt-3">
                   <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide mb-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                    Top {summary.topSettings.length} Most Important Configured Settings
+                    Configured Settings
                   </h4>
                   <div className="space-y-1">
                     {summary.topSettings.map((s: any, idx: number) => (
@@ -815,7 +815,10 @@ export default function AnalysisPage() {
 
   if (!selectedPolicies || selectedPolicies.length === 0) return null;
 
-  const totalSettings = selectedPolicies.reduce((sum, p) => sum + Math.max(0, p.settingsCount), 0);
+  const totalSettings = selectedPolicies.reduce((sum, p) => {
+    const expanded = analysis?.expandedSettingsCounts?.[p.id];
+    return sum + Math.max(0, expanded ?? p.settingsCount);
+  }, 0);
   const settingConflictCount = analysis?.settingConflicts?.length || 0;
   const aiConflictCount = analysis?.conflicts?.length || 0;
   const conflictCount = settingConflictCount + aiConflictCount;
@@ -942,7 +945,7 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard label="Policies Analyzed" value={selectedPolicies.length} color="text-primary" />
               <StatCard label="Total Settings" value={totalSettings} color="text-primary" />
-              <StatCard label="Conflicting Settings" value={settingConflictCount} color={settingConflictCount > 0 ? "text-orange-400" : "text-emerald-400"} />
+              <StatCard label="Conflicts" value={conflictCount} color={conflictCount > 0 ? "text-orange-400" : "text-emerald-400"} />
               <StatCard label="Recommendations" value={recCount} color="text-chart-4" />
             </div>
 
@@ -962,7 +965,8 @@ export default function AnalysisPage() {
             )}
 
             <Tabs defaultValue="summary" className="space-y-4">
-              <TabsList className="bg-card border border-border/40 p-1 h-auto flex-wrap">
+              <div className="sticky top-14 z-20 bg-background/95 backdrop-blur-md py-1 -mx-1 px-1">
+              <TabsList className="bg-card border border-border/40 p-1 h-auto flex-wrap w-full shadow-sm">
                 <TabsTrigger value="summary" data-testid="tab-summary" className="gap-1.5 text-xs">
                   <FileText className="w-3.5 h-3.5" /> Summary
                 </TabsTrigger>
@@ -985,17 +989,18 @@ export default function AnalysisPage() {
                   <Shield className="w-3.5 h-3.5" /> CIS / ISO 27001
                 </TabsTrigger>
               </TabsList>
+              </div>
 
-              <TabsContent value="summary" className="space-y-3">
+              <TabsContent value="summary" className="space-y-4">
                 <ExpandCollapseBar expanded={summaryExpanded} onToggle={() => { const next = !summaryExpanded; setSummaryExpanded(next); setSummaryForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const summary = analysis.summaries[policy.id];
                   const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
-                  return <SummaryPolicyRow key={policy.id} policy={policy} summary={summary} isUnassigned={isUnassigned} forceOpen={summaryForce} />;
+                  return <SummaryPolicyRow key={policy.id} policy={policy} summary={summary} isUnassigned={isUnassigned} forceOpen={summaryForce} expandedSettingsCount={analysis.expandedSettingsCounts?.[policy.id]} />;
                 })}
               </TabsContent>
 
-              <TabsContent value="enduser" className="space-y-3">
+              <TabsContent value="enduser" className="space-y-4">
                 <ExpandCollapseBar expanded={enduserExpanded} onToggle={() => { const next = !enduserExpanded; setEnduserExpanded(next); setEnduserForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const impact = analysis.endUserImpact[policy.id];
@@ -1005,7 +1010,7 @@ export default function AnalysisPage() {
                 })}
               </TabsContent>
 
-              <TabsContent value="security" className="space-y-3">
+              <TabsContent value="security" className="space-y-4">
                 <ExpandCollapseBar expanded={securityExpanded} onToggle={() => { const next = !securityExpanded; setSecurityExpanded(next); setSecurityForce(next); }} />
                 {selectedPolicies.map(policy => {
                   const impact = analysis.securityImpact[policy.id];
@@ -1178,14 +1183,15 @@ export default function AnalysisPage() {
                     </div>
                     {analysis.conflicts.map((conflict, i) => {
                       const color = CONFLICT_SEVERITY_COLORS[conflict.severity] || CONFLICT_SEVERITY_COLORS["Info"];
-                      const severityBorderColor = conflict.severity === "Critical" ? "border-l-red-500/50" : conflict.severity === "Warning" ? "border-l-orange-500/50" : "border-l-blue-500/50";
+                      const severityBorderColor = conflict.severity === "Critical" ? "border-l-red-500/50" : conflict.severity === "Warning" ? "border-l-orange-500/50" : "border-l-amber-500/50";
                       const hasStructuredData = conflict.conflictingSettings || conflict.assignmentOverlap || conflict.impactAssessment || conflict.resolutionSteps;
+                      const severityTextColor = conflict.severity === "Critical" ? "text-red-400" : conflict.severity === "Warning" ? "text-orange-400" : "text-amber-400";
                       return (
                         <Card key={i} className={`border-border/30 border-l-2 ${severityBorderColor}`} data-testid={`card-conflict-${i}`}>
                           <CardContent className="pt-4 space-y-3">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <AlertTriangle className={`w-4 h-4 ${conflict.severity === "Critical" ? "text-red-400" : conflict.severity === "Warning" ? "text-orange-400" : "text-blue-400"}`} />
-                              <span className={`text-sm font-medium ${conflict.severity === "Critical" ? "text-red-400" : conflict.severity === "Warning" ? "text-orange-400" : "text-blue-400"}`}>{conflict.type}</span>
+                              <AlertTriangle className={`w-4 h-4 ${severityTextColor}`} />
+                              <span className={`text-sm font-medium ${severityTextColor}`}>{conflict.type}</span>
                               <Badge variant="outline" className={`text-xs border ${color}`}>{conflict.severity}</Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">{conflict.detail}</p>
