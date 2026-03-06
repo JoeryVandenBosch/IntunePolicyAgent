@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
 import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, cleanSettingDefinitionId } from "./graph-client";
-import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts } from "./ai-analyzer";
+import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts, extractGroundTruth } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import { lookupComplianceForSetting, enrichSettingsWithCompliance, computePolicyComplianceSummary } from "./compliance-lookup";
 import type { IntunePolicyRaw } from "./graph-client";
@@ -136,17 +136,25 @@ export async function registerRoutes(
                     defInfo = await fetchSettingDefinitionDisplayName(token, defId);
                     settingDefCache.set(defId, defInfo);
                   }
-                  cleaned._settingFriendlyName = defInfo.displayName !== defId ? defInfo.displayName : cleanSettingDefinitionId(defId);
+                  // Only use API display name when it's a real human-readable name
+                  // (when fetch fails, defInfo.displayName === defId — keep original flattenSettings name)
+                  if (defInfo.displayName !== defId) {
+                    cleaned._settingFriendlyName = defInfo.displayName;
+                  }
+                  // else: keep _settingFriendlyName set by flattenSettings (e.g. "DevicePasswordEnabled")
                 }
 
                 if (cleaned.settingInstance.choiceSettingValue) {
                   const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
-                  if (choiceValue.includes("_1")) {
+                  // Use endsWith to avoid false matches on e.g. "_10", "_11"
+                  if (choiceValue.endsWith("_1") || choiceValue.endsWith("~1")) {
                     cleaned._settingFriendlyValue = "Enabled";
-                  } else if (choiceValue.includes("_0")) {
+                  } else if (choiceValue.endsWith("_0") || choiceValue.endsWith("~0")) {
                     cleaned._settingFriendlyValue = "Disabled";
                   } else {
-                    cleaned._settingFriendlyValue = choiceValue.replace(/^.*~/, "").replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+                    // Strip CSP path prefix, humanise the tail value
+                    const tail = choiceValue.replace(/^.*[~_]([^~_]+)$/, "$1");
+                    cleaned._settingFriendlyValue = tail.replace(/_/g, " ").replace(/\w/g, (c: string) => c.toUpperCase());
                   }
                 }
                 if (cleaned.settingInstance.simpleSettingValue) {
@@ -224,19 +232,34 @@ export async function registerRoutes(
       }
 
       // ── Compliance enrichment (CIS Benchmark → ISO 27001) ──────────────────
-      // Enrich each policy's security settings with deterministic CIS/ISO lookups
+      // Build directly from extractGroundTruth (pure Graph API data).
+      // AI is NOT involved in this path — values come directly from the API.
       const complianceByPolicy: Record<string, any> = {};
-      for (const policy of selectedPolicies) {
-        const impact = securityImpact[policy.id];
-        if (impact?.settings && impact.settings.length > 0) {
-          const platform = policy.platform || "";
-          const enriched = enrichSettingsWithCompliance(impact.settings, platform);
-          const summary = computePolicyComplianceSummary(impact.settings, platform);
-          complianceByPolicy[policy.id] = {
-            settings: enriched,
-            summary,
-          };
-        }
+      for (let i = 0; i < selectedPolicies.length; i++) {
+        const policy = selectedPolicies[i];
+        const detail = enrichedDetails[i];
+        const platform = policy.platform || "";
+
+        // Extract setting names + values straight from API data
+        const gt = extractGroundTruth(detail);
+        if (gt.length === 0) continue;
+
+        // Build a settings array compatible with enrichSettingsWithCompliance
+        const apiSettings = gt.map(s => ({
+          settingName: s.settingName,
+          settingValue: s.settingValue,
+          securityRating: "Low" as const,
+          detail: "",
+          frameworks: [] as string[],
+          recommendation: "",
+        }));
+
+        const enriched = enrichSettingsWithCompliance(apiSettings, platform);
+        const summary = computePolicyComplianceSummary(apiSettings, platform);
+        complianceByPolicy[policy.id] = {
+          settings: enriched,
+          summary,
+        };
       }
 
       res.json({

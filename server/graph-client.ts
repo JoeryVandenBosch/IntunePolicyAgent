@@ -40,6 +40,273 @@ async function graphGetAll(token: string, url: string): Promise<any[]> {
   return results;
 }
 
+/**
+ * Authoritative display-name table for flat deviceConfigurations / deviceCompliancePolicies
+ * properties.  These are the exact labels shown in the Intune admin portal and used
+ * in CIS Benchmark titles, so the values MUST match the benchmark wording.
+ *
+ * Source: Microsoft Graph reference + CIS Microsoft Intune Benchmark (Windows/iOS/macOS).
+ */
+const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
+  // ── Windows – Device Lock / Password ──────────────────────────────────────
+  passwordRequired:                                     "Device Password Enabled",
+  devicePasswordEnabled:                                "Device Password Enabled",
+  passwordMaximumAttemptCount:                          "Max Device Password Failed Attempts",
+  passwordMinutesOfInactivityBeforeScreenTimeout:       "Max Inactivity Time Device Lock",
+  passwordMinutesOfInactivityBeforeLock:                "Max Inactivity Time Device Lock",
+  passwordMinimumLength:                                "Min Device Password Length",
+  passwordRequiredType:                                 "Required Password Type",
+  passwordBlockSimple:                                  "Block Simple Password",
+  passwordExpirationDays:                               "Password Expiration Days",
+  passwordPreviousPasswordBlockCount:                   "Previous Passwords to Block",
+  passwordSignInFailureCountBeforeFactoryReset:         "Number of Sign In Failures Before Wiping Device",
+  passwordMinimumCharacterSetCount:                     "Password Complexity Characters Required",
+
+  // ── Windows – Encryption ──────────────────────────────────────────────────
+  bitLockerEncryptDevice:                               "Require BitLocker Encryption",
+  bitLockerRemovableDrivePolicy:                        "BitLocker Removable Drive Policy",
+  defenderRequireRealTimeMonitoring:                    "Real-Time Monitoring",
+  defenderRequireBehaviorMonitoring:                    "Behavior Monitoring",
+  defenderRequireNetworkInspectionSystem:               "Network Inspection System",
+  defenderScanDownloads:                                "Scan Downloads",
+  defenderScanScriptsLoadedInInternetExplorer:          "Scan Scripts Loaded in Internet Explorer",
+  defenderBlockEndUserAccess:                           "Block End User Access to Defender",
+  defenderRequireCloudProtection:                       "Cloud Protection",
+  defenderCloudBlockLevel:                              "Cloud Delivered Protection Level",
+  defenderSubmitSamplesConsentType:                     "Submit Samples Consent",
+  defenderScheduledScanDay:                             "Scheduled Scan Day",
+  defenderScheduledScanTime:                            "Scheduled Scan Time",
+  defenderSignatureUpdateIntervalInHours:               "Signature Update Interval (Hours)",
+  defenderMonitorFileActivity:                          "Monitor File Activity",
+  defenderDetectedMalwareActions:                       "Actions on Detected Malware",
+  defenderScanMaxCpu:                                   "Maximum CPU Usage During Scan (%)",
+  defenderScanArchiveFiles:                             "Scan Archive Files",
+  defenderScanIncomingMail:                             "Scan Incoming Mail",
+  defenderScanRemovableDrivesDuringFullScan:            "Scan Removable Drives During Full Scan",
+  defenderScanMappedNetworkDrivesDuringFullScan:        "Scan Mapped Network Drives",
+  defenderScanNetworkFiles:                             "Scan Network Files",
+  defenderRequireAntispywareProtection:                 "Require Anti-Spyware Protection",
+  defenderPotentiallyUnwantedAppAction:                 "Potentially Unwanted App Action",
+
+  // ── Windows – SmartScreen ─────────────────────────────────────────────────
+  windowsSmartScreen:                                   "Windows SmartScreen",
+  smartScreenBlockOverride:                             "SmartScreen Block Override",
+  smartScreenEnableAppInstallControl:                   "SmartScreen App Install Control",
+
+  // ── Windows – Firewall ────────────────────────────────────────────────────
+  firewallEnabled:                                      "Windows Firewall Enabled",
+  firewallBlockAllIncomingConnections:                  "Block All Incoming Connections",
+  firewallBlockAllNetworkTrafficWhenNotConnected:       "Block Traffic When Not Connected",
+  firewallRules:                                        "Firewall Rules",
+
+  // ── Windows – Updates ─────────────────────────────────────────────────────
+  automaticUpdateMode:                                  "Automatic Update Mode",
+  businessReadyUpdatesOnly:                             "Business Ready Updates Only",
+  microsoftUpdateServiceAllowed:                        "Microsoft Update Service",
+  updatePauseDeadlineInDays:                            "Update Pause Deadline (Days)",
+  qualityUpdatesDeferralPeriodInDays:                   "Quality Updates Deferral (Days)",
+  featureUpdatesDeferralPeriodInDays:                   "Feature Updates Deferral (Days)",
+  scheduleInstallDay:                                   "Schedule Install Day",
+  scheduleInstallTime:                                  "Schedule Install Time",
+
+  // ── Windows – Bluetooth / Connectivity ────────────────────────────────────
+  bluetoothAllowedServices:                             "Bluetooth Allowed Services",
+  bluetoothBlockAdvertising:                            "Block Bluetooth Advertising",
+  bluetoothBlockDiscoverableMode:                       "Block Bluetooth Discoverable Mode",
+  bluetoothBlockPrePairing:                             "Block Bluetooth Pre-Pairing",
+  bluetoothBlockPromptedProximalConnections:            "Block Prompted Bluetooth Connections",
+  wirelessDisplayBlockProjectionToThisDevice:           "Block Wireless Display Projection",
+  usbBlocked:                                           "Block USB Connection",
+  removableStorageBlocked:                              "Block Removable Storage",
+
+  // ── Windows – Browser / Edge ──────────────────────────────────────────────
+  browserBlockPopups:                                   "Block Pop-ups",
+  browserBlockAutofill:                                 "Block Autofill",
+  browserBlockPasswordManager:                          "Block Password Manager",
+  browserSmartScreenEnabled:                            "Browser SmartScreen Enabled",
+  browserPreventSmartScreenPromptOverride:              "Prevent SmartScreen Override",
+  browserPreventSmartScreenPromptOverrideForFiles:      "Prevent SmartScreen Override for Files",
+  browserRequireSmartScreen:                            "Require SmartScreen",
+  browserRequireHighSecurityZoneUrlsOnly:               "Require High Security Zone URLs Only",
+  browserDoNotTrack:                                    "Do Not Track",
+  browserBlockInPrivateBrowsing:                        "Block InPrivate Browsing",
+  browserRequireFirewall:                               "Require Firewall",
+  browserRequireUpdates:                                "Require Browser Updates",
+
+  // ── Windows – Accounts ────────────────────────────────────────────────────
+  accountsBlockAddingNonMicrosoftAccountEmail:          "Block Adding Non-Microsoft Accounts",
+  accountsBlockMicrosoftAccountSignInAssistant:         "Block Microsoft Account Sign-In Assistant",
+  accountsBlockMicrosoftAccountChange:                  "Block Microsoft Account Changes",
+
+  // ── Windows – Application Management ─────────────────────────────────────
+  appsAllowTrustedAppsSideloading:                      "Allow Trusted App Sideloading",
+  appsBlockWindowsStoreOriginatedApps:                  "Block Windows Store Originated Apps",
+  developerUnlockSetting:                               "Developer Unlock Setting",
+  appManagementMsiAllowUserControlOverInstall:          "Allow User Control Over MSI Install",
+  appManagementMsiAlwaysInstallWithElevatedPrivileges:  "Always Install MSI With Elevated Privileges",
+
+  // ── Windows – Credential / Authentication ────────────────────────────────
+  windowsHelloForBusinessBlocked:                       "Block Windows Hello for Business",
+  pinMinimumLength:                                     "Windows Hello PIN Minimum Length",
+  pinMaximumLength:                                     "Windows Hello PIN Maximum Length",
+  pinUppercaseLettersUsage:                             "Windows Hello PIN Uppercase Letters",
+  pinLowercaseLettersUsage:                             "Windows Hello PIN Lowercase Letters",
+  pinSpecialCharactersUsage:                            "Windows Hello PIN Special Characters",
+  pinExpirationInDays:                                  "Windows Hello PIN Expiration (Days)",
+  pinPreviousBlockCount:                                "Windows Hello Previous PINs to Block",
+  biometricsEnabled:                                    "Biometrics Enabled",
+  enhancedAntiSpoofingForFacialFeaturesEnabled:         "Enhanced Anti-Spoofing for Facial Features",
+
+  // ── Windows – Telemetry / Privacy ────────────────────────────────────────
+  diagnosticsDataSubmissionMode:                        "Diagnostics Data Submission Mode",
+  windowsSpotlightEnabled:                              "Windows Spotlight Enabled",
+  windowsSpotlightBlockOnActionCenter:                  "Block Windows Spotlight on Action Center",
+  windowsSpotlightBlockConsumerSpecificFeatures:        "Block Consumer Specific Features",
+  cortanaBlocked:                                       "Block Cortana",
+  webRtcBlockLocalhostIpAddress:                        "Block WebRTC Localhost IP Address",
+
+  // ── Windows – Miscellaneous ───────────────────────────────────────────────
+  screenCaptureBlocked:                                 "Block Screen Capture",
+  voiceRecordingBlocked:                                "Block Voice Recording",
+  locationServicesBlocked:                              "Block Location Services",
+  cameraBlocked:                                        "Block Camera",
+  storageRequireMobileDeviceEncryption:                 "Require Mobile Device Encryption",
+  storageBlockRemovableStorage:                         "Block Removable Storage",
+  storageBlockCloudSync:                                "Block Cloud Sync",
+  storageBlockCloudDocumentSync:                        "Block Cloud Document Sync",
+  antiTheftModeBlocked:                                 "Block Anti-Theft Mode",
+  nfcBlocked:                                           "Block NFC",
+  wiFiBlockAutomaticConnectHotspots:                    "Block Auto-Connect to Wi-Fi Hotspots",
+  wiFiBlocked:                                          "Block Wi-Fi",
+  wiFiBlockManualConfiguration:                         "Block Manual Wi-Fi Configuration",
+  vpnBlocked:                                           "Block VPN",
+  cellularBlockDataWhenRoaming:                         "Block Cellular Data When Roaming",
+  cellularBlockVpnWhenRoaming:                          "Block VPN When Roaming",
+  powerLidCloseActionOnBattery:                         "Lid Close Action (Battery)",
+  powerLidCloseActionPluggedIn:                         "Lid Close Action (Plugged In)",
+  powerButtonActionOnBattery:                           "Power Button Action (Battery)",
+  powerButtonActionPluggedIn:                           "Power Button Action (Plugged In)",
+  powerSleepButtonActionOnBattery:                      "Sleep Button Action (Battery)",
+  powerSleepButtonActionPluggedIn:                      "Sleep Button Action (Plugged In)",
+
+  // ── iOS / iPadOS – Passcode ────────────────────────────────────────────────
+  passcodeRequired:                                     "Require Passcode",
+  passcodeRequiredType:                                 "Required Passcode Type",
+  passcodeMinimumLength:                                "Minimum Passcode Length",
+  passcodeMaximumAttemptCount:                          "Maximum Passcode Attempts",
+  passcodeMinutesOfInactivityBeforeScreenTimeout:       "Minutes of Inactivity Before Screen Locks",
+  passcodeMinutesOfInactivityBeforeLock:                "Minutes of Inactivity Before Lock",
+  passcodeExpirationDays:                               "Passcode Expiration Days",
+  passcodePreviousPasscodeBlockCount:                   "Previous Passcodes to Block",
+  passcodeBlockSimple:                                  "Block Simple Passcode",
+  passcodeBlockFingerprintUnlock:                       "Block Fingerprint Unlock",
+  passcodeBlockFingerprintModification:                 "Block Fingerprint Modification",
+
+  // ── iOS / iPadOS – Encryption / Backup ────────────────────────────────────
+  iCloudBackupBlocked:                                  "Block iCloud Backup",
+  iCloudBlockBackup:                                    "Block iCloud Backup",
+  iCloudBlockDocumentSync:                              "Block iCloud Document Sync",
+  iCloudBlockPhotoLibrary:                              "Block iCloud Photo Library",
+  iCloudBlockPhotoStreamSync:                           "Block iCloud Photo Stream Sync",
+  iCloudBlockSharedPhotoStream:                         "Block iCloud Shared Photo Stream",
+  managedAppDataEncryptionType:                         "Managed App Data Encryption Type",
+
+  // ── iOS / iPadOS – App Management ─────────────────────────────────────────
+  appStoreBlocked:                                      "Block App Store",
+  appStoreBlockAutomaticDownloads:                      "Block Automatic App Downloads",
+  appStoreRequirePassword:                              "Require Password for App Store",
+  appleNewsBlocked:                                     "Block Apple News",
+  gameCenterBlocked:                                    "Block Game Center",
+  multiplayerGamingBlocked:                             "Block Multiplayer Gaming",
+  iTunesBlockRadio:                                     "Block iTunes Radio",
+  mediaContentRatingApps:                               "Content Rating Apps",
+
+  // ── iOS / iPadOS – Browser / Safari ──────────────────────────────────────
+  safariBlocked:                                        "Block Safari",
+  safariBlockPopups:                                    "Block Safari Pop-ups",
+  safariRequireFraudWarning:                            "Require Safari Fraud Warning",
+  safariCookieSettings:                                 "Safari Cookie Settings",
+  safariManagedDomains:                                 "Safari Managed Domains",
+
+  // ── iOS / iPadOS – Miscellaneous ──────────────────────────────────────────
+  cameraBlocked:                                        "Block Camera",
+  screenCaptureBlocked:                                 "Block Screen Capture",
+  voiceDialingBlocked:                                  "Block Voice Dialing",
+  facetimeBlocked:                                      "Block FaceTime",
+  siriBlocked:                                          "Block Siri",
+  siriBlockedWhenLocked:                                "Block Siri When Locked",
+  diagnosticDataSubmissionBlocked:                      "Block Diagnostic Data Submission",
+  bluetoothBlockModification:                           "Block Bluetooth Modification",
+  accountBlockModification:                             "Block Account Modification",
+  airdropBlocked:                                       "Block AirDrop",
+  airdropForceUnmanagedDropTarget:                      "Force AirDrop Unmanaged",
+  airPlayForcesPairingPasswordForOutgoingRequests:      "Require AirPlay Pairing Password",
+  appleWatchBlockPairing:                               "Block Apple Watch Pairing",
+  appleWatchForceWristDetection:                        "Force Apple Watch Wrist Detection",
+  lockScreenBlockNotificationView:                      "Block Notifications on Lock Screen",
+  lockScreenBlockControlCenter:                         "Block Control Center on Lock Screen",
+  lockScreenBlockTodayView:                             "Block Today View on Lock Screen",
+  lockScreenBlockPassbook:                              "Block Passbook on Lock Screen",
+  managedDevicePasscodeNotRequired:                     "Passcode Not Required",
+  deviceBlockEnableRestrictions:                        "Block Enable Restrictions",
+  deviceBlockEraseContentAndSettings:                   "Block Erase Content and Settings",
+  deviceBlockChangingDeviceName:                        "Block Changing Device Name",
+  enterpriseAppBlockTrust:                              "Block Enterprise App Trust",
+  enterpriseAppBlockTrustModification:                  "Block Enterprise App Trust Modification",
+  podcastsBlocked:                                      "Block Podcasts",
+  newsstandBlocked:                                     "Block Newsstand",
+  wiFiConnectOnlyToConfiguredNetworks:                  "Require Configured Networks for Wi-Fi",
+  hostPairingBlocked:                                   "Block Host Pairing",
+  classroomForceUnpromptedAppAndDeviceLock:             "Force Classroom App Device Lock",
+  classroomForceRequestPermissionToLeaveClasses:        "Require Permission to Leave Classroom",
+  kioskModeRequireAssistiveTouch:                       "Kiosk Mode Require Assistive Touch",
+
+  // ── macOS – Password ───────────────────────────────────────────────────────
+  passwordRequired:                                     "Require Password",
+  passwordMinimumLength:                                "Minimum Password Length",
+  passwordRequiredType:                                 "Required Password Type",
+  passwordMaximumAttemptCount:                          "Max Password Attempts",
+  passwordMinutesOfInactivityBeforeLock:                "Minutes of Inactivity Before Lock",
+  passwordMinutesUntilFailedLoginReset:                 "Minutes Until Failed Login Reset",
+  passwordExpirationDays:                               "Password Expiration Days",
+  passwordBlockSimple:                                  "Block Simple Password",
+  keychainBlockCloudSync:                               "Block Keychain Cloud Sync",
+
+  // ── Android – Password ────────────────────────────────────────────────────
+  passwordRequired:                                     "Require Password",
+  passwordRequiredType:                                 "Required Password Type",
+  passwordMinimumLength:                                "Minimum Password Length",
+  passwordMinutesOfInactivityBeforeScreenTimeout:       "Screen Timeout (Minutes)",
+  passwordExpirationDays:                               "Password Expiration Days",
+  passwordPreviousPasswordBlockCount:                   "Previous Passwords to Block",
+  passwordSignInFailureCountBeforeFactoryReset:         "Sign-In Failures Before Factory Reset",
+  passwordBlockFingerprintUnlock:                       "Block Fingerprint Unlock",
+  storageRequireDeviceEncryption:                       "Require Device Encryption",
+  storageRequireRemovableStorageEncryption:             "Require Removable Storage Encryption",
+
+  // ── Compliance policy properties ──────────────────────────────────────────
+  requireHealthAttestation:                             "Require Health Attestation",
+  activeFirewallRequired:                               "Require Active Firewall",
+  antiSpywareRequired:                                  "Require Anti-Spyware",
+  antivirusRequired:                                    "Require Antivirus",
+  autoUpdateEnabled:                                    "Require Auto-Update",
+  bitLockerEnabled:                                     "Require BitLocker",
+  codeIntegrityEnabled:                                 "Require Code Integrity",
+  earlyLaunchAntiMalwareDriverEnabled:                  "Require Early Launch Anti-Malware",
+  passwordRequired:                                     "Require Password",
+  passwordMinimumLength:                                "Minimum Password Length",
+  secureBootEnabled:                                    "Require Secure Boot",
+  signatureOutOfDate:                                   "Signature Up to Date",
+  tpmRequired:                                          "Require TPM",
+  osMinimumVersion:                                     "OS Minimum Version",
+  osMaximumVersion:                                     "OS Maximum Version",
+  mobileOsMinimumVersion:                               "Mobile OS Minimum Version",
+  mobileOsMaximumVersion:                               "Mobile OS Maximum Version",
+  storageRequireEncryption:                             "Require Encryption",
+  deviceThreatProtectionRequiredSecurityLevel:          "Device Threat Protection Level",
+  managedEmailProfileRequired:                          "Require Managed Email Profile",
+};
+
 function toPascalCaseSettingName(fullKey: string): string {
   return fullKey.split('.').map(part => {
     const cleaned = part.replace(/\[(\d+)\]/g, '[$1]');
@@ -361,7 +628,9 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
                   }
                 });
               } else {
-                const friendlyName = toPascalCaseSettingName(fullKey);
+                // Use leaf key for display-name lookup; fall back to toPascalCaseSettingName
+              const leafKey = fullKey.split(".").pop()?.replace(/\[\d+\].*$/, "") || fullKey;
+              const friendlyName = DEVICE_CONFIG_DISPLAY_NAMES[leafKey] || toPascalCaseSettingName(fullKey);
                 extractedSettings.push({
                   _settingFriendlyName: friendlyName,
                   _settingFriendlyValue: value.join(", "),
@@ -371,10 +640,15 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
             } else if (typeof value === "object") {
               flattenSettings(value, fullKey, depth + 1);
             } else {
-              const friendlyName = toPascalCaseSettingName(fullKey);
+              const leafKey = fullKey.split(".").pop()?.replace(/\[\d+\].*$/, "") || fullKey;
+              const friendlyName = DEVICE_CONFIG_DISPLAY_NAMES[leafKey] || toPascalCaseSettingName(fullKey);
+              // Normalise booleans to Enabled/Disabled so CIS compliance matching works
+              let friendlyValue = String(value);
+              if (friendlyValue === "true")  friendlyValue = "Enabled";
+              if (friendlyValue === "false") friendlyValue = "Disabled";
               extractedSettings.push({
                 _settingFriendlyName: friendlyName,
-                _settingFriendlyValue: String(value),
+                _settingFriendlyValue: friendlyValue,
                 settingInstance: { settingDefinitionId: `${source}/${fullKey}` },
               });
             }

@@ -169,6 +169,20 @@ export interface GroundTruthSetting {
   settingValue: string; // raw value from API — authoritative, never changes
 }
 
+/** Split camelCase or PascalCase into space-separated words.
+ *  "DevicePasswordEnabled" → "Device Password Enabled"
+ *  Already-spaced names are returned unchanged.
+ */
+function splitCamelCase(s: string): string {
+  if (s.includes(" ")) return s; // already has spaces, leave as-is
+  // Insert space before sequences of uppercase+lowercase (PascalCase/camelCase)
+  return s
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+    .trim();
+}
+
 export function extractGroundTruth(detail: any): GroundTruthSetting[] {
   if (!detail?.settings) return [];
   return detail.settings.map((s: any, idx: number) => {
@@ -179,6 +193,9 @@ export function extractGroundTruth(detail: any): GroundTruthSetting[] {
       settingName = defId ? cleanFriendlyName(formatSettingIdToName(defId)) : `Setting ${idx + 1}`;
     }
     settingName = cleanFriendlyName(settingName);
+    // For flat Configuration Profile properties, name is PascalCase without spaces.
+    // Split into words so CIS benchmark matching works ("DevicePasswordEnabled" → "Device Password Enabled")
+    settingName = splitCamelCase(settingName);
 
     // Value: cascade through all known Graph API value formats
     let settingValue = "";
