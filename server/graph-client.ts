@@ -644,14 +644,6 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
         };
 
         flattenSettings(details, "", 0);
-
-        // DEBUG: trace the exact raw and extracted value for Device Password Enabled
-        const pwdSetting = extractedSettings.find((s: any) => s._settingFriendlyName === "Device Password Enabled");
-        if (pwdSetting) {
-          console.log(`  [DEBUG-PWD] "${policy.name}" → extracted="${pwdSetting._settingFriendlyValue}" | raw details.devicePasswordEnabled=${JSON.stringify(details.devicePasswordEnabled)} | details.passwordRequired=${JSON.stringify(details.passwordRequired)}`);
-        } else {
-          console.log(`  [DEBUG-PWD] "${policy.name}" → NO "Device Password Enabled" setting extracted | raw details.devicePasswordEnabled=${JSON.stringify(details.devicePasswordEnabled)}`);
-        }
       }
       details.settings = extractedSettings;
       details.settingsCount = extractedSettings.length;

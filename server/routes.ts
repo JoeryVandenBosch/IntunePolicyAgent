@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, cleanSettingDefinitionId } from "./graph-client";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, fetchChoiceOptionDisplayName, cleanSettingDefinitionId } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts, extractGroundTruth } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import { lookupComplianceForSetting, enrichSettingsWithCompliance, computePolicyComplianceSummary } from "./compliance-lookup";
@@ -123,47 +123,79 @@ export async function registerRoutes(
         }
 
         const settingDefCache = new Map<string, { displayName: string; description: string }>();
-        if (enriched.settings) {
-          enriched.settings = await Promise.all(
-            enriched.settings.map(async (setting: any) => {
-              const cleaned = { ...setting };
-              if (cleaned.settingInstance) {
-                const defId = cleaned.settingInstance.settingDefinitionId || "";
 
-                if (defId) {
-                  let defInfo = settingDefCache.get(defId);
-                  if (!defInfo) {
-                    defInfo = await fetchSettingDefinitionDisplayName(token, defId);
-                    settingDefCache.set(defId, defInfo);
-                  }
-                  // Only use API display name when it's a real human-readable name
-                  // (when fetch fails, defInfo.displayName === defId — keep original flattenSettings name)
-                  if (defInfo.displayName !== defId) {
-                    cleaned._settingFriendlyName = defInfo.displayName;
-                  }
-                  // else: keep _settingFriendlyName set by flattenSettings (e.g. "DevicePasswordEnabled")
-                }
+        const processSettingInstance = async (instance: any): Promise<any[]> => {
+          const results: any[] = [];
+          const defId = instance.settingDefinitionId || "";
+          const item: any = { settingInstance: instance };
 
-                if (cleaned.settingInstance.choiceSettingValue) {
-                  const choiceValue = cleaned.settingInstance.choiceSettingValue.value || "";
-                  // Use endsWith to avoid false matches on e.g. "_10", "_11"
-                  if (choiceValue.endsWith("_1") || choiceValue.endsWith("~1")) {
-                    cleaned._settingFriendlyValue = "Enabled";
-                  } else if (choiceValue.endsWith("_0") || choiceValue.endsWith("~0")) {
-                    cleaned._settingFriendlyValue = "Disabled";
-                  } else {
-                    // Strip CSP path prefix, humanise the tail value
-                    const tail = choiceValue.replace(/^.*[~_]([^~_]+)$/, "$1");
-                    cleaned._settingFriendlyValue = tail.replace(/_/g, " ").replace(/\w/g, (c: string) => c.toUpperCase());
-                  }
-                }
-                if (cleaned.settingInstance.simpleSettingValue) {
-                  cleaned._settingFriendlyValue = String(cleaned.settingInstance.simpleSettingValue.value || "");
+          if (defId) {
+            let defInfo = settingDefCache.get(defId);
+            if (!defInfo) {
+              defInfo = await fetchSettingDefinitionDisplayName(token, defId);
+              settingDefCache.set(defId, defInfo);
+            }
+            if (defInfo.displayName !== defId) {
+              item._settingFriendlyName = defInfo.displayName;
+            }
+          }
+
+          if (instance.choiceSettingValue) {
+            const choiceValue = instance.choiceSettingValue.value || "";
+            const optionDisplayName = await fetchChoiceOptionDisplayName(token, defId, choiceValue);
+            if (optionDisplayName && optionDisplayName !== choiceValue) {
+              item._settingFriendlyValue = optionDisplayName;
+            } else {
+              const tail = choiceValue.replace(/^.*[~_]([^~_]+)$/, "$1");
+              item._settingFriendlyValue = tail.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+            }
+            results.push(item);
+
+            if (instance.choiceSettingValue.children && Array.isArray(instance.choiceSettingValue.children)) {
+              for (const child of instance.choiceSettingValue.children) {
+                if (child.settingInstance) {
+                  const childResults = await processSettingInstance(child.settingInstance);
+                  results.push(...childResults);
                 }
               }
-              return cleaned;
-            })
-          );
+            }
+          } else if (instance.simpleSettingValue) {
+            item._settingFriendlyValue = String(instance.simpleSettingValue.value ?? "");
+            results.push(item);
+          } else if (instance.groupSettingCollectionValue && Array.isArray(instance.groupSettingCollectionValue)) {
+            results.push(item);
+            for (const group of instance.groupSettingCollectionValue) {
+              if (group.children && Array.isArray(group.children)) {
+                for (const child of group.children) {
+                  if (child.settingInstance) {
+                    const childResults = await processSettingInstance(child.settingInstance);
+                    results.push(...childResults);
+                  }
+                }
+              }
+            }
+          } else {
+            results.push(item);
+          }
+          return results;
+        };
+
+        if (enriched.settings) {
+          const expandedSettings: any[] = [];
+          for (const setting of enriched.settings) {
+            if (setting.settingInstance) {
+              const processed = await processSettingInstance(setting.settingInstance);
+              for (const p of processed) {
+                expandedSettings.push({ ...setting, ...p });
+              }
+            } else if (setting._settingFriendlyName) {
+              expandedSettings.push(setting);
+            } else {
+              expandedSettings.push(setting);
+            }
+          }
+          enriched.settings = expandedSettings;
+          enriched.settingsCount = expandedSettings.length;
         }
 
         return enriched;

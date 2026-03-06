@@ -71,7 +71,7 @@ export interface ComplianceLookupResult {
 // as raw TypeScript (tsx), compiled CJS (dist/index.cjs), or in tests.
 // Strategy: try several candidate paths, pick the first that exists.
 function resolveDataDir(): string {
-  const currentDir = __dirname;
+  const currentDir = typeof __dirname !== "undefined" ? __dirname : path.dirname(new URL(import.meta.url).pathname);
   const candidates = [
     path.join(currentDir, "data/compliance"),
     path.join(currentDir, "../server/data/compliance"),
