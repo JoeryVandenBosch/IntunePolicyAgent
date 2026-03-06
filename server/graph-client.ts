@@ -229,8 +229,7 @@ const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
   safariManagedDomains:                                 "Safari Managed Domains",
 
   // ── iOS / iPadOS – Miscellaneous ──────────────────────────────────────────
-  cameraBlocked:                                        "Block Camera",
-  screenCaptureBlocked:                                 "Block Screen Capture",
+  // (cameraBlocked, screenCaptureBlocked already defined above)
   voiceDialingBlocked:                                  "Block Voice Dialing",
   facetimeBlocked:                                      "Block FaceTime",
   siriBlocked:                                          "Block Siri",
@@ -262,24 +261,12 @@ const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
   kioskModeRequireAssistiveTouch:                       "Kiosk Mode Require Assistive Touch",
 
   // ── macOS – Password ───────────────────────────────────────────────────────
-  passwordRequired:                                     "Require Password",
-  passwordMinimumLength:                                "Minimum Password Length",
-  passwordRequiredType:                                 "Required Password Type",
-  passwordMaximumAttemptCount:                          "Max Password Attempts",
-  passwordMinutesOfInactivityBeforeLock:                "Minutes of Inactivity Before Lock",
+  // (passwordRequired, passwordMinimumLength, etc. already defined above)
   passwordMinutesUntilFailedLoginReset:                 "Minutes Until Failed Login Reset",
-  passwordExpirationDays:                               "Password Expiration Days",
-  passwordBlockSimple:                                  "Block Simple Password",
   keychainBlockCloudSync:                               "Block Keychain Cloud Sync",
 
   // ── Android – Password ────────────────────────────────────────────────────
-  passwordRequired:                                     "Require Password",
-  passwordRequiredType:                                 "Required Password Type",
-  passwordMinimumLength:                                "Minimum Password Length",
-  passwordMinutesOfInactivityBeforeScreenTimeout:       "Screen Timeout (Minutes)",
-  passwordExpirationDays:                               "Password Expiration Days",
-  passwordPreviousPasswordBlockCount:                   "Previous Passwords to Block",
-  passwordSignInFailureCountBeforeFactoryReset:         "Sign-In Failures Before Factory Reset",
+  // (passwordRequired, passwordMinimumLength, etc. already defined above)
   passwordBlockFingerprintUnlock:                       "Block Fingerprint Unlock",
   storageRequireDeviceEncryption:                       "Require Device Encryption",
   storageRequireRemovableStorageEncryption:             "Require Removable Storage Encryption",
@@ -293,8 +280,7 @@ const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
   bitLockerEnabled:                                     "Require BitLocker",
   codeIntegrityEnabled:                                 "Require Code Integrity",
   earlyLaunchAntiMalwareDriverEnabled:                  "Require Early Launch Anti-Malware",
-  passwordRequired:                                     "Require Password",
-  passwordMinimumLength:                                "Minimum Password Length",
+  // (passwordRequired, passwordMinimumLength already defined above)
   secureBootEnabled:                                    "Require Secure Boot",
   signatureOutOfDate:                                   "Signature Up to Date",
   tpmRequired:                                          "Require TPM",
