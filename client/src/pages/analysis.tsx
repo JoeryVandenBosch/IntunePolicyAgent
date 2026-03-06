@@ -499,6 +499,145 @@ function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen }: { policy
   );
 }
 
+// ── Subcomponent: one policy row in the Security Impact tab ─────────────
+function SecurityPolicyRow({ policy, impact, isUnassigned, forceOpen }: { policy: any; impact: any; isUnassigned?: boolean; forceOpen?: boolean }) {
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
+  const hasImpactGroups = impact.securityImpactGroups && Array.isArray(impact.securityImpactGroups) && impact.securityImpactGroups.length > 0;
+  const hasRiskItems = impact.riskItems && Array.isArray(impact.riskItems) && impact.riskItems.length > 0;
+  const visibleGroups = showAllGroups
+    ? (impact.securityImpactGroups ?? [])
+    : (impact.securityImpactGroups ?? []).slice(0, 5);
+
+  return (
+    <PolicySection policy={policy} isUnassigned={isUnassigned} forceOpen={forceOpen}>
+      <div className="space-y-3 text-sm">
+
+        {/* ── 1. Per-setting cards ── */}
+        {hasSettingsArray && (
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <Shield className="w-3.5 h-3.5 text-muted-foreground" /> Security Impact per Configured Setting
+            </h4>
+            <p className="text-[11px] text-muted-foreground/70 italic">Click any setting to expand the security detail, recommendation, and compliance frameworks.</p>
+            <SettingCardGrid settings={impact.settings!} />
+          </div>
+        )}
+
+        {(hasSettingsArray && (hasImpactGroups || hasRiskItems || impact.assignmentScope || impact.overallSummary)) && (
+          <div className="border-t border-border/30" />
+        )}
+
+        {/* ── 2. Numbered thematic groups ── */}
+        {hasImpactGroups && (
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Policy Settings and Security Impact
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">{impact.description}</p>
+            <div className="space-y-0.5">
+              {visibleGroups.map((g: any, idx: number) => (
+                <div key={idx} className="flex gap-2 text-xs py-1.5">
+                  <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
+                  <p className="text-muted-foreground leading-relaxed m-0">
+                    <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.impact}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {impact.securityImpactGroups!.length > 5 && (
+              <button
+                onClick={() => setShowAllGroups(v => !v)}
+                className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
+              >
+                <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
+                {showAllGroups ? "Show fewer" : `Show ${impact.securityImpactGroups!.length - 5} more`}
+              </button>
+            )}
+            {impact.footerNote && (
+              <p className="text-[11px] text-muted-foreground/70 italic mt-1 leading-relaxed">{impact.footerNote}</p>
+            )}
+          </div>
+        )}
+
+        {/* ── 3. Named risk items ── */}
+        {hasRiskItems && (
+          <div className="border-t border-border/30 pt-3 space-y-2">
+            <h4 className="text-xs font-semibold text-red-400 flex items-center gap-1.5 uppercase tracking-wide">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-400" /> Risk Analysis
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">Implementing this policy introduces several security risks that leadership should be aware of:</p>
+            <div className="flex flex-col gap-2">
+              {impact.riskItems.map((r: any, i: number) => (
+                <div key={i} className="flex gap-2.5 items-start px-3 py-2.5 rounded-md" style={{background:"rgba(220,80,80,0.06)",border:"1px solid rgba(220,80,80,0.18)"}}>
+                  <span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5" style={{background:"rgba(220,80,80,0.15)",border:"1px solid rgba(220,80,80,0.3)",color:"hsl(0,72%,65%)"}}>{i + 1}</span>
+                  <p className="text-xs text-muted-foreground leading-relaxed m-0">
+                    <strong className="text-foreground font-semibold">{r.name}: </strong>{r.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── 4. Assignment scope ── */}
+        {impact.assignmentScope && (
+          <div className="border-t border-border/30 pt-3 space-y-1">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
+            </h4>
+            {isUnassigned ? (
+              <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
+            )}
+          </div>
+        )}
+
+        {/* ── 5. Overall summary ── */}
+        {impact.overallSummary && (
+          <div className="border-t border-border/30 pt-3 space-y-1">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">{impact.overallSummary}</p>
+          </div>
+        )}
+
+        {/* ── 6. Compliance frameworks ── */}
+        {impact.complianceFrameworks?.length > 0 && (
+          <div className="border-t border-border/30 pt-3 flex items-center gap-2 flex-wrap">
+            <BookOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="text-xs font-semibold text-foreground">Compliance Frameworks:</span>
+            {impact.complianceFrameworks.map((fw: string) => (
+              <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
+            ))}
+          </div>
+        )}
+
+        {/* ── Fallback for legacy data ── */}
+        {!hasSettingsArray && !hasImpactGroups && !hasRiskItems && (
+          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+            <p>{impact.description}</p>
+            {impact.assignmentScope && <div><span className="font-bold text-foreground">Assignment Scope: </span>{impact.assignmentScope}</div>}
+            {typeof impact.riskAnalysis === "string" && impact.riskAnalysis && <div><span className="font-bold text-foreground">Risk Analysis: </span>{impact.riskAnalysis}</div>}
+            {impact.overallSummary && <div><span className="font-bold text-foreground">Overall Summary: </span>{impact.overallSummary}</div>}
+            {impact.complianceFrameworks?.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                {impact.complianceFrameworks.map((fw: string) => <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </PolicySection>
+  );
+}
+
 // ── Subcomponent: one policy row in the End-User Impact tab ──────────────
 function EndUserPolicyRow({ policy, impact, isUnassigned, forceOpen }: { policy: any; impact: any; isUnassigned?: boolean; forceOpen?: boolean }) {
   const [showAllGroups, setShowAllGroups] = useState(false);
@@ -871,71 +1010,8 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const impact = analysis.securityImpact[policy.id];
                   if (!impact) return null;
-                  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
-                  const effectiveRating = hasSettingsArray ? calculatePolicySeverity(impact.settings!) : (impact.rating || "Medium");
-                  const ratingColor = SEVERITY_COLORS[effectiveRating] || SEVERITY_COLORS["Medium"];
-                  const hasStructuredData = impact.policySettingsAndSecurityImpact || impact.assignmentScope || impact.riskAnalysis || impact.overallSummary;
-                  return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={analysis.assignments[policy.id]?.isUnassigned} forceOpen={securityForce}>
-                      <div className="space-y-1">
-                        {hasSettingsArray && (
-                          <div className="mb-4">
-                            <h4 className="text-xs font-bold text-foreground mb-2">Security Impact per Setting:</h4>
-                            <SettingCardGrid settings={impact.settings!} />
-                          </div>
-                        )}
-
-                        {/* Fallback: old text-based sections */}
-                        {!hasSettingsArray && hasStructuredData ? (
-                          <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                            {impact.policySettingsAndSecurityImpact && (
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground mb-1.5">Policy Settings and Security Impact:</h4>
-                                <FormattedSettingsBlock text={impact.policySettingsAndSecurityImpact} />
-                              </div>
-                            )}
-                          </div>
-                        ) : !hasSettingsArray ? (
-                          <div className="space-y-3">
-                            <p className="text-sm text-muted-foreground leading-relaxed">{impact.description}</p>
-                          </div>
-                        ) : null}
-
-                        {/* These sections always render when available */}
-                        <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                          {impact.assignmentScope && (
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground mb-1.5">Assignment Scope:</h4>
-                              <p className="whitespace-pre-line">{impact.assignmentScope}</p>
-                            </div>
-                          )}
-                          {impact.riskAnalysis && (
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground mb-1.5">Risk Analysis:</h4>
-                              <p className="whitespace-pre-line">{impact.riskAnalysis}</p>
-                            </div>
-                          )}
-                          {impact.overallSummary && (
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground mb-1.5">Overall Summary:</h4>
-                              <p className="whitespace-pre-line">{impact.overallSummary}</p>
-                            </div>
-                          )}
-                          {impact.complianceFrameworks?.length > 0 && (
-                            <div>
-                              <h4 className="text-xs font-bold text-foreground mb-1.5">Compliance Frameworks:</h4>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                                {impact.complianceFrameworks.map(fw => (
-                                  <Badge key={fw} variant="outline" className="text-xs">{fw}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </PolicySection>
-                  );
+                  const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
+                  return <SecurityPolicyRow key={policy.id} policy={policy} impact={impact} isUnassigned={isUnassigned} forceOpen={securityForce} />;
                 })}
               </TabsContent>
 

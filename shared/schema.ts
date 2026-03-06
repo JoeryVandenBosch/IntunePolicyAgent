@@ -100,16 +100,26 @@ export interface SecuritySettingDetail {
   recommendation: string;
 }
 
+export interface SecurityImpactGroup {
+  groupName: string;
+  impact: string;
+}
+
+export interface SecurityRiskItem {
+  name: string;
+  text: string;
+}
+
 export interface PolicySecurityImpact {
   rating: "Low" | "Medium" | "High" | "Critical";
   description: string;
   complianceFrameworks: string[];
-  policySettingsAndSecurityImpact?: string;
   settings?: SecuritySettingDetail[] | null;
   assignmentScope?: string;
-  riskAnalysis?: string;
-  conflictAnalysis?: string;
   overallSummary?: string;
+  securityImpactGroups?: SecurityImpactGroup[];
+  riskItems?: SecurityRiskItem[];
+  footerNote?: string;
 }
 
 export interface AssignmentGroup {

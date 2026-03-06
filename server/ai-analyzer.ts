@@ -438,33 +438,46 @@ async function analyzeSingleSecurityImpact(policy: IntunePolicyRaw, detail: any)
   const context = buildPolicyContext([policy], [detail]);
 
   const result = await callAI(
-    `You are a Microsoft Intune security expert similar to Microsoft Security Copilot. Write a clear, executive-friendly security impact analysis for this policy. Your audience is C-level management, CISOs, and non-technical stakeholders who need to understand what this policy means for their organization's security posture.
+    `You are Microsoft Security Copilot embedded in Microsoft Intune. When an admin asks about security impact of a policy, produce output matching Security Copilot's exact style: per-setting security details, a numbered thematic group list, named risk categories for C-level leadership, assignment scope, and a board-ready overall summary.
 
 CRITICAL RULES:
-- Base your analysis ONLY on the actual setting names and values provided in the data. Do NOT infer or fabricate settings not listed.
-- Write in clear, flowing paragraphs — NOT bullet points or lists. Use plain business English that a CISO or CTO can present to their board.
-- Explain security impact in business terms: "This protects company data by..." rather than "This setting enables DLP policy..."
-- Be specific about what is protected, what gaps remain, and what the real-world consequences are.
+- Base your analysis ONLY on the actual setting names and values provided. Do NOT infer or fabricate settings not listed.
+- Write in plain business English suitable for a CISO presenting to a board. Avoid jargon.
+- Translate technical OMA-URI and CSP setting names into human-readable labels.
+- For securityImpactGroups, group related settings thematically — do NOT list each setting individually.
+- For riskItems, each item must have a short bold title and 2-3 sentences of plain-language explanation.
+- Do NOT include conflict analysis — that is handled separately.
 
-Provide these structured fields:
-- rating: "Low"|"Medium"|"High"|"Critical" - overall security impact rating
-- settings: A JSON array where each element represents ONE configured setting with these fields:
-  { "settingName": "Human-readable setting name", "settingValue": "The configured value", "securityRating": "Critical"|"High"|"Medium"|"Low", "detail": "What this setting protects and why it matters in business terms", "frameworks": ["CIS 1.2.3", "NIST AC-7", ...], "recommendation": "What to improve or keep, be specific" }
-  Include EVERY setting from the data. Use human-readable names (e.g., "Require Device Encryption" not "device_vendor_msft_...").
-- assignmentScope: A clear paragraph explaining which users and devices are protected by this policy. Name the specific groups, how many members, and any filters. If the policy is not assigned, state clearly: "This policy is not currently assigned to any users or devices, so it provides no active security protection."
-- riskAnalysis: Write 3-5 sentences as a flowing paragraph (not a list). Explain what security measures this policy enforces and what gaps remain. Consider: Does it adequately protect corporate data? Are there settings that are too permissive (e.g., allowing copy/paste between work and personal)? Are strong authentication mechanisms enforced? What could an attacker exploit if these are the only protections in place? Are there industry best practices not being followed? Write like a senior security consultant briefing a CISO — concrete, referencing actual settings and their configured values.
-- overallSummary: Write a comprehensive closing paragraph (4-6 sentences) that a CISO could read aloud in a board meeting. Summarize the policy's security controls, its assignment scope, the number of configured settings, what it protects well, and where gaps exist. Mention whether the policy is currently active. End with a clear verdict on the overall security posture this policy provides. Reference specific settings to support your assessment.
-- description: Brief 1-2 sentence security impact summary.
-- complianceFrameworks: Array of relevant frameworks (NIST 800-53, CIS Benchmarks, ISO 27001, etc.) — this is the OVERALL list for the entire policy
+Produce a JSON object with ALL of these fields:
 
-Do NOT include any conflict analysis - conflicts are handled separately.
+- rating: "Low"|"Medium"|"High"|"Critical" — overall security rating for the policy.
 
-IMPORTANT: Always refer to the policy by its display NAME followed by the GUID in parentheses. Never use the GUID alone without the name.
+- description: 1-2 sentence plain-language summary of the overall security posture.
+
+- complianceFrameworks: Array of relevant framework names for the whole policy (e.g. ["NIST SP 800-53 Rev. 5", "CIS Critical Security Controls v8", "ISO/IEC 27001"]).
+
+- settings: Array of per-setting security objects — one per configured setting, sorted by securityRating descending (Critical first):
+  { "settingName": "Human-readable name", "settingValue": "configured value", "securityRating": "Critical"|"High"|"Medium"|"Low", "detail": "What this protects or risks in plain business terms", "frameworks": ["NIST ...", "CIS ..."], "recommendation": "Specific actionable recommendation" }
+  Include EVERY setting. Use human-readable names.
+
+- securityImpactGroups: Array of thematic groups — matching Security Copilot's numbered list format:
+  { "groupName": "Human-readable group label", "impact": "One sentence describing the security impact of all settings in this group." }
+  Aim for 5-12 groups. Group by feature area (e.g. Defender Antivirus, Browser Security, Device Connectivity, Authentication, Encryption).
+
+- footerNote: One italic sentence noting this covers the most impactful settings and the policy contains many more configurations.
+
+- riskItems: Array of named risk categories — each with a bold title and explanation:
+  { "name": "Short bold risk title (e.g. Reduced Threat Detection)", "text": "2-3 sentences explaining the risk in plain language a CISO can present to the board." }
+  Aim for 4-7 risk items. Reference actual settings and values.
+
+- assignmentScope: Plain-language paragraph describing which users/devices are protected. Include group names, member counts, and filters. If unassigned: "This policy is not currently assigned to any users or devices, so it provides no active security protection."
+
+- overallSummary: Board-ready closing paragraph (4-6 sentences). Summarise the policy's security controls, assignment scope, number of configured settings, what it protects well, and where gaps exist. End with a clear verdict a CISO could read aloud in a board meeting. Reference specific settings.
 
 Return ONLY valid JSON. No markdown, no backticks, no preamble:
-{ "rating": "...", "description": "...", "complianceFrameworks": [...], "settings": [ { "settingName": "...", "settingValue": "...", "securityRating": "...", "detail": "...", "frameworks": [...], "recommendation": "..." }, ... ], "assignmentScope": "...", "riskAnalysis": "...", "overallSummary": "..." }`,
+{ "rating": "...", "description": "...", "complianceFrameworks": [...], "settings": [...], "securityImpactGroups": [...], "footerNote": "...", "riskItems": [...], "assignmentScope": "...", "overallSummary": "..." }`,
     `Analyze security impact for this policy:\n${context}`,
-    12000
+    14000
   );
 
   try {
@@ -482,11 +495,24 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     throw new Error("Unexpected response structure");
   } catch (e) {
     console.error(`Failed to parse security impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
-    return { id: policy.id, data: { rating: "Medium", description: `Contributes to organizational security posture through ${policy.type} enforcement.`, complianceFrameworks: ["General Best Practice"], policySettingsAndSecurityImpact: `This policy configures ${policy.type} settings for ${policy.platform} with security implications.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings that contributes to organizational security.` } };
+    return {
+      id: policy.id,
+      data: {
+        rating: "Medium",
+        description: `Contributes to organisational security posture through ${policy.type} enforcement.`,
+        complianceFrameworks: ["General Best Practice"],
+        settings: [],
+        securityImpactGroups: [],
+        footerNote: "",
+        riskItems: [],
+        assignmentScope: "Assignment information not available.",
+        overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings that contributes to organisational security.`,
+      },
+    };
   }
 }
 
-export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, { rating: string; description: string; complianceFrameworks: string[]; policySettingsAndSecurityImpact?: string; settings?: any[] | null; assignmentScope?: string; riskAnalysis?: string; overallSummary?: string }>> {
+export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details: any[]): Promise<Record<string, any>> {
   const results = await Promise.allSettled(
     policies.map((policy, i) => analyzeSingleSecurityImpact(policy, details[i]))
   );
@@ -497,7 +523,17 @@ export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details
     } else {
       const p = policies[i];
       console.error(`Security impact analysis failed for policy ${p.name}:`, result.reason);
-      merged[p.id] = { rating: "Medium", description: `Contributes to organizational security posture through ${p.type} enforcement.`, complianceFrameworks: ["General Best Practice"], policySettingsAndSecurityImpact: `This policy configures ${p.type} settings for ${p.platform} with security implications.`, assignmentScope: "Assignment information not available.", riskAnalysis: "Risk analysis not available.", overallSummary: `The "${p.name}" policy is a ${p.type} configuration for ${p.platform} with ${p.settingsCount} configured settings that contributes to organizational security.` };
+      merged[p.id] = {
+        rating: "Medium",
+        description: `Contributes to organisational security posture through ${p.type} enforcement.`,
+        complianceFrameworks: ["General Best Practice"],
+        settings: [],
+        securityImpactGroups: [],
+        footerNote: "",
+        riskItems: [],
+        assignmentScope: "Assignment information not available.",
+        overallSummary: `The "${p.name}" policy is a ${p.type} configuration for ${p.platform} with ${p.settingsCount} configured settings.`,
+      };
     }
   });
   return merged;
