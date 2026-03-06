@@ -49,11 +49,13 @@ async function graphGetAll(token: string, url: string): Promise<any[]> {
  */
 const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
   // ── Windows – Device Lock / Password ──────────────────────────────────────
-  passwordRequired:                                     "Device Password Enabled",
+  // Note: passwordRequired and devicePasswordEnabled are distinct Graph API properties.
+  // Keep them with distinct display names to avoid duplicate entries in flat Config Profiles.
+  passwordRequired:                                     "Require Password",
   devicePasswordEnabled:                                "Device Password Enabled",
   passwordMaximumAttemptCount:                          "Max Device Password Failed Attempts",
   passwordMinutesOfInactivityBeforeScreenTimeout:       "Max Inactivity Time Device Lock",
-  passwordMinutesOfInactivityBeforeLock:                "Max Inactivity Time Device Lock",
+  passwordMinutesOfInactivityBeforeLock:                "Max Inactivity Before Lock",
   passwordMinimumLength:                                "Min Device Password Length",
   passwordRequiredType:                                 "Required Password Type",
   passwordBlockSimple:                                  "Block Simple Password",
@@ -203,7 +205,7 @@ const DEVICE_CONFIG_DISPLAY_NAMES: Record<string, string> = {
   passcodeBlockFingerprintModification:                 "Block Fingerprint Modification",
 
   // ── iOS / iPadOS – Encryption / Backup ────────────────────────────────────
-  iCloudBackupBlocked:                                  "Block iCloud Backup",
+  iCloudBackupBlocked:                                  "iCloud Backup Blocked",
   iCloudBlockBackup:                                    "Block iCloud Backup",
   iCloudBlockDocumentSync:                              "Block iCloud Document Sync",
   iCloudBlockPhotoLibrary:                              "Block iCloud Photo Library",
