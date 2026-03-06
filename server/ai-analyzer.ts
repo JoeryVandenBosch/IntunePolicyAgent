@@ -158,6 +158,106 @@ function getSettingValueForContext(setting: any): string {
   return "Configured";
 }
 
+// ── Ground truth extraction ──────────────────────────────────────────────────
+// Builds a stable list of { settingKey, settingName, settingValue } purely from
+// Graph API data. No AI involved. Used to pre-populate setting names/values in
+// prompts AND to overwrite any AI-produced values after the AI responds.
+
+export interface GroundTruthSetting {
+  settingKey: string;   // unique stable key for matching (defId or index-based)
+  settingName: string;  // human-readable name from API
+  settingValue: string; // raw value from API — authoritative, never changes
+}
+
+export function extractGroundTruth(detail: any): GroundTruthSetting[] {
+  if (!detail?.settings) return [];
+  return detail.settings.map((s: any, idx: number) => {
+    // Name: prefer _settingFriendlyName (already resolved via Graph API definition lookup)
+    let settingName = s._settingFriendlyName || "";
+    if (!settingName) {
+      const defId = s.settingInstance?.settingDefinitionId || "";
+      settingName = defId ? cleanFriendlyName(formatSettingIdToName(defId)) : `Setting ${idx + 1}`;
+    }
+    settingName = cleanFriendlyName(settingName);
+
+    // Value: cascade through all known Graph API value formats
+    let settingValue = "";
+
+    // 1. Already resolved by enrichedDetails pipeline (most reliable)
+    if (s._settingFriendlyValue !== undefined && s._settingFriendlyValue !== null && s._settingFriendlyValue !== "") {
+      settingValue = String(s._settingFriendlyValue);
+    }
+    // 2. Settings Catalog: choiceSettingValue
+    else if (s.settingInstance?.choiceSettingValue?.value !== undefined) {
+      const raw = s.settingInstance.choiceSettingValue.value || "";
+      // Suffix-based boolean: _1 = enabled, _0 = disabled (strict suffix match)
+      if (/[^a-z]1$/.test(raw) || raw.endsWith("_1") || raw.endsWith("~1")) {
+        settingValue = "Enabled";
+      } else if (/[^a-z]0$/.test(raw) || raw.endsWith("_0") || raw.endsWith("~0")) {
+        settingValue = "Disabled";
+      } else {
+        settingValue = raw.replace(/^.*[~_]/, "").replace(/_/g, " ").replace(/\w/g, (c: string) => c.toUpperCase());
+      }
+    }
+    // 3. Settings Catalog: simpleSettingValue (integer, string)
+    else if (s.settingInstance?.simpleSettingValue?.value !== undefined) {
+      settingValue = String(s.settingInstance.simpleSettingValue.value);
+    }
+    // 4. Settings Catalog: simpleSettingCollectionValue
+    else if (Array.isArray(s.settingInstance?.simpleSettingCollectionValue)) {
+      settingValue = s.settingInstance.simpleSettingCollectionValue
+        .map((item: any) => String(item.value ?? item)).join(", ");
+    }
+    // 5. Settings Catalog: groupSettingCollectionValue (nested groups)
+    else if (Array.isArray(s.settingInstance?.groupSettingCollectionValue)) {
+      settingValue = "Configured (group)";
+    }
+    // 6. OMA-URI raw value
+    else if (s._rawValue !== undefined) {
+      settingValue = String(s._rawValue);
+    }
+    // 7. Configuration Profile flat property (boolean true/false from Graph API)
+    else if (s._settingFriendlyValue !== undefined) {
+      settingValue = String(s._settingFriendlyValue);
+    }
+    // 8. Fallback
+    else {
+      settingValue = "Configured";
+    }
+
+    // Normalise true/false strings from flat Configuration Profile properties
+    if (settingValue === "true") settingValue = "Enabled";
+    if (settingValue === "false") settingValue = "Disabled";
+
+    // Stable key: prefer settingDefinitionId, fall back to index
+    const settingKey = s.settingInstance?.settingDefinitionId || `idx_${idx}`;
+
+    return { settingKey, settingName, settingValue };
+  });
+}
+
+// After AI returns its settings array, overwrite every settingName+settingValue
+// with the ground truth. AI is only allowed to set securityRating/impactLevel,
+// detail/userExperience, recommendation, workaround, frameworks.
+export function mergeGroundTruth(
+  aiSettings: any[],
+  groundTruth: GroundTruthSetting[],
+  nameField: string,
+  valueField: string
+): any[] {
+  if (!groundTruth.length) return aiSettings;
+
+  // Build a lookup by index (order is preserved since AI receives the same ordered list)
+  return groundTruth.map((gt, idx) => {
+    const aiSetting = aiSettings?.[idx] || {};
+    return {
+      ...aiSetting,
+      [nameField]: gt.settingName,   // always from API
+      [valueField]: gt.settingValue, // always from API
+    };
+  });
+}
+
 function formatAssignmentsForContext(assignments: any[]): string {
   return assignments.map((a) => {
     const target = a.target || {};
@@ -192,13 +292,21 @@ function formatAssignmentsForContext(assignments: any[]): string {
 function buildPolicyContext(policies: IntunePolicyRaw[], details: any[]): string {
   return policies.map((p, i) => {
     const detail = details[i];
+
+    // Use ground truth for setting names/values — pure API data, no AI interpretation
+    const gt = extractGroundTruth(detail);
     let settingsInfo = "";
-    if (detail?.settings) {
-      const totalSettings = detail.settings.length;
-      const maxDisplay = 80;
-      const displayedSettings = detail.settings.slice(0, maxDisplay);
-      settingsInfo = `\nConfigured Settings (${totalSettings} total${totalSettings > maxDisplay ? `, showing first ${maxDisplay} of ${totalSettings}` : ""}):\n${formatSettingsForContext(displayedSettings)}`;
+    if (gt.length > 0) {
+      const totalSettings = gt.length;
+      const maxDisplay = 100;
+      const displayed = gt.slice(0, maxDisplay);
+      const rows = displayed.map((s, idx) => `  [${idx}] ${s.settingName}: ${s.settingValue}`).join("\n");
+      settingsInfo = `\nConfigured Settings (${totalSettings} total${totalSettings > maxDisplay ? `, showing first ${maxDisplay}` : ""}):\n${rows}`;
+      settingsInfo += `\n\nIMPORTANT: The [index], settingName, and settingValue above are authoritative API values. ` +
+        `Copy them EXACTLY into your settings array. Do NOT change, rephrase, or infer any name or value. ` +
+        `Your only job for each setting is to add: securityRating or impactLevel, detail or userExperience, recommendation or workaround, frameworks, technicalName.`;
     }
+
     let assignmentInfo = "";
     if (detail?.assignments) {
       assignmentInfo = `\nAssignments:\n${formatAssignmentsForContext(detail.assignments)}`;
@@ -386,19 +494,21 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     14000
   );
 
+  const gt = extractGroundTruth(detail);
   try {
     const parsed = extractJSON(result);
     if (!parsed || typeof parsed !== "object") {
       throw new Error("AI returned non-object response");
     }
-    if (parsed.severity) {
-      return { id: policy.id, data: parsed };
+    let data = parsed.severity ? parsed : (Object.values(parsed)[0] as any);
+    if (!data?.severity) throw new Error("Unexpected response structure");
+
+    // Overwrite AI-produced settingName/settingValue with authoritative API values
+    if (gt.length > 0 && Array.isArray(data.settings)) {
+      data.settings = mergeGroundTruth(data.settings, gt, "settingName", "settingValue");
     }
-    const firstValue = Object.values(parsed)[0] as any;
-    if (firstValue?.severity) {
-      return { id: policy.id, data: firstValue };
-    }
-    throw new Error("Unexpected response structure");
+
+    return { id: policy.id, data };
   } catch (e) {
     console.error(`Failed to parse end-user impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
     return {
@@ -406,7 +516,7 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
       data: {
         severity: "Minimal",
         description: `Standard ${policy.type} configuration with typical user impact.`,
-        settings: [],
+        settings: gt.map(s => ({ settingName: s.settingName, settingValue: s.settingValue, impactLevel: "Minimal", userExperience: "", workaround: null, technicalName: s.settingKey })),
         keyImpactGroups: [],
         footerNote: "",
         riskAnalysis: { productivity: [], security: [], configuration: [] },
@@ -480,19 +590,21 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
     14000
   );
 
+  const gt = extractGroundTruth(detail);
   try {
     const parsed = extractJSON(result);
     if (!parsed || typeof parsed !== "object") {
       throw new Error("AI returned non-object response for security impact");
     }
-    if (parsed.rating) {
-      return { id: policy.id, data: parsed };
+    let data = parsed.rating ? parsed : (Object.values(parsed)[0] as any);
+    if (!data?.rating) throw new Error("Unexpected response structure");
+
+    // Overwrite AI-produced settingName/settingValue with authoritative API values
+    if (gt.length > 0 && Array.isArray(data.settings)) {
+      data.settings = mergeGroundTruth(data.settings, gt, "settingName", "settingValue");
     }
-    const firstValue = Object.values(parsed)[0] as any;
-    if (firstValue?.rating) {
-      return { id: policy.id, data: firstValue };
-    }
-    throw new Error("Unexpected response structure");
+
+    return { id: policy.id, data };
   } catch (e) {
     console.error(`Failed to parse security impact for policy ${policy.name}:`, e, "Raw:", result.substring(0, 500));
     return {
@@ -501,7 +613,7 @@ Return ONLY valid JSON. No markdown, no backticks, no preamble:
         rating: "Medium",
         description: `Contributes to organisational security posture through ${policy.type} enforcement.`,
         complianceFrameworks: ["General Best Practice"],
-        settings: [],
+        settings: gt.map(s => ({ settingName: s.settingName, settingValue: s.settingValue, securityRating: "Low", detail: "", frameworks: [], recommendation: "" })),
         securityImpactGroups: [],
         footerNote: "",
         riskItems: [],
