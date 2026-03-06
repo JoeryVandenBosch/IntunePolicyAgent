@@ -221,13 +221,12 @@ function substringScore(query: string, target: string): number {
 }
 
 /** Map platform string from Intune to benchmark platform key */
-function normalizePlatform(platform: string): string[] {
+function normalizePlatform(platform: string): string[] | null {
   const p = platform.toLowerCase();
   if (p.includes("windows")) return ["windows11"];
   if (p.includes("ios") || p.includes("ipad")) return ["ios"];
   if (p.includes("macos") || p.includes("mac")) return ["macos"];
-  if (p.includes("android")) return []; // no Android benchmark yet
-  // Unknown — search all
+  if (p.includes("android") || p.includes("linux")) return null;
   return ["windows11", "ios", "macos"];
 }
 
@@ -249,6 +248,10 @@ export function lookupComplianceForSetting(
 
   const queryTokens = tokenize(settingName);
   const targetPlatforms = normalizePlatform(platform);
+
+  if (targetPlatforms === null) {
+    return { matches: [], matchCount: 0 };
+  }
 
   const candidates: Array<{ rec: BenchmarkRec; platformKey: string; score: number }> = [];
 

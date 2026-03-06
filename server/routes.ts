@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
-import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, fetchChoiceOptionDisplayName, cleanSettingDefinitionId } from "./graph-client";
+import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, fetchChoiceOptionDisplayName, cleanSettingDefinitionId, GraphApiCache } from "./graph-client";
 import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts, extractGroundTruth } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import { lookupComplianceForSetting, enrichSettingsWithCompliance, computePolicyComplianceSummary } from "./compliance-lookup";
@@ -71,23 +71,17 @@ export async function registerRoutes(
         selectedPolicies.map(p => fetchPolicyDetails(token, p.id, allPolicies))
       );
 
-      const groupCache = new Map<string, any>();
+      const cache = new GraphApiCache();
+
       const groupResolver = async (groupId: string) => {
-        if (groupCache.has(groupId)) return groupCache.get(groupId);
-        const info = await fetchGroupDetails(token, groupId);
-        groupCache.set(groupId, info);
-        return info;
+        return cache.getGroupDetails(token, groupId);
       };
 
-      const filterCache = new Map<string, any>();
       const filterResolver = async (filterId: string) => {
-        if (filterCache.has(filterId)) return filterCache.get(filterId);
-        const info = await fetchAssignmentFilterDetails(token, filterId);
-        filterCache.set(filterId, info);
-        return info;
+        return cache.getFilterDetails(token, filterId);
       };
 
-      const enrichedDetails = await Promise.all(details.map(async (detail) => {
+      const enrichPolicy = async (detail: any) => {
         if (!detail) return detail;
         const enriched = { ...detail };
 
@@ -122,19 +116,13 @@ export async function registerRoutes(
           );
         }
 
-        const settingDefCache = new Map<string, { displayName: string; description: string }>();
-
         const processSettingInstance = async (instance: any): Promise<any[]> => {
           const results: any[] = [];
           const defId = instance.settingDefinitionId || "";
           const item: any = { settingInstance: instance };
 
           if (defId) {
-            let defInfo = settingDefCache.get(defId);
-            if (!defInfo) {
-              defInfo = await fetchSettingDefinitionDisplayName(token, defId);
-              settingDefCache.set(defId, defInfo);
-            }
+            const defInfo = await cache.getSettingDisplayName(token, defId);
             if (defInfo.displayName !== defId) {
               item._settingFriendlyName = defInfo.displayName;
             }
@@ -153,7 +141,7 @@ export async function registerRoutes(
 
           if (instance.choiceSettingValue) {
             const choiceValue = instance.choiceSettingValue.value || "";
-            const optionDisplayName = await fetchChoiceOptionDisplayName(token, defId, choiceValue);
+            const optionDisplayName = await cache.getChoiceOptionDisplayName(token, defId, choiceValue);
             if (optionDisplayName && optionDisplayName !== choiceValue) {
               item._settingFriendlyValue = optionDisplayName;
             } else {
@@ -166,7 +154,7 @@ export async function registerRoutes(
           } else if (instance.choiceSettingCollectionValue && Array.isArray(instance.choiceSettingCollectionValue)) {
             for (const choiceItem of instance.choiceSettingCollectionValue) {
               const choiceValue = choiceItem.value || "";
-              const optionDisplayName = await fetchChoiceOptionDisplayName(token, defId, choiceValue);
+              const optionDisplayName = await cache.getChoiceOptionDisplayName(token, defId, choiceValue);
               const cloneItem = { ...item };
               if (optionDisplayName && optionDisplayName !== choiceValue) {
                 cloneItem._settingFriendlyValue = optionDisplayName;
@@ -227,7 +215,10 @@ export async function registerRoutes(
         }
 
         return enriched;
-      }));
+      };
+
+      const enrichedDetails = await Promise.all(details.map(enrichPolicy));
+      cache.logStats();
 
       const uniquePlatforms = Array.from(new Set(selectedPolicies.map(p => p.platform)));
       const uniqueTypes = Array.from(new Set(selectedPolicies.map(p => p.type)));

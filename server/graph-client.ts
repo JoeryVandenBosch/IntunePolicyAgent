@@ -719,37 +719,96 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
   return details;
 }
 
-export async function fetchSettingDefinitionDisplayName(token: string, definitionId: string): Promise<{ displayName: string; description: string }> {
-  try {
-    const encoded = encodeURIComponent(definitionId);
-    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/configurationSettings('${encoded}')?$select=displayName,description`);
-    return {
-      displayName: data.displayName || definitionId,
-      description: data.description || "",
-    };
-  } catch {
-    return {
-      displayName: definitionId,
-      description: "",
-    };
-  }
-}
+export class GraphApiCache {
+  private settingDefs = new Map<string, Promise<any>>();
+  private groups = new Map<string, Promise<any>>();
+  private filters = new Map<string, Promise<any>>();
+  private _stats = { settingDefHits: 0, settingDefMisses: 0, groupHits: 0, groupMisses: 0, filterHits: 0, filterMisses: 0 };
 
-export async function fetchChoiceOptionDisplayName(token: string, definitionId: string, choiceValue: string): Promise<string> {
-  try {
-    const encoded = encodeURIComponent(definitionId);
-    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/configurationSettings('${encoded}')`);
-    if (data.options) {
-      const option = data.options.find((o: any) => o.itemId === choiceValue);
+  async getSettingDefinition(token: string, definitionId: string): Promise<any> {
+    if (this.settingDefs.has(definitionId)) {
+      this._stats.settingDefHits++;
+      return this.settingDefs.get(definitionId)!;
+    }
+    this._stats.settingDefMisses++;
+    const promise = fetchSettingDefinitionFull(token, definitionId);
+    this.settingDefs.set(definitionId, promise);
+    return promise;
+  }
+
+  async getSettingDisplayName(token: string, definitionId: string): Promise<{ displayName: string; description: string }> {
+    const full = await this.getSettingDefinition(token, definitionId);
+    return { displayName: full.displayName, description: full.description };
+  }
+
+  async getChoiceOptionDisplayName(token: string, definitionId: string, choiceValue: string): Promise<string> {
+    const full = await this.getSettingDefinition(token, definitionId);
+    if (full.options) {
+      const option = full.options.find((o: any) => o.itemId === choiceValue);
       if (option?.displayName) return option.displayName;
     }
     return choiceValue;
-  } catch {
-    return choiceValue;
+  }
+
+  async getGroupDetails(token: string, groupId: string): Promise<any> {
+    if (this.groups.has(groupId)) {
+      this._stats.groupHits++;
+      return this.groups.get(groupId)!;
+    }
+    this._stats.groupMisses++;
+    const promise = fetchGroupDetailsUncached(token, groupId);
+    this.groups.set(groupId, promise);
+    return promise;
+  }
+
+  async getFilterDetails(token: string, filterId: string): Promise<any> {
+    if (this.filters.has(filterId)) {
+      this._stats.filterHits++;
+      return this.filters.get(filterId)!;
+    }
+    this._stats.filterMisses++;
+    const promise = fetchAssignmentFilterDetailsUncached(token, filterId);
+    this.filters.set(filterId, promise);
+    return promise;
+  }
+
+  logStats() {
+    const s = this._stats;
+    const total = s.settingDefHits + s.settingDefMisses + s.groupHits + s.groupMisses + s.filterHits + s.filterMisses;
+    const hits = s.settingDefHits + s.groupHits + s.filterHits;
+    console.log(`  [GraphApiCache] ${hits}/${total} cache hits (settingDefs: ${s.settingDefHits}/${s.settingDefHits + s.settingDefMisses}, groups: ${s.groupHits}/${s.groupHits + s.groupMisses}, filters: ${s.filterHits}/${s.filterHits + s.filterMisses})`);
   }
 }
 
-export async function fetchAssignmentFilterDetails(token: string, filterId: string): Promise<any> {
+async function fetchSettingDefinitionFull(token: string, definitionId: string): Promise<any> {
+  try {
+    const encoded = encodeURIComponent(definitionId);
+    const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/configurationSettings('${encoded}')`);
+    return {
+      displayName: data.displayName || definitionId,
+      description: data.description || "",
+      options: data.options || null,
+    };
+  } catch {
+    return { displayName: definitionId, description: "", options: null };
+  }
+}
+
+export async function fetchSettingDefinitionDisplayName(token: string, definitionId: string): Promise<{ displayName: string; description: string }> {
+  const full = await fetchSettingDefinitionFull(token, definitionId);
+  return { displayName: full.displayName, description: full.description };
+}
+
+export async function fetchChoiceOptionDisplayName(token: string, definitionId: string, choiceValue: string): Promise<string> {
+  const full = await fetchSettingDefinitionFull(token, definitionId);
+  if (full.options) {
+    const option = full.options.find((o: any) => o.itemId === choiceValue);
+    if (option?.displayName) return option.displayName;
+  }
+  return choiceValue;
+}
+
+async function fetchAssignmentFilterDetailsUncached(token: string, filterId: string): Promise<any> {
   try {
     const data = await graphGet(token, `https://graph.microsoft.com/beta/deviceManagement/assignmentFilters('${filterId}')?$select=displayName,rule,platform`);
     return {
@@ -766,7 +825,11 @@ export async function fetchAssignmentFilterDetails(token: string, filterId: stri
   }
 }
 
-export async function fetchGroupDetails(token: string, groupId: string): Promise<any> {
+export async function fetchAssignmentFilterDetails(token: string, filterId: string): Promise<any> {
+  return fetchAssignmentFilterDetailsUncached(token, filterId);
+}
+
+async function fetchGroupDetailsUncached(token: string, groupId: string): Promise<any> {
   try {
     const data = await graphGet(token, `https://graph.microsoft.com/v1.0/groups/${groupId}?$select=displayName,membershipRule,groupTypes`);
     let memberCount = 0;
@@ -791,6 +854,10 @@ export async function fetchGroupDetails(token: string, groupId: string): Promise
       memberCount: 0,
     };
   }
+}
+
+export async function fetchGroupDetails(token: string, groupId: string): Promise<any> {
+  return fetchGroupDetailsUncached(token, groupId);
 }
 
 export async function fetchGroupMembers(token: string, groupId: string): Promise<any[]> {

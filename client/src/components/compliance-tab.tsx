@@ -842,6 +842,25 @@ function ComplianceTabInner({ policies, compliance }: ComplianceTabProps) {
         {platformStats.map(s => <PlatformCard key={s.platform} stat={s} />)}
       </div>
 
+      {(() => {
+        const unsupported = [...new Set(policies.map(p => (p.platform || "").toLowerCase()))].filter(
+          p => p.includes("android") || p.includes("linux")
+        );
+        if (!unsupported.length) return null;
+        const labels = unsupported.map(p => p.includes("android") ? "Android" : "Linux");
+        return (
+          <div className="flex items-center gap-2 rounded-md border border-border/30 bg-muted/10 px-3 py-2 text-xs text-muted-foreground">
+            <span className="shrink-0 text-amber-500">ⓘ</span>
+            <span>{labels.join(" and ")} {labels.length > 1 ? "policies are" : "policies are"} excluded — CIS Microsoft Intune Benchmarks are not yet available for {labels.length > 1 ? "these platforms" : "this platform"}.</span>
+          </div>
+        );
+      })()}
+
+      <div className="flex items-center gap-2 rounded-md border border-border/30 bg-muted/10 px-3 py-2 text-xs text-muted-foreground">
+        <span className="shrink-0 text-blue-400">ⓘ</span>
+        <span>CIS matching works at the individual setting level, not the policy level. A policy only appears here if it contains settings that match known CIS benchmark recommendations. Policies with only non-security settings (e.g. WiFi, bookmarks, UI preferences) may not produce any CIS matches.</span>
+      </div>
+
       {/* CIS list */}
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-4 flex-wrap">
