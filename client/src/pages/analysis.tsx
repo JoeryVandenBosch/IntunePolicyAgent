@@ -360,6 +360,259 @@ function getSelectedPolicies(queryClientInstance: ReturnType<typeof useQueryClie
   return policies;
 }
 
+// ── Subcomponent: one policy row in the Summary tab ──────────────────────
+function SummaryPolicyRow({ policy, summary, isUnassigned, forceOpen }: { policy: any; summary: any; isUnassigned?: boolean; forceOpen?: boolean }) {
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const hasStructured = !!(summary?.introParagraph || summary?.settingGroups || summary?.topSettings);
+  const visibleGroups = showAllGroups
+    ? (summary?.settingGroups ?? [])
+    : (summary?.settingGroups ?? []).slice(0, 8);
+
+  return (
+    <PolicySection policy={policy} isUnassigned={isUnassigned} forceOpen={forceOpen}>
+      <div className="space-y-3 text-sm">
+        {/* ── Metrics bar ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { label: "Type", value: policy.type },
+            { label: "Platform", value: policy.platform },
+            { label: "Settings", value: String(summary?.keySettings ?? policy.settingsCount) },
+            { label: "Last modified", value: summary?.lastModified ?? policy.lastModified },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-muted/30 border border-border/40 rounded-md px-3 py-2 text-xs">
+              <div className="text-muted-foreground/70 mb-0.5">{label}</div>
+              <div className="font-medium text-foreground truncate">{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {hasStructured ? (
+          <>
+            {summary.headline && (
+              <div className="flex items-start gap-2 rounded-md bg-primary/8 border border-primary/20 px-3 py-2.5">
+                <Info className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-foreground leading-relaxed">{summary.headline}</p>
+              </div>
+            )}
+            {summary.introParagraph && (
+              <p className="text-xs text-muted-foreground leading-relaxed">{summary.introParagraph}</p>
+            )}
+            {summary.settingGroups && summary.settingGroups.length > 0 && (
+              <div className="space-y-1.5">
+                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                  <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Configured Settings Summary
+                </h4>
+                <div className="space-y-0.5">
+                  {visibleGroups.map((g: any, idx: number) => (
+                    <div key={idx} className="flex gap-2 text-xs py-1.5">
+                      <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
+                      <p className="text-muted-foreground leading-relaxed m-0">
+                        <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.summary}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {summary.settingGroups.length > 8 && (
+                  <button
+                    onClick={() => setShowAllGroups(v => !v)}
+                    className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
+                  >
+                    <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
+                    {showAllGroups ? "Show fewer" : `Show ${summary.settingGroups.length - 8} more setting groups`}
+                  </button>
+                )}
+              </div>
+            )}
+            {summary.topSettings && summary.topSettings.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="border-t border-border/30 pt-3">
+                  <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide mb-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                    Top {summary.topSettings.length} Most Important Configured Settings
+                  </h4>
+                  <div className="space-y-1">
+                    {summary.topSettings.map((s: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2 px-2 py-1.5 rounded text-xs" style={{ background: idx % 2 === 1 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                        <span className="w-4 h-4 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                        <p className="text-muted-foreground leading-relaxed m-0">
+                          <strong className="text-foreground font-semibold">{s.name}</strong>
+                          {" "}<span className="inline-block bg-muted/60 border border-border/40 rounded px-1.5 font-mono text-[10px] align-middle mx-0.5">{s.value}</span>
+                          {" "}{s.impact}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/70 italic mt-2 leading-relaxed">
+                    These settings are highlighted due to their direct impact on privacy, user experience, and security posture.
+                  </p>
+                </div>
+              </div>
+            )}
+            {summary.assignmentScope && (
+              <div className="border-t border-border/30 pt-3 space-y-1">
+                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                  <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
+                </h4>
+                {isUnassigned ? (
+                  <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
+                )}
+              </div>
+            )}
+            {summary.overallSummary && (
+              <div className="border-t border-border/30 pt-3 space-y-1">
+                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{summary.overallSummary}</p>
+                {summary.footerNote && (
+                  <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed border-t border-border/20 pt-2 mt-1">{summary.footerNote}</p>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">
+            {(summary?.overview || "No summary available.").split(/\n\n+/).map((paragraph: string, idx: number) => {
+              const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());
+              if (isHeader) {
+                const colonIdx = paragraph.indexOf(":");
+                const header = paragraph.substring(0, colonIdx).trim();
+                const rest = paragraph.substring(colonIdx + 1).trim();
+                return (
+                  <div key={idx}>
+                    <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
+                    {rest && <p>{rest}</p>}
+                  </div>
+                );
+              }
+              return <p key={idx}>{paragraph}</p>;
+            })}
+          </div>
+        )}
+      </div>
+    </PolicySection>
+  );
+}
+
+// ── Subcomponent: one policy row in the End-User Impact tab ──────────────
+function EndUserPolicyRow({ policy, impact, isUnassigned, forceOpen }: { policy: any; impact: any; isUnassigned?: boolean; forceOpen?: boolean }) {
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
+  const hasKeyGroups = impact.keyImpactGroups && Array.isArray(impact.keyImpactGroups) && impact.keyImpactGroups.length > 0;
+  const hasStructuredRisk = impact.riskAnalysis && typeof impact.riskAnalysis === "object";
+  const visibleGroups = showAllGroups
+    ? (impact.keyImpactGroups ?? [])
+    : (impact.keyImpactGroups ?? []).slice(0, 6);
+
+  return (
+    <PolicySection policy={policy} isUnassigned={isUnassigned} forceOpen={forceOpen}>
+      <div className="space-y-3 text-sm">
+        {hasSettingsArray && (
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <Shield className="w-3.5 h-3.5 text-muted-foreground" /> Impact per Configured Setting
+            </h4>
+            <p className="text-[11px] text-muted-foreground/70 italic">Click any row to expand the user-facing explanation. Sorted by impact level.</p>
+            <EndUserImpactCards settings={impact.settings!} />
+          </div>
+        )}
+        {(hasSettingsArray && (hasKeyGroups || hasStructuredRisk || impact.assignmentScope || impact.overallSummary)) && (
+          <div className="border-t border-border/30" />
+        )}
+        {hasKeyGroups && (
+          <div className="space-y-1.5">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Key Policy Settings and End-User Impact
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">{impact.description}</p>
+            <div className="space-y-0.5">
+              {visibleGroups.map((g: any, idx: number) => (
+                <div key={idx} className="flex gap-2 text-xs py-1.5">
+                  <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
+                  <p className="text-muted-foreground leading-relaxed m-0">
+                    <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.impact}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {impact.keyImpactGroups!.length > 6 && (
+              <button
+                onClick={() => setShowAllGroups(v => !v)}
+                className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
+              >
+                <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
+                {showAllGroups ? "Show fewer" : `Show ${impact.keyImpactGroups!.length - 6} more`}
+              </button>
+            )}
+            {impact.footerNote && (
+              <p className="text-[11px] text-muted-foreground/70 italic mt-1 leading-relaxed">{impact.footerNote}</p>
+            )}
+          </div>
+        )}
+        {hasStructuredRisk && (
+          <div className="border-t border-border/30 pt-3 space-y-2">
+            <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Risk Analysis
+            </h4>
+            {[
+              { label: "Productivity Risks:", color: "text-orange-400", items: (impact.riskAnalysis as any).productivity },
+              { label: "Security Risks:", color: "text-red-400", items: (impact.riskAnalysis as any).security },
+              { label: "Configuration Risks:", color: "text-blue-400", items: (impact.riskAnalysis as any).configuration },
+            ].map(({ label, color, items }) =>
+              items && items.length > 0 ? (
+                <div key={label}>
+                  <div className={`text-xs font-bold mb-1.5 ${color}`}>{label}</div>
+                  <ul className="space-y-1 list-disc list-inside">
+                    {items.map((r: string, i: number) => (
+                      <li key={i} className="text-xs text-muted-foreground leading-relaxed">{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null
+            )}
+          </div>
+        )}
+        {impact.assignmentScope && (
+          <div className="border-t border-border/30 pt-3 space-y-1">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
+            </h4>
+            {isUnassigned ? (
+              <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
+            )}
+          </div>
+        )}
+        {impact.overallSummary && (
+          <div className="border-t border-border/30 pt-3 space-y-1">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
+              <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">{impact.overallSummary}</p>
+          </div>
+        )}
+        {!hasSettingsArray && !hasKeyGroups && !hasStructuredRisk && (
+          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+            <p>{impact.description}</p>
+            {impact.assignmentScope && <div><span className="font-bold text-foreground">Assignment Scope: </span>{impact.assignmentScope}</div>}
+            {typeof impact.riskAnalysis === "string" && impact.riskAnalysis && <div><span className="font-bold text-foreground">Risk Analysis: </span>{impact.riskAnalysis}</div>}
+            {impact.overallSummary && <div><span className="font-bold text-foreground">Overall Summary: </span>{impact.overallSummary}</div>}
+          </div>
+        )}
+      </div>
+    </PolicySection>
+  );
+}
+
 export default function AnalysisPage() {
   const [, setLocation] = useLocation();
   const { auth, logout } = useAuth();
@@ -599,157 +852,7 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const summary = analysis.summaries[policy.id];
                   const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
-                  const hasStructured = !!(summary?.introParagraph || summary?.settingGroups || summary?.topSettings);
-                  const [showAllGroups, setShowAllGroups] = useState(false);
-                  const visibleGroups = showAllGroups
-                    ? (summary?.settingGroups ?? [])
-                    : (summary?.settingGroups ?? []).slice(0, 8);
-
-                  return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={isUnassigned} forceOpen={summaryForce}>
-                      <div className="space-y-3 text-sm">
-
-                        {/* ── Metrics bar ── */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {[
-                            { label: "Type", value: policy.type },
-                            { label: "Platform", value: policy.platform },
-                            { label: "Settings", value: String(summary?.keySettings ?? policy.settingsCount) },
-                            { label: "Last modified", value: summary?.lastModified ?? policy.lastModified },
-                          ].map(({ label, value }) => (
-                            <div key={label} className="bg-muted/30 border border-border/40 rounded-md px-3 py-2 text-xs">
-                              <div className="text-muted-foreground/70 mb-0.5">{label}</div>
-                              <div className="font-medium text-foreground truncate">{value}</div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {hasStructured ? (
-                          <>
-                            {/* ── Headline chip ── */}
-                            {summary.headline && (
-                              <div className="flex items-start gap-2 rounded-md bg-primary/8 border border-primary/20 px-3 py-2.5">
-                                <Info className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
-                                <p className="text-xs font-medium text-foreground leading-relaxed">{summary.headline}</p>
-                              </div>
-                            )}
-
-                            {/* ── Intro paragraph ── */}
-                            {summary.introParagraph && (
-                              <p className="text-xs text-muted-foreground leading-relaxed">{summary.introParagraph}</p>
-                            )}
-
-                            {/* ── Numbered grouped settings ── */}
-                            {summary.settingGroups && summary.settingGroups.length > 0 && (
-                              <div className="space-y-1.5">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                                  <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Configured Settings Summary
-                                </h4>
-                                <div className="space-y-0.5">
-                                  {visibleGroups.map((g: any, idx: number) => (
-                                    <div key={idx} className="flex gap-2 text-xs py-1.5">
-                                      <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
-                                      <p className="text-muted-foreground leading-relaxed m-0">
-                                        <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.summary}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                                {(summary.settingGroups.length > 8) && (
-                                  <button
-                                    onClick={() => setShowAllGroups(v => !v)}
-                                    className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
-                                  >
-                                    <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
-                                    {showAllGroups
-                                      ? "Show fewer"
-                                      : `Show ${summary.settingGroups.length - 8} more setting groups`}
-                                  </button>
-                                )}
-                              </div>
-                            )}
-
-                            {/* ── Top N Most Important Settings ── */}
-                            {summary.topSettings && summary.topSettings.length > 0 && (
-                              <div className="space-y-1.5">
-                                <div className="border-t border-border/30 pt-3">
-                                  <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide mb-2">
-                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                                    Top {summary.topSettings.length} Most Important Configured Settings
-                                  </h4>
-                                  <div className="space-y-1">
-                                    {summary.topSettings.map((s: any, idx: number) => (
-                                      <div key={idx} className="flex items-start gap-2 px-2 py-1.5 rounded text-xs" style={{ background: idx % 2 === 1 ? "rgba(255,255,255,0.02)" : "transparent" }}>
-                                        <span className="w-4 h-4 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                                        <p className="text-muted-foreground leading-relaxed m-0">
-                                          <strong className="text-foreground font-semibold">{s.name}</strong>
-                                          {" "}
-                                          <span className="inline-block bg-muted/60 border border-border/40 rounded px-1.5 font-mono text-[10px] align-middle mx-0.5">{s.value}</span>
-                                          {" "}{s.impact}
-                                        </p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <p className="text-[11px] text-muted-foreground/70 italic mt-2 leading-relaxed">
-                                    These settings are highlighted due to their direct impact on privacy, user experience, and security posture. The policy contains many more settings, but these are among the most significant due to their broad effect on device behaviour and user interaction.
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* ── Assignment scope ── */}
-                            {summary.assignmentScope && (
-                              <div className="border-t border-border/30 pt-3 space-y-1">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                                  <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
-                                </h4>
-                                {isUnassigned ? (
-                                  <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
-                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-muted-foreground leading-relaxed">{summary.assignmentScope}</p>
-                                )}
-                              </div>
-                            )}
-
-                            {/* ── Overall summary ── */}
-                            {summary.overallSummary && (
-                              <div className="border-t border-border/30 pt-3 space-y-1">
-                                <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{summary.overallSummary}</p>
-                                {summary.footerNote && (
-                                  <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed border-t border-border/20 pt-2 mt-1">{summary.footerNote}</p>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          /* Fallback for any legacy text-blob summaries */
-                          <div className="whitespace-pre-line text-xs text-muted-foreground leading-relaxed">
-                            {(summary?.overview || "No summary available.").split(/\n\n+/).map((paragraph: string, idx: number) => {
-                              const isHeader = /^(Key Configured Settings?:|Most Important Settings?:|Configured Settings?:|Assignment Scope Summary?:|Assignment Scope:|Overall Summary:|Summary:)/i.test(paragraph.trim());
-                              if (isHeader) {
-                                const colonIdx = paragraph.indexOf(":");
-                                const header = paragraph.substring(0, colonIdx).trim();
-                                const rest = paragraph.substring(colonIdx + 1).trim();
-                                return (
-                                  <div key={idx}>
-                                    <h4 className="text-xs font-semibold text-foreground mt-2 mb-1">{header}:</h4>
-                                    {rest && <p>{rest}</p>}
-                                  </div>
-                                );
-                              }
-                              return <p key={idx}>{paragraph}</p>;
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </PolicySection>
-                  );
+                  return <SummaryPolicyRow key={policy.id} policy={policy} summary={summary} isUnassigned={isUnassigned} forceOpen={summaryForce} />;
                 })}
               </TabsContent>
 
@@ -758,130 +861,8 @@ export default function AnalysisPage() {
                 {selectedPolicies.map(policy => {
                   const impact = analysis.endUserImpact[policy.id];
                   if (!impact) return null;
-                  const hasSettingsArray = impact.settings && Array.isArray(impact.settings) && impact.settings.length > 0;
-                  const hasKeyGroups = impact.keyImpactGroups && Array.isArray(impact.keyImpactGroups) && impact.keyImpactGroups.length > 0;
-                  const hasStructuredRisk = impact.riskAnalysis && typeof impact.riskAnalysis === "object";
                   const isUnassigned = analysis.assignments[policy.id]?.isUnassigned;
-                  const [showAllGroups, setShowAllGroups] = useState(false);
-                  const visibleGroups = showAllGroups
-                    ? (impact.keyImpactGroups ?? [])
-                    : (impact.keyImpactGroups ?? []).slice(0, 6);
-
-                  return (
-                    <PolicySection key={policy.id} policy={policy} isUnassigned={isUnassigned} forceOpen={enduserForce}>
-                      <div className="space-y-3 text-sm">
-
-                        {/* ── 1. Per-setting impact cards ── */}
-                        {hasSettingsArray && (
-                          <div className="space-y-1.5">
-                            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                              <Shield className="w-3.5 h-3.5 text-muted-foreground" /> Impact per Configured Setting
-                            </h4>
-                            <p className="text-[11px] text-muted-foreground/70 italic">Click any row to expand the user-facing explanation. Sorted by impact level.</p>
-                            <EndUserImpactCards settings={impact.settings!} />
-                          </div>
-                        )}
-
-                        {(hasSettingsArray && (hasKeyGroups || hasStructuredRisk || impact.assignmentScope || impact.overallSummary)) && (
-                          <div className="border-t border-border/30" />
-                        )}
-
-                        {/* ── 2. Key impact groups (SC numbered list) ── */}
-                        {hasKeyGroups && (
-                          <div className="space-y-1.5">
-                            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> Key Policy Settings and End-User Impact
-                            </h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">{impact.description}</p>
-                            <div className="space-y-0.5">
-                              {visibleGroups.map((g: any, idx: number) => (
-                                <div key={idx} className="flex gap-2 text-xs py-1.5">
-                                  <span className="text-primary font-bold min-w-[18px] shrink-0">{idx + 1}.</span>
-                                  <p className="text-muted-foreground leading-relaxed m-0">
-                                    <strong className="text-foreground font-semibold">{g.groupName}:</strong>{" "}{g.impact}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                            {(impact.keyImpactGroups!.length > 6) && (
-                              <button
-                                onClick={() => setShowAllGroups(v => !v)}
-                                className="text-xs text-muted-foreground border border-border/50 rounded px-3 py-1 mt-1 flex items-center gap-1.5 hover:text-foreground transition-colors bg-transparent cursor-pointer"
-                              >
-                                <ChevronDown className={"w-3 h-3 transition-transform" + (showAllGroups ? " rotate-180" : "")} />
-                                {showAllGroups ? "Show fewer" : `Show ${impact.keyImpactGroups!.length - 6} more`}
-                              </button>
-                            )}
-                            {impact.footerNote && (
-                              <p className="text-[11px] text-muted-foreground/70 italic mt-1 leading-relaxed">{impact.footerNote}</p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* ── 3. Risk analysis (productivity / security / configuration) ── */}
-                        {hasStructuredRisk && (
-                          <div className="border-t border-border/30 pt-3 space-y-2">
-                            <h4 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 uppercase tracking-wide">
-                              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Risk Analysis
-                            </h4>
-                            {[
-                              { label: "Productivity Risks:", color: "text-orange-400", items: (impact.riskAnalysis as any).productivity },
-                              { label: "Security Risks:", color: "text-red-400", items: (impact.riskAnalysis as any).security },
-                              { label: "Configuration Risks:", color: "text-blue-400", items: (impact.riskAnalysis as any).configuration },
-                            ].map(({ label, color, items }) =>
-                              items && items.length > 0 ? (
-                                <div key={label}>
-                                  <div className={`text-xs font-bold mb-1.5 ${color}`}>{label}</div>
-                                  <ul className="space-y-1 list-disc list-inside">
-                                    {items.map((r: string, i: number) => (
-                                      <li key={i} className="text-xs text-muted-foreground leading-relaxed">{r}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ) : null
-                            )}
-                          </div>
-                        )}
-
-                        {/* ── 4. Assignment scope ── */}
-                        {impact.assignmentScope && (
-                          <div className="border-t border-border/30 pt-3 space-y-1">
-                            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                              <Target className="w-3.5 h-3.5 text-muted-foreground" /> Assignment Scope
-                            </h4>
-                            {isUnassigned ? (
-                              <div className="flex items-start gap-2 rounded-md bg-amber-500/8 border border-amber-500/20 px-3 py-2">
-                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                                <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
-                              </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground leading-relaxed">{impact.assignmentScope}</p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* ── 5. Overall summary ── */}
-                        {impact.overallSummary && (
-                          <div className="border-t border-border/30 pt-3 space-y-1">
-                            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-                              <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Overall Summary
-                            </h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">{impact.overallSummary}</p>
-                          </div>
-                        )}
-
-                        {/* ── Fallback for legacy data ── */}
-                        {!hasSettingsArray && !hasKeyGroups && !hasStructuredRisk && (
-                          <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                            <p>{impact.description}</p>
-                            {impact.assignmentScope && <div><span className="font-bold text-foreground">Assignment Scope: </span>{impact.assignmentScope}</div>}
-                            {typeof impact.riskAnalysis === "string" && impact.riskAnalysis && <div><span className="font-bold text-foreground">Risk Analysis: </span>{impact.riskAnalysis}</div>}
-                            {impact.overallSummary && <div><span className="font-bold text-foreground">Overall Summary: </span>{impact.overallSummary}</div>}
-                          </div>
-                        )}
-                      </div>
-                    </PolicySection>
-                  );
+                  return <EndUserPolicyRow key={policy.id} policy={policy} impact={impact} isUnassigned={isUnassigned} forceOpen={enduserForce} />;
                 })}
               </TabsContent>
 
