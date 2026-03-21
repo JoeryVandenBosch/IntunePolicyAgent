@@ -67,9 +67,11 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Selected policies not found. Try refreshing the policy list." });
       }
 
+      const t0 = Date.now();
       const details = await Promise.all(
         selectedPolicies.map(p => fetchPolicyDetails(token, p.id, allPolicies))
       );
+      console.log(`[TIMING] fetchPolicyDetails: ${Date.now() - t0}ms`);
 
       const cache = new GraphApiCache();
 
@@ -218,7 +220,9 @@ export async function registerRoutes(
         return enriched;
       };
 
+      const t1 = Date.now();
       const enrichedDetails = await Promise.all(details.map(enrichPolicy));
+      console.log(`[TIMING] enrichPolicy (setting name resolution): ${Date.now() - t1}ms`);
       cache.logStats();
 
       const uniquePlatforms = Array.from(new Set(selectedPolicies.map(p => p.platform)));
@@ -248,12 +252,14 @@ export async function registerRoutes(
 
       // Combined per-policy call: Summary + End-User Impact + Security Impact
       // in one AI call per policy instead of 3 separate calls — ~60% fewer round trips.
+      const t2 = Date.now();
       const [allPolicyData, assignments, conflicts, recommendations] = await Promise.all([
         analyzePoliciesAll(selectedPolicies, enrichedDetails),
         analyzeAssignments(selectedPolicies, enrichedDetails, groupResolver),
         analyzeConflicts(selectedPolicies, enrichedDetails),
         analyzeRecommendations(selectedPolicies, enrichedDetails),
       ]);
+      console.log(`[TIMING] AI analysis (combined policy + conflicts + recs): ${Date.now() - t2}ms`);
       const { summaries, endUserImpacts: endUserImpact, securityImpacts: securityImpact } = allPolicyData;
 
       for (const policy of selectedPolicies) {
