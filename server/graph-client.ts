@@ -522,6 +522,22 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
   const baseUrl = "https://graph.microsoft.com/beta/deviceManagement";
   let details: any = { ...policy.rawData, _policyMeta: policy };
 
+  // Fire assignments fetch immediately — it's independent of settings and runs in parallel
+  const assignmentsUrl = (() => {
+    const source = policy.rawData?._source;
+    if (source === "deviceConfigurations")     return `${baseUrl}/deviceConfigurations('${policyId}')/assignments`;
+    if (source === "deviceCompliancePolicies") return `${baseUrl}/deviceCompliancePolicies('${policyId}')/assignments`;
+    if (source === "configurationPolicies")    return `${baseUrl}/configurationPolicies('${policyId}')/assignments`;
+    if (source === "intents")                  return `${baseUrl}/intents('${policyId}')/assignments`;
+    return "";
+  })();
+  const assignmentsFetch = assignmentsUrl
+    ? graphGetAll(token, assignmentsUrl).catch((e: any) => {
+        console.error(`Failed to fetch assignments for policy "${policy.name}" (${policyId}):`, e?.message);
+        return [];
+      })
+    : Promise.resolve([]);
+
   try {
     const source = policy.rawData?._source;
     if (source === "configurationPolicies") {
@@ -695,26 +711,9 @@ export async function fetchPolicyDetails(token: string, policyId: string, polici
     console.error(`Failed to fetch settings for policy "${policy.name}" (${policyId}):`, settingsErr?.message);
   }
 
-  try {
-    let assignmentsUrl = "";
-    const source = policy.rawData?._source;
-    if (source === "deviceConfigurations") {
-      assignmentsUrl = `${baseUrl}/deviceConfigurations('${policyId}')/assignments`;
-    } else if (source === "deviceCompliancePolicies") {
-      assignmentsUrl = `${baseUrl}/deviceCompliancePolicies('${policyId}')/assignments`;
-    } else if (source === "configurationPolicies") {
-      assignmentsUrl = `${baseUrl}/configurationPolicies('${policyId}')/assignments`;
-    } else if (source === "intents") {
-      assignmentsUrl = `${baseUrl}/intents('${policyId}')/assignments`;
-    }
-
-    if (assignmentsUrl) {
-      const assignments = await graphGetAll(token, assignmentsUrl);
-      details.assignments = assignments;
-    }
-  } catch (assignErr: any) {
-    console.error(`Failed to fetch assignments for policy "${policy.name}" (${policyId}):`, assignErr?.message);
-  }
+  // Await the assignments fetch that was fired in parallel with settings above
+  const assignments = await assignmentsFetch;
+  if (assignments.length > 0) details.assignments = assignments;
 
   return details;
 }

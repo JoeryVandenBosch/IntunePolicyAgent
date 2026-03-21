@@ -130,12 +130,15 @@ export async function registerRoutes(
 
           const processChildren = async (children: any[]) => {
             if (!Array.isArray(children)) return;
-            for (const child of children) {
-              const inst = child.settingInstance || child;
-              if (inst.settingDefinitionId || inst.choiceSettingValue || inst.simpleSettingValue || inst.groupSettingValue || inst.groupSettingCollectionValue || inst.choiceSettingCollectionValue || inst.simpleSettingCollectionValue) {
-                const childResults = await processSettingInstance(inst);
-                results.push(...childResults);
-              }
+            // Parallel: all children processed simultaneously instead of sequentially
+            const eligible = children.map(child => child.settingInstance || child).filter(inst =>
+              inst.settingDefinitionId || inst.choiceSettingValue || inst.simpleSettingValue ||
+              inst.groupSettingValue || inst.groupSettingCollectionValue ||
+              inst.choiceSettingCollectionValue || inst.simpleSettingCollectionValue
+            );
+            const childResultSets = await Promise.all(eligible.map(inst => processSettingInstance(inst)));
+            for (const childResults of childResultSets) {
+              results.push(...childResults);
             }
           };
 
@@ -152,7 +155,8 @@ export async function registerRoutes(
             await processChildren(instance.choiceSettingValue.children);
 
           } else if (instance.choiceSettingCollectionValue && Array.isArray(instance.choiceSettingCollectionValue)) {
-            for (const choiceItem of instance.choiceSettingCollectionValue) {
+            // Parallel: resolve all choice option display names simultaneously
+            await Promise.all(instance.choiceSettingCollectionValue.map(async (choiceItem: any) => {
               const choiceValue = choiceItem.value || "";
               const optionDisplayName = await cache.getChoiceOptionDisplayName(token, defId, choiceValue);
               const cloneItem = { ...item };
@@ -164,7 +168,7 @@ export async function registerRoutes(
               }
               results.push(cloneItem);
               await processChildren(choiceItem.children);
-            }
+            }));
             if (instance.choiceSettingCollectionValue.length === 0) {
               results.push(item);
             }
@@ -195,23 +199,20 @@ export async function registerRoutes(
         };
 
         if (enriched.settings) {
-          const expandedSettings: any[] = [];
-          for (const setting of enriched.settings) {
+          const rawCount = enriched.settings.length;
+          // Parallel: process all top-level settings simultaneously instead of sequentially
+          const expandedArrays = await Promise.all(enriched.settings.map(async (setting: any) => {
             if (setting.settingInstance) {
               const processed = await processSettingInstance(setting.settingInstance);
-              for (const p of processed) {
-                expandedSettings.push({ ...setting, ...p });
-              }
-            } else if (setting._settingFriendlyName) {
-              expandedSettings.push(setting);
-            } else {
-              expandedSettings.push(setting);
+              return processed.map((p: any) => ({ ...setting, ...p }));
             }
-          }
+            return [setting];
+          }));
+          const expandedSettings = expandedArrays.flat();
           enriched.settings = expandedSettings;
           enriched.settingsCount = expandedSettings.length;
           const policyName = enriched._policyMeta?.name || "unknown";
-          console.log(`  Expanded ${expandedSettings.length} settings (from ${enriched.settings?.length ?? 0} raw) for "${policyName}"`);
+          console.log(`  Expanded ${expandedSettings.length} settings (from ${rawCount} raw) for "${policyName}"`);
         }
 
         return enriched;
