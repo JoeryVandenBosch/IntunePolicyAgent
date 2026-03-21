@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { setupSession, registerAuthRoutes, requireAuth, refreshTokenIfNeeded } from "./auth";
 import { fetchAllPolicies, fetchPolicyDetails, fetchGroupDetails, fetchGroupMembers, fetchAssignmentFilterDetails, fetchSettingDefinitionDisplayName, fetchChoiceOptionDisplayName, cleanSettingDefinitionId, GraphApiCache } from "./graph-client";
-import { analyzePolicySummaries, analyzeEndUserImpact, analyzeSecurityImpact, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts, extractGroundTruth } from "./ai-analyzer";
+import { analyzePoliciesAll, analyzeAssignments, analyzeConflicts, analyzeRecommendations, detectSettingConflicts, extractGroundTruth } from "./ai-analyzer";
 import { trackEvent, getAnalyticsSummary } from "./analytics";
 import { lookupComplianceForSetting, enrichSettingsWithCompliance, computePolicyComplianceSummary } from "./compliance-lookup";
 import type { IntunePolicyRaw } from "./graph-client";
@@ -245,14 +245,15 @@ export async function registerRoutes(
       const { conflicts: settingConflicts, allSettings } = detectSettingConflicts(selectedPolicies, enrichedDetails);
       console.log(`Detected ${settingConflicts.length} setting-level conflicts, ${allSettings.length} total settings across ${selectedPolicies.length} selected policies`);
 
-      const [summaries, endUserImpact, securityImpact, assignments, conflicts, recommendations] = await Promise.all([
-        analyzePolicySummaries(selectedPolicies, enrichedDetails),
-        analyzeEndUserImpact(selectedPolicies, enrichedDetails),
-        analyzeSecurityImpact(selectedPolicies, enrichedDetails),
+      // Combined per-policy call: Summary + End-User Impact + Security Impact
+      // in one AI call per policy instead of 3 separate calls — ~60% fewer round trips.
+      const [allPolicyData, assignments, conflicts, recommendations] = await Promise.all([
+        analyzePoliciesAll(selectedPolicies, enrichedDetails),
         analyzeAssignments(selectedPolicies, enrichedDetails, groupResolver),
         analyzeConflicts(selectedPolicies, enrichedDetails),
         analyzeRecommendations(selectedPolicies, enrichedDetails),
       ]);
+      const { summaries, endUserImpacts: endUserImpact, securityImpacts: securityImpact } = allPolicyData;
 
       for (const policy of selectedPolicies) {
         const assign = assignments[policy.id];

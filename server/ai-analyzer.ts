@@ -1014,6 +1014,190 @@ export async function analyzeSecurityImpact(policies: IntunePolicyRaw[], details
   return merged;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// COMBINED PER-POLICY AI CALL
+// Replaces 3 separate calls (Summary + End-User Impact + Security Impact)
+// with 1 call per policy. Settings context is built once and sent once.
+// Post-processing (ground truth merge, known-risk overrides, rating rollup)
+// is identical to the individual functions — accuracy is unchanged.
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function analyzeSinglePolicyAll(
+  policy: IntunePolicyRaw,
+  detail: any
+): Promise<{ id: string; summary: any; endUserImpact: any; securityImpact: any }> {
+  const context = buildPolicyContext([policy], [detail]);
+  const gt = extractGroundTruth(detail);
+  const enrichedGt = applyKnownRisks(gt);
+
+  const systemPrompt = `You are Microsoft Security Copilot embedded in Microsoft Intune. Analyze the provided Intune policy and produce THREE separate analyses in a single JSON response: a policy summary, an end-user impact assessment, and a security impact assessment.
+
+CRITICAL RULES (apply to ALL three analyses):
+- Base your analysis ONLY on the actual setting names and values provided. NEVER invent or infer settings not listed.
+- Use plain business English. Translate OMA-URI/CSP names to human-readable labels.
+- Do NOT include conflict analysis in any section — that is handled separately.
+- Settings marked [KNOWN-RISK:X] already have their rating determined — use that rating for securityRating and impactLevel for those settings.
+- Copy settingName and settingValue EXACTLY as provided — do NOT rephrase them.
+
+Return a single JSON object with exactly three top-level keys: "summary", "endUserImpact", "securityImpact".
+
+═══ summary ═══
+{ 
+  "headline": "Single crisp sentence summarising what this policy does and why it exists.",
+  "introParagraph": "2-3 sentences introducing the policy purpose, what it enforces, and why it matters. End with 'Below is a summary of the key configured settings and their values:'",
+  "settingGroups": [ { "groupName": "Human-readable group label", "summary": "One sentence describing what all settings in this group are configured to and what effect that has." } ],
+  "topSettings": [ { "name": "Human-readable setting name", "value": "Configured value", "impact": "One sentence explaining why this setting matters." } ],
+  "overallSummary": "Closing paragraph 4-6 sentences summarising purpose, scope, setting count, strengths, and caveats.",
+  "footerNote": "Single sentence noting the summary covers the most important settings.",
+  "keySettings": <integer — total configured settings count>,
+  "lastModified": "YYYY-MM-DD"
+}
+Notes: settingGroups — aim for 8-20 thematic groups. topSettings — up to 10, ranked by security/privacy/UX impact.
+
+═══ endUserImpact ═══
+{
+  "severity": "Minimal|Low|Medium|High|Critical",
+  "description": "1-2 sentence plain-language summary of overall user impact.",
+  "settings": [ { "settingName": "exact name", "settingValue": "exact value", "impactLevel": "Minimal|Low|Medium|High|Critical", "userExperience": "What the end user will actually see or experience.", "workaround": "Workaround or null" } ],
+  "keyImpactGroups": [ { "groupName": "Human-readable group label", "impact": "One sentence describing user-facing impact of all settings in this group." } ],
+  "footerNote": "One sentence noting the policy configures many settings contributing to a controlled environment.",
+  "riskAnalysis": { "productivity": ["bullet 1", ...], "security": ["bullet 1", ...], "configuration": ["bullet 1", ...] },
+  "overallSummary": "Closing paragraph 4-6 sentences on purpose, scope, setting count, net user effect, and productivity vs security verdict."
+}
+Notes: settings — include EVERY setting, sorted by impactLevel descending. keyImpactGroups — aim for 5-15 groups. riskAnalysis — 2-4 bullets per category.
+
+═══ securityImpact ═══
+{
+  "rating": "Low|Medium|High|Critical",
+  "description": "1-2 sentence plain-language summary of overall security posture.",
+  "complianceFrameworks": ["NIST SP 800-53 Rev. 5", "CIS Critical Security Controls v8", "ISO/IEC 27001"],
+  "settings": [ { "settingName": "exact name", "settingValue": "exact value", "securityRating": "Critical|High|Medium|Low", "detail": "What this protects or risks in plain business terms.", "frameworks": ["NIST ..."], "recommendation": "Specific actionable recommendation." } ],
+  "securityImpactGroups": [ { "groupName": "Human-readable group label", "impact": "One sentence describing the security impact of all settings in this group." } ],
+  "footerNote": "One italic sentence noting this covers the most impactful settings.",
+  "riskItems": [ { "name": "Short bold risk title", "text": "2-3 sentences explaining the risk in plain language a CISO can present to the board." } ],
+  "overallSummary": "Board-ready closing paragraph 4-6 sentences: controls, scope, setting count, strengths, gaps, and a verdict a CISO could read aloud."
+}
+Notes: settings — include EVERY setting, sorted by securityRating descending. securityImpactGroups — aim for 5-12 groups. riskItems — aim for 4-7 items.
+
+Return ONLY valid JSON. No markdown, no backticks, no preamble:
+{ "summary": {...}, "endUserImpact": {...}, "securityImpact": {...} }`;
+
+  const result = await callAI(
+    systemPrompt,
+    `Analyze this Intune policy:\n${context}`,
+    18000
+  );
+
+  // ── Fallbacks ──
+  const summaryFallback = {
+    headline: `${policy.type} policy for ${policy.platform}`,
+    introParagraph: `${policy.name} is a ${policy.type} policy targeting ${policy.platform} devices with ${policy.settingsCount} configured settings.`,
+    settingGroups: [], topSettings: [],
+    assignmentScope: buildAssignmentScope(detail),
+    overallSummary: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+    overview: `${policy.type} policy for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+    footerNote: "", keySettings: policy.settingsCount, lastModified: policy.lastModified,
+  };
+  const euFallback = {
+    severity: "Minimal" as const, description: `Standard ${policy.type} configuration with typical user impact.`,
+    settings: gt.map(s => ({ settingName: s.settingName, settingValue: s.settingValue, impactLevel: "Minimal", userExperience: "", workaround: null, technicalName: s.settingKey })),
+    keyImpactGroups: [], footerNote: "",
+    riskAnalysis: { productivity: [], security: [], configuration: [] },
+    assignmentScope: buildAssignmentScope(detail),
+    overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings.`,
+  };
+  const secFallback = {
+    rating: "Medium" as const, description: `Contributes to organisational security posture through ${policy.type} enforcement.`,
+    complianceFrameworks: ["General Best Practice"],
+    settings: gt.map(s => ({ settingName: s.settingName, settingValue: s.settingValue, securityRating: "Low", detail: "", frameworks: [], recommendation: "" })),
+    securityImpactGroups: [], footerNote: "", riskItems: [],
+    assignmentScope: buildAssignmentScope(detail),
+    overallSummary: `The "${policy.name}" policy is a ${policy.type} configuration for ${policy.platform} with ${policy.settingsCount} configured settings that contributes to organisational security.`,
+  };
+
+  try {
+    const parsed = extractJSON(result);
+    if (!parsed || typeof parsed !== "object") throw new Error("Non-object response");
+
+    const raw = parsed.summary && parsed.endUserImpact && parsed.securityImpact
+      ? parsed
+      : (() => { throw new Error("Missing top-level keys in combined response"); })();
+
+    // ── Post-process summary ──
+    const sum = raw.summary || {};
+    if (!sum.overview) sum.overview = sum.overallSummary || "";
+    sum.keySettings = detail?.settingsCount ?? policy.settingsCount;
+    sum.lastModified = policy.lastModified;
+    sum.assignmentScope = buildAssignmentScope(detail);
+
+    // ── Post-process endUserImpact ──
+    const eu = raw.endUserImpact || {};
+    if (gt.length > 0 && Array.isArray(eu.settings)) {
+      eu.settings = mergeGroundTruth(eu.settings, gt, "settingName", "settingValue");
+    }
+    if (Array.isArray(eu.settings)) {
+      eu.settings = eu.settings.map((s: any, idx: number) => {
+        const known = enrichedGt[idx]?.knownRating;
+        return known ? { ...s, impactLevel: known } : s;
+      });
+    }
+    eu.severity = calculatePolicyRating(eu.settings || [], "impactLevel");
+    eu.assignmentScope = buildAssignmentScope(detail);
+
+    // ── Post-process securityImpact ──
+    const sec = raw.securityImpact || {};
+    if (gt.length > 0 && Array.isArray(sec.settings)) {
+      sec.settings = mergeGroundTruth(sec.settings, gt, "settingName", "settingValue");
+    }
+    if (Array.isArray(sec.settings)) {
+      sec.settings = sec.settings.map((s: any, idx: number) => {
+        const known = enrichedGt[idx]?.knownRating;
+        return known ? { ...s, securityRating: known } : s;
+      });
+    }
+    sec.rating = calculatePolicyRating(sec.settings || [], "securityRating");
+    sec.assignmentScope = buildAssignmentScope(detail);
+    sec.complianceFrameworks = aggregateComplianceFrameworks(
+      (sec.settings || []).map((s: any) => ({ settingName: s.settingName })),
+      policy.platform
+    );
+
+    return { id: policy.id, summary: sum, endUserImpact: eu, securityImpact: sec };
+  } catch (e) {
+    console.error(`Combined analysis failed for policy ${policy.name}:`, e, "Raw:", result.substring(0, 300));
+    return { id: policy.id, summary: summaryFallback, endUserImpact: euFallback, securityImpact: secFallback };
+  }
+}
+
+export async function analyzePoliciesAll(
+  policies: IntunePolicyRaw[],
+  details: any[]
+): Promise<{ summaries: Record<string, any>; endUserImpacts: Record<string, any>; securityImpacts: Record<string, any> }> {
+  const results = await Promise.allSettled(
+    policies.map((policy, i) => analyzeSinglePolicyAll(policy, details[i]))
+  );
+
+  const summaries: Record<string, any> = {};
+  const endUserImpacts: Record<string, any> = {};
+  const securityImpacts: Record<string, any> = {};
+
+  results.forEach((result, i) => {
+    const p = policies[i];
+    if (result.status === "fulfilled") {
+      summaries[result.value.id] = result.value.summary;
+      endUserImpacts[result.value.id] = result.value.endUserImpact;
+      securityImpacts[result.value.id] = result.value.securityImpact;
+    } else {
+      console.error(`Combined analysis failed for policy ${p.name}:`, result.reason);
+      summaries[p.id] = { overview: `${p.type} policy for ${p.platform} with ${p.settingsCount} configured settings.`, keySettings: p.settingsCount, lastModified: p.lastModified };
+      endUserImpacts[p.id] = { severity: "Minimal", description: "", settings: [], keyImpactGroups: [], riskAnalysis: { productivity: [], security: [], configuration: [] }, assignmentScope: "", overallSummary: "" };
+      securityImpacts[p.id] = { rating: "Medium", description: "", settings: [], securityImpactGroups: [], riskItems: [], complianceFrameworks: [], assignmentScope: "", overallSummary: "" };
+    }
+  });
+
+  return { summaries, endUserImpacts, securityImpacts };
+}
+
 export async function analyzeAssignments(policies: IntunePolicyRaw[], details: any[], groupResolver: (groupId: string) => Promise<any>): Promise<Record<string, { included: any[]; excluded: any[]; filters: any[] }>> {
   const result: Record<string, any> = {};
 
